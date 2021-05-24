@@ -13,7 +13,7 @@
 </div>
 
 <div class="container col-md-3 col-md-5">
-    <form id="login-form">
+    <form id="login-form" onsubmit="login(); return false;">
         <div class="mb-3">
             <label for="zid" class="form-label">zID</label>
             <input class="form-control bg-dark text-white" id="zid">
@@ -23,7 +23,7 @@
             <input type="password" class="form-control bg-dark text-white" id="password">
         </div>
         <div class="col text-center">
-            <button class="btn btn-primary" type="button" id="submit" onclick="login()">Login</button>
+            <button class="btn btn-primary" type="submit" id="submit">Login</button>
         </div>
     </form>
 </div>

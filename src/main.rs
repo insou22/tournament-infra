@@ -8,6 +8,7 @@ pub mod templates;
 
 use api::{
     login::*,
+    logout::*,
 };
 
 use pages::{
@@ -35,6 +36,7 @@ fn main() {
             about,
             login,
             login_post,
+            logout_post,
         ])
         .mount("/static", StaticFiles::from("./static"))
         .launch();
