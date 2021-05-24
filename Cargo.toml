@@ -1,0 +1,13 @@
+[package]
+name = "tournament-infra"
+version = "0.1.0"
+authors = ["insou22 <zac.kologlu@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.10"
+rocket_contrib = { version = "0.4.10", features = ["tera_templates"] }
+serde = "1.0"
+tera = "1.8.0"
+diesel = { version = "1.4.4", features = ["sqlite"] }
+dotenv = "0.15.0"

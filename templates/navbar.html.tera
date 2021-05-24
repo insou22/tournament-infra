@@ -1,0 +1,22 @@
+<div class="container">
+    <header class="bg-dark text-white d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-white text-decoration-none">
+            <img src="https://i.ytimg.com/vi/bDByGe7FgEQ/hqdefault.jpg" height="50" width="50" />
+        </a>
+
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            {% set page_colours = get_page_colours(page=page) %}
+
+            <li><a href="/" class="nav-link px-2 {{ page_colours['home'] }}">Home</a></li>
+            <li><a href="/rankings" class="nav-link px-2 {{ page_colours['rankings'] }}">Rankings</a></li>
+            <li><a href="/spec" class="nav-link px-2 {{ page_colours['spec'] }}">Spec</a></li>
+            <li><a href="/faq" class="nav-link px-2 {{ page_colours['faq'] }}">FAQs</a></li>
+            <li><a href="/about" class="nav-link px-2 {{ page_colours['about'] }}">About</a></li>
+        </ul>
+
+        <div class="col-md-3 text-end">
+            <a href="/login" type="button" class="btn btn-outline-light me-2">Login</a>
+            <a href="/signup" type="button" class="btn btn-warning">Sign-up</a>
+        </div>
+    </header>
+</div>
