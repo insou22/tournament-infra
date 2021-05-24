@@ -2,8 +2,13 @@
 #[macro_use]
 extern crate rocket;
 
+pub mod api;
 pub mod pages;
 pub mod templates;
+
+use api::{
+    login::*,
+};
 
 use pages::{
     index::*,
@@ -12,7 +17,6 @@ use pages::{
     faq::*,
     about::*,
     login::*,
-    signup::*,
 };
 
 use templates::register_functions;
@@ -23,7 +27,15 @@ use rocket_contrib::templates::Template;
 fn main() {
     rocket::ignite()
         .attach(Template::custom(|engines| register_functions(&mut engines.tera)))
-        .mount("/", routes![index, rankings, spec, faq, about, login, signup])
+        .mount("/", routes![
+            index,
+            rankings,
+            spec,
+            faq,
+            about,
+            login,
+            login_post,
+        ])
         .mount("/static", StaticFiles::from("./static"))
         .launch();
 }

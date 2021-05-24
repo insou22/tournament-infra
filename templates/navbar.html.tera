@@ -15,8 +15,11 @@
         </ul>
 
         <div class="col-md-3 text-end">
-            <a href="/login" type="button" class="btn btn-outline-light me-2">Login</a>
-            <a href="/signup" type="button" class="btn btn-warning">Sign-up</a>
+            {% if zid %}
+            <a>Logged in: {{ zid }}</a>
+            {% else %}
+            <a href="/login" type="button" class="btn btn-warning me-2">Login</a>
+            {% endif %}
         </div>
     </header>
 </div>
