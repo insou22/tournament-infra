@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
 
@@ -20,13 +19,16 @@ use pages::{
     login::*,
 };
 
+use rocket::{
+    fs::FileServer,
+};
+
 use templates::register_functions;
+use rocket_dyn_templates::Template;
 
-use rocket_contrib::serve::StaticFiles;
-use rocket_contrib::templates::Template;
-
-fn main() {
-    rocket::ignite()
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
         .attach(Template::custom(|engines| register_functions(&mut engines.tera)))
         .mount("/", routes![
             index,
@@ -38,6 +40,5 @@ fn main() {
             login_post,
             logout_post,
         ])
-        .mount("/static", StaticFiles::from("./static"))
-        .launch();
+        .mount("/static", FileServer::from("./static"))
 }

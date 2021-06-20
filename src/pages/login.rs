@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rocket_contrib::templates::Template;
+use rocket_dyn_templates::Template;
 
 #[get("/login")]
 pub fn login() -> Template {

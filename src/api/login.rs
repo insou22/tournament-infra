@@ -1,7 +1,6 @@
-use rocket::http::{Cookie, Cookies};
+use rocket::{http::{Cookie, CookieJar}, serde::json::Json};
 use serde::{Deserialize, Serialize};
-use rocket_contrib::json::Json;
-use time::Duration;
+use time::{OffsetDateTime, Duration};
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
@@ -21,7 +20,7 @@ pub struct LoginFailure {
 }
 
 #[post("/login", data = "<request>")]
-pub fn login_post(request: Json<LoginRequest>, mut cookies: Cookies) -> Json<LoginResponse> {
+pub fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) -> Json<LoginResponse> {
     let client = reqwest::blocking::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
     let res = client.post("https://cgi.cse.unsw.edu.au/~z5257261/zidauth.cgi")
@@ -49,7 +48,7 @@ pub fn login_post(request: Json<LoginRequest>, mut cookies: Cookies) -> Json<Log
             .path("/")
             // .secure(true)
             .http_only(true)
-            .expires(time::now() + Duration::weeks(6))
+            .expires(OffsetDateTime::now_utc() + Duration::weeks(6))
             .finish();
 
         cookies.add_private(cookie);

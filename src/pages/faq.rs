@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use rocket::http::Cookies;
-use rocket_contrib::templates::Template;
+use rocket::http::CookieJar;
+use rocket_dyn_templates::Template;
 
 #[get("/faq")]
-pub fn faq(mut cookies: Cookies) -> Template {
+pub fn faq(cookies: &CookieJar<'_>) -> Template {
     let mut context: HashMap<String, String> = HashMap::new();
     
     if let Some(zid) = cookies.get_private("zid") {

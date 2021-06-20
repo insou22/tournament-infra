@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-pub fn get_page_colours(args: HashMap<String, tera::Value>) -> Result<tera::Value, rocket_contrib::templates::tera::Error> {
+pub fn get_page_colours(args: &HashMap<String, tera::Value>) -> Result<tera::Value, rocket_dyn_templates::tera::Error> {
     let arg = args.get("page");
-    
+
     let mut pages: HashMap<String, String> = HashMap::new();
     
     for page in ["home", "rankings", "spec", "faq", "about"] {
