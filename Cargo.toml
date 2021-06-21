@@ -11,5 +11,5 @@ serde   = { version = "1.0", features = ["derive"] }
 tera    = "1.11"
 diesel  = { version = "1.4", features = ["sqlite"] }
 dotenv  = "0.15"
-reqwest = { version = "0.11", features = ["blocking"] }
+reqwest = { version = "0.11", features = [] }
 time    = { version = "0.2", features = ["std"] }
