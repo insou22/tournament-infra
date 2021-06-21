@@ -1,9 +1,11 @@
-#[macro_use]
-extern crate rocket;
+#[macro_use] extern crate rocket;
+#[macro_use] extern crate diesel;
 
 pub mod api;
 pub mod pages;
 pub mod templates;
+pub mod schema;
+pub mod models;
 
 use api::{
     login::*,
