@@ -1,4 +1,15 @@
 table! {
+    binaries (id) {
+        id -> Nullable<Integer>,
+        user_id -> Integer,
+        tournament_id -> Integer,
+        created_at -> Integer,
+        time_taken_ms -> Nullable<Integer>,
+        timed_out -> Nullable<Bool>,
+    }
+}
+
+table! {
     games (id, user_id) {
         id -> Integer,
         user_id -> Integer,
@@ -11,11 +22,21 @@ table! {
 }
 
 table! {
+    rankings (id) {
+        id -> Nullable<Integer>,
+        user_id -> Integer,
+        tournament_id -> Integer,
+        elo -> Nullable<Integer>,
+    }
+}
+
+table! {
     turns (id) {
         id -> Nullable<Integer>,
         game_id -> Integer,
         turn_number -> Integer,
         player_id -> Integer,
+        binary_id -> Integer,
         created_at -> Integer,
         time_taken_ms -> Nullable<Integer>,
         timed_out -> Nullable<Bool>,
@@ -34,10 +55,15 @@ table! {
     }
 }
 
+joinable!(binaries -> users (user_id));
 joinable!(games -> users (user_id));
+joinable!(rankings -> users (user_id));
+joinable!(turns -> binaries (binary_id));
 
 allow_tables_to_appear_in_same_query!(
+    binaries,
     games,
+    rankings,
     turns,
     users,
 );
