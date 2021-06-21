@@ -20,12 +20,13 @@ pub struct LoginFailure {
 }
 
 #[post("/login", data = "<request>")]
-pub fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) -> Json<LoginResponse> {
-    let client = reqwest::blocking::Client::new();
+pub async fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) -> Json<LoginResponse> {
+    let client = reqwest::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
     let res = client.post("https://cgi.cse.unsw.edu.au/~z5257261/zidauth.cgi")
         .form(&params)
-        .send();
+        .send()
+        .await;
 
     if let Err(err) = res {
         println!("Unexpected error: {}", err.to_string());
@@ -39,7 +40,7 @@ pub fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) -> Json<
     }
 
     let response = res.expect("just checked error case and returned above");
-    let status_body = response.text()
+    let status_body = response.text().await
         .expect("should never fail");
     let status = status_body.trim();
 
