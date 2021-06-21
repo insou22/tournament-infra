@@ -7,13 +7,12 @@ CREATE TABLE users (
 CREATE TABLE games (
     id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    points INTEGER,
-    elo_change INTEGER,
+    tournament_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     completed_at INTEGER,
-    tournament_id INTEGER NOT NULL,
+    points INTEGER,
+    elo_change INTEGER,
     FOREIGN KEY (user_id) REFERENCES users (id),
-    UNIQUE (game_id, user_id),
     PRIMARY KEY (id, user_id)
 );
 
@@ -23,7 +22,7 @@ CREATE TABLE turns (
     turn_number INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
-    time_taken INTEGER,
+    time_taken_ms INTEGER,
     timed_out BOOLEAN,
     legal BOOLEAN,
     stdout TEXT,
