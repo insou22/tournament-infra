@@ -20,9 +20,9 @@ pub struct Game {
     id: i32,
     user_id: i32,
     tournament_id: i32,
-    created_at: i32,
-    points: i32,
-    elo_change: i32,
+    created_at: Option<i32>,
+    points: Option<i32>,
+    elo_change: Option<i32>,
 }
 
 #[derive(Queryable)]
@@ -31,8 +31,8 @@ pub struct Binary {
     user_id: i32,
     tournament_id: i32,
     created_at: i32,
-    time_taken_ms: i32,
-    timed_out: bool,
+    time_taken_ms: Option<i32>,
+    timed_out: Option<bool>,
 }
 
 #[derive(Queryable)]
@@ -43,10 +43,10 @@ pub struct Turn {
     player_id: i32,
     binary_id: i32,
     created_at: i32,
-    time_taken_ms: i32,
-    timed_out: bool,
-    legal: bool,
-    stdout: String,
-    stderr: String,
-    stdin: String,
+    time_taken_ms: Option<i32>,
+    timed_out: Option<bool>,
+    legal: Option<bool>,
+    stdout: Option<String>,
+    stderr: Option<String>,
+    stdin: Option<String>,
 }
