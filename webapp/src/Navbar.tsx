@@ -18,7 +18,7 @@ export const Navbar = () => {
         history.push("/login")
     }, [history])
 
-    return <HStack justifyContent="space-between" my={4} alignItems="center">
+    return <HStack justifyContent="space-between" mt={4} mb={10} alignItems="center">
         <NavLink to="/">
             <Link display="flex" alignItems="center">
                 <img src="https://i.ytimg.com/vi/bDByGe7FgEQ/hqdefault.jpg" height="50" width="50" />

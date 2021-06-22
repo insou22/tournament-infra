@@ -8,7 +8,7 @@ import {
     Redirect
 } from "react-router-dom";
 import {UserContext} from './UserContext';
-import {LoginPage} from './pages/login';
+import {LoginPage} from './pages/LoginPage';
 
 interface AppProps {}
 
