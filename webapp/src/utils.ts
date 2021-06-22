@@ -7,5 +7,6 @@ export const logout = async () => {
 
 export const login = async (username: string, password: string): Promise<User> => {
     const response = await api.post<User>("/login", {zid: username, password})
+    console.log(response.data)
     return response.data
 }
