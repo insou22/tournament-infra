@@ -2,17 +2,17 @@
 
 #[derive(Queryable)]
 pub struct User {
-    id: i32,
-    username: String,
-    display_name: String,
+    pub id: i32,
+    pub username: String,
+    pub display_name: String,
 }
 
 #[derive(Queryable)]
 pub struct Ranking {
-    id: i32,
-    user_id: i32,
-    tournament_id: i32,
-    elo: i32,
+    pub id: i32,
+    pub user_id: i32,
+    pub tournament_id: i32,
+    pub elo: i32,
 }
 
 #[derive(Queryable)]

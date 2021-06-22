@@ -1,16 +1,21 @@
+import {ChakraProvider, ColorModeScript} from "@chakra-ui/react";
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {
+    BrowserRouter as Router
+} from "react-router-dom";
 import App from './App';
 import './index.css';
-
-import {ChakraProvider, ColorModeScript} from "@chakra-ui/react"
 import theme from './theme';
+
 
 ReactDOM.render(<>
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <React.StrictMode>
         <ChakraProvider theme={theme}>
-            <App />
+            <Router>
+                <App />
+            </Router>
         </ChakraProvider>
     </React.StrictMode>
 </>,
