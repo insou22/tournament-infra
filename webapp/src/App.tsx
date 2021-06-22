@@ -1,16 +1,16 @@
+import {Box, Container} from '@chakra-ui/layout';
 import React from 'react';
-import {Container} from 'react-bootstrap';
 import './App.css';
-import {TopNavbar} from './TopNavbar';
+import {Navbar} from './Navbar';
 
 interface AppProps {}
 
 function App({}: AppProps) {
-    return <Container fluid className="bg-dark h-100">
-        <Container fluid="md">
-            <TopNavbar />
+    return <Box w="100%" height="100%">
+        <Container maxW="container.lg">
+            <Navbar />
         </Container>
-    </Container>
+    </Box>
 }
 
 export default App;
