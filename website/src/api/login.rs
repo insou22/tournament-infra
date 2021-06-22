@@ -1,6 +1,12 @@
-use rocket::{http::{Cookie, CookieJar}, serde::json::Json};
+use crate::schema::users;
+use crate::MainDbConn;
+use diesel::prelude::*;
+use rocket::{
+    http::{Cookie, CookieJar},
+    serde::json::Json,
+};
 use serde::{Deserialize, Serialize};
-use time::{OffsetDateTime, Duration};
+use time::{Duration, OffsetDateTime};
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
@@ -20,28 +26,28 @@ pub struct LoginFailure {
 }
 
 #[post("/login", data = "<request>")]
-pub async fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) -> Json<LoginResponse> {
+pub async fn login_post(
+    conn: MainDbConn,
+    request: Json<LoginRequest>,
+    cookies: &CookieJar<'_>,
+) -> Json<LoginResponse> {
     let client = reqwest::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
-    let res = client.post("https://cgi.cse.unsw.edu.au/~z5257261/zidauth.cgi")
+    let res = client
+        .post("https://cgi.cse.unsw.edu.au/~z5257261/zidauth.cgi")
         .form(&params)
         .send()
         .await;
 
     if let Err(err) = res {
         println!("Unexpected error: {}", err.to_string());
-        return Json(
-            LoginResponse::Failure(
-                LoginFailure {
-                    message: "failed to connect to UNSW services".to_string(),
-                }
-            )
-        );
+        return Json(LoginResponse::Failure(LoginFailure {
+            message: "failed to connect to UNSW services".to_string(),
+        }));
     }
 
     let response = res.expect("just checked error case and returned above");
-    let status_body = response.text().await
-        .expect("should never fail");
+    let status_body = response.text().await.expect("should never fail");
     let status = status_body.trim();
 
     if status == "true" {
@@ -53,17 +59,24 @@ pub async fn login_post(request: Json<LoginRequest>, cookies: &CookieJar<'_>) ->
             .finish();
 
         cookies.add_private(cookie);
-        
-        Json(
-            LoginResponse::Success
-        )
+
+        conn.run(move |c| {
+            diesel::insert_into(users::table)
+                .values((
+                    users::columns::username.eq(&request.zid),
+                    users::columns::display_name.eq(&request.zid),
+                ))
+                .on_conflict(users::columns::username)
+                .do_nothing()
+                .execute(c)
+        })
+        .await
+        .expect("insert into users table failed");
+
+        Json(LoginResponse::Success)
     } else {
-        Json(
-            LoginResponse::Failure(
-                LoginFailure {
-                    message: "incorrect zID or password".to_string(),
-                }
-            )
-        )
+        Json(LoginResponse::Failure(LoginFailure {
+            message: "incorrect zID or password".to_string(),
+        }))
     }
 }
