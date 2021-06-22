@@ -26,7 +26,7 @@ pub enum LoginResponse {
 pub struct LoginSuccess {
     username: String,
     display_name: String,
-    current_elo: i32,
+    current_elo: Option<i32>,
 }
 
 #[derive(Serialize)]
@@ -94,41 +94,27 @@ pub async fn login(
             })
             .await;
 
+        let user_id = user.id;
+
         let current_ranking = conn
-            .run(|c| {
-                let ranking = rankings::table
-                    .filter(rankings::columns::user_id.eq(&user.id))
+            .run(move |c| {
+                rankings::table
+                    .filter(rankings::columns::user_id.eq(user_id))
                     .filter(
                         rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
                     )
                     .first::<Ranking>(c)
                     .optional()
-                    .expect("ranking find failed");
-                if ranking.is_none() {
-                    diesel::insert_into(rankings::table)
-                        .values((
-                            rankings::columns::user_id.eq(&user.id),
-                            rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
-                        ))
-                        .execute(c)
-                        .expect("insert into rankings table failed");
-                    rankings::table
-                        .filter(rankings::columns::user_id.eq(&user.id))
-                        .filter(
-                            rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
-                        )
-                        .first::<Ranking>(c)
-                        .expect("ranking find failed")
-                } else {
-                    ranking.unwrap()
-                }
+                    .expect("ranking find failed")
             })
             .await;
+
+        let current_elo = current_ranking.and_then(|r| Some(r.elo));
 
         Json(LoginResponse::Success(LoginSuccess {
             username: user.username,
             display_name: user.display_name,
-            current_elo: 1,
+            current_elo
         }))
     } else {
         Json(LoginResponse::Failure(LoginFailure {
