@@ -1,3 +1,6 @@
 */target/
 **.env
 test.db
+# These files are created when the SQLite DB is in use.
+test.db-shm
+test.db-wal
