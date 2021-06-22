@@ -16,12 +16,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
+    - name: Build api
+      working-directory: ./api
       run: cargo build --verbose
-    - name: Run tests
+    - name: Run api tests
+      working-directory: ./api
       run: cargo test --verbose
-    - name: rust-clippy-check
-      uses: actions-rs/clippy-check@v1.0.7
-      with:
-        # GitHub token
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build runner
+      working-directory: ./runner
+      run: cargo build --verbose
+    - name: Run runner tests
+      working-directory: ./runner
+      run: cargo test --verbose
