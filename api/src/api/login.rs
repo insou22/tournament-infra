@@ -27,7 +27,7 @@ pub struct LoginFailure {
 }
 
 #[post("/login", data = "<request>")]
-pub async fn login_post(
+pub async fn login(
     conn: MainDbConn,
     request: Json<LoginRequest>,
     cookies: &CookieJar<'_>,

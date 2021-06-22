@@ -21,7 +21,7 @@ if ! [ -x "$(command -v diesel)" ]; then
 fi
 
 if ! [ -f '.env' ]; then
-	echo 'DATABASE_URL=./database.db' > .env;
+	echo 'DATABASE_URL=../test.db' > .env;
 fi
 
 diesel setup
