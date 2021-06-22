@@ -79,13 +79,18 @@ pub async fn play(binary_1: String, binary_2: String) {
     let duration = Instant::now().duration_since(i);
     println!("Teardown: {:?}", duration);
 
-    println!("Sleep:");
-    let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/sleep".to_string()).await;
-    println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
-    teardown_container(&docker, &container_id).await;
+    // println!("Sleep:");
+    // let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/sleep".to_string()).await;
+    // println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
+    // teardown_container(&docker, &container_id).await;
 
-    println!("Loudmouth:");
-    let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/loudmouth".to_string()).await;
+    // println!("Loudmouth:");
+    // let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/loudmouth".to_string()).await;
+    // println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
+    // teardown_container(&docker, &container_id).await;
+
+    println!("F-Bomb:");
+    let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/f_bomb".to_string()).await;
     println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
     teardown_container(&docker, &container_id).await;
 }

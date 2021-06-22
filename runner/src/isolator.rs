@@ -33,6 +33,7 @@ pub async fn create_container(docker: &Docker, binary_path: String) -> String {
         ipc_mode:        Some(String::from("none")),
         cgroupns_mode:   Some(HostConfigCgroupnsModeEnum::PRIVATE),
         memory:          Some(MEMORY),
+        memory_swap:     Some(MEMORY),
         nano_cpus:       Some(NANO_CPUS),
         pids_limit:      Some(PIDS),
         ..Default::default()
