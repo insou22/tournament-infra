@@ -1,5 +1,6 @@
-use crate::schema::users;
+use crate::schema::users::dsl::*;
 use crate::MainDbConn;
+use crate::models::User;
 use diesel::prelude::*;
 use rocket::{
     http::{Cookie, CookieJar},
@@ -61,17 +62,19 @@ pub async fn login_post(
         cookies.add_private(cookie);
 
         conn.run(move |c| {
-            diesel::insert_into(users::table)
-                .values((
-                    users::columns::username.eq(&request.zid),
-                    users::columns::display_name.eq(&request.zid),
-                ))
-                .on_conflict(users::columns::username)
-                .do_nothing()
-                .execute(c)
+            let user = users
+                .filter(username.eq(&request.zid))
+                .first::<User>(c)
+                .optional()
+                .expect("user find failed");
+            if user.is_none() {
+                diesel::insert_into(users)
+                    .values((username.eq(&request.zid), display_name.eq(&request.zid)))
+                    .execute(c)
+                    .expect("insert into users table failed");
+            }
         })
-        .await
-        .expect("insert into users table failed");
+        .await;
 
         Json(LoginResponse::Success)
     } else {

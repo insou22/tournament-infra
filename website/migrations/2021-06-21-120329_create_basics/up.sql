@@ -1,14 +1,14 @@
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    username VARCHAR(8) UNIQUE, -- For now, this is only zIDs, so we'll restrict to 8 characters.
-    display_name VARCHAR(32)
+    id INTEGER PRIMARY KEY NOT NULL,
+    username VARCHAR(8) UNIQUE NOT NULL, -- For now, this is only zIDs, so we'll restrict to 8 characters.
+    display_name VARCHAR(32) NOT NULL
 );
 
 CREATE TABLE rankings (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
-    elo INTEGER,
+    elo INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
@@ -25,7 +25,7 @@ CREATE TABLE games (
 );
 
 CREATE TABLE binaries (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE binaries (
 );
 
 CREATE TABLE turns (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     game_id INTEGER NOT NULL,
     turn_number INTEGER NOT NULL,
     player_id INTEGER NOT NULL,

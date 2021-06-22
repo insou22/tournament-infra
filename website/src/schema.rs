@@ -1,6 +1,6 @@
 table! {
     binaries (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         user_id -> Integer,
         tournament_id -> Integer,
         created_at -> Integer,
@@ -23,16 +23,16 @@ table! {
 
 table! {
     rankings (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         user_id -> Integer,
         tournament_id -> Integer,
-        elo -> Nullable<Integer>,
+        elo -> Integer,
     }
 }
 
 table! {
     turns (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         game_id -> Integer,
         turn_number -> Integer,
         player_id -> Integer,
@@ -49,9 +49,9 @@ table! {
 
 table! {
     users (id) {
-        id -> Nullable<Integer>,
-        username -> Nullable<Text>,
-        display_name -> Nullable<Text>,
+        id -> Integer,
+        username -> Text,
+        display_name -> Text,
     }
 }
 
