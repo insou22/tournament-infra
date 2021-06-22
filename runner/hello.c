@@ -1,12 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pwd.h>
 
 int main(void) {
-	printf("hello, ");
+	uid_t uid = geteuid();
+	struct passwd *pw = getpwuid(uid);
+	printf("i am %s  ,  ", pw->pw_name);
 
-	int ch;
-	while ((ch = getchar()) != EOF) {
-		putchar(ch);
-	}
+	char name[20] = { 0 };
+	scanf("%s", name);
 
-	printf("!\n");
+	printf("hello, %s!\n", name);
 }

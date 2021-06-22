@@ -5,6 +5,7 @@ use tokio::{signal, sync::oneshot};
 pub mod schema;
 pub mod models;
 pub mod game;
+pub mod isolator;
 
 #[tokio::main]
 pub async fn main() {

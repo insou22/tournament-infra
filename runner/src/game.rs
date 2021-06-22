@@ -1,8 +1,8 @@
 #![allow(unused)]
 
+use crate::isolator::*;
 use std::time::Instant;
-
-use bollard::{Docker, container::{self, LogOutput}, exec::{self, CreateExecOptions, StartExecOptions}, models::HostConfig};
+use bollard::{Docker, container::{self, LogOutput}, exec::{self, CreateExecOptions, StartExecOptions}, models::{HostConfig, HostConfigCgroupnsModeEnum, ResourcesUlimits}};
 use rand::seq::SliceRandom;
 use tokio::io::AsyncWriteExt;
 use futures_util::stream::StreamExt;
@@ -40,14 +40,11 @@ struct GameState {
     curr: PartialTrick,
 }
 
-const EOF: u8 = -1i8 as u8;
-
 pub async fn play(binary_1: String, binary_2: String) {
     let mut state = GameState::random_starting_state();
 
     // connect to docker daemon socket
-    let docker = Docker::connect_with_socket_defaults()
-        .expect("Failed to connect to docker socket");
+    let docker = connect_docker();
 
     // create the container
     let i = Instant::now();
@@ -61,9 +58,9 @@ pub async fn play(binary_1: String, binary_2: String) {
     let stdin = String::from("zac");
     println!("  stdin={:?}", stdin);
     let i = Instant::now();
-    let (stdout, stderr) = exec(&docker, &p1_container, stdin).await;
+    let result = exec_container_binary(&docker, &p1_container, stdin).await;
     let duration = Instant::now().duration_since(i);
-    println!("  stdout={:?}, stderr={:?}", stdout, stderr);
+    println!("  {:?}", result);
     println!("  duration: {:?}", duration);
 
     // execute binary again
@@ -71,9 +68,9 @@ pub async fn play(binary_1: String, binary_2: String) {
     let stdin = String::from("jeff\n");
     println!("  stdin={:?}", stdin);
     let i = Instant::now();
-    let (stdout, stderr) = exec(&docker, &p1_container, stdin).await;
+    let result = exec_container_binary(&docker, &p1_container, stdin).await;
     let duration = Instant::now().duration_since(i);
-    println!("  stdout={:?}, stderr={:?}", stdout, stderr);
+    println!("  {:?}", result);
     println!("  duration: {:?}", duration);
 
     // teardown the container
@@ -81,90 +78,16 @@ pub async fn play(binary_1: String, binary_2: String) {
     teardown_container(&docker, &p1_container).await;
     let duration = Instant::now().duration_since(i);
     println!("Teardown: {:?}", duration);
-}
 
-async fn create_container(docker: &Docker, binary: String) -> String {
-    let host_config = HostConfig {
-        binds: Some(vec![format!("{}:/run:ro", binary)]),
-        ..Default::default()
-    };
+    println!("Sleep:");
+    let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/sleep".to_string()).await;
+    println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
+    teardown_container(&docker, &container_id).await;
 
-    let container_config = container::Config {
-        image: Some("busybox:glibc"),
-        cmd: Some(vec!["/bin/sh", "-c", "adduser -DH -h / worker; sleep infinity"]),
-        host_config: Some(host_config),
-        ..Default::default()
-    };
-
-    let container_id = docker.create_container::<&str, &str>(None, container_config)
-        .await
-        .expect("Failed to create glibc container")
-        .id;
-
-    docker.start_container::<String>(&container_id, None)
-        .await
-        .expect("Failed to start glibc container");
-
-    container_id
-}
-
-async fn exec(docker: &Docker, container: &str, stdin: String) -> (String, String) {
-    let exec_id = docker.create_exec(container, CreateExecOptions {
-        privileged: Some(false),
-        cmd:  Some(vec!["su", "-", "worker", "-c", "/run"]),
-        attach_stdin:  Some(true),
-        attach_stdout: Some(true),
-        attach_stderr: Some(true),
-        ..Default::default()
-    }).await.expect("Failed to create run execution").id;
-
-    let execution = docker.start_exec(&exec_id, Some(StartExecOptions {
-        ..Default::default()
-    })).await.expect("Failed to execute run");
-
-    match execution {
-        exec::StartExecResults::Attached { mut output, mut input } => {
-            input.write_all(stdin.as_bytes())
-                .await
-                .expect("Failed to write stdin");
-            
-            input.flush()
-                .await
-                .expect("Failed to flush input");
-            
-            input.shutdown()
-                .await
-                .expect("Failed to close stream");
-
-            let mut stdout = String::new();
-            let mut stderr = String::new();
-
-            while let Some(Ok(msg)) = output.next().await {
-                match msg {
-                    LogOutput::StdOut { message } => {
-                        stdout.push_str(&*String::from_utf8_lossy(&message));
-                    }
-                    LogOutput::StdErr { message } => {
-                        stderr.push_str(&*String::from_utf8_lossy(&message));
-                    }
-                    _ => {}
-                }
-            }
-
-            (stdout, stderr)
-        }
-        _ => unreachable!("Attached to stdin, stdout, stderr"),
-    }
-}
-
-async fn teardown_container(docker: &Docker, container: &str) {
-    docker.kill_container::<String>(&container, None)
-        .await
-        .expect("Failed to kill container");
-    
-    docker.remove_container(&container, None)
-        .await
-        .expect("Failed to remove container");
+    println!("Loudmouth:");
+    let container_id = create_container(&docker, "/home/zac/dev/tournament-infra/runner/loudmouth".to_string()).await;
+    println!("  {:?}", exec_container_binary(&docker, &container_id, String::new()).await);
+    teardown_container(&docker, &container_id).await;
 }
 
 impl GameState {
