@@ -1,6 +1,6 @@
-use crate::schema::users::dsl::*;
+use crate::models::{Ranking, User};
+use crate::schema::{rankings, users};
 use crate::MainDbConn;
-use crate::models::User;
 use diesel::prelude::*;
 use rocket::{
     http::{Cookie, CookieJar},
@@ -18,9 +18,17 @@ pub struct LoginRequest {
 #[derive(Serialize)]
 #[serde(tag = "status")]
 pub enum LoginResponse {
-    Success,
+    Success(LoginSuccess),
     Failure(LoginFailure),
 }
+
+#[derive(Serialize)]
+pub struct LoginSuccess {
+    username: String,
+    display_name: String,
+    current_elo: Option<i32>,
+}
+
 #[derive(Serialize)]
 pub struct LoginFailure {
     message: String,
@@ -61,22 +69,53 @@ pub async fn login(
 
         cookies.add_private(cookie);
 
-        conn.run(move |c| {
-            let user = users
-                .filter(username.eq(&request.zid))
-                .first::<User>(c)
-                .optional()
-                .expect("user find failed");
-            if user.is_none() {
-                diesel::insert_into(users)
-                    .values((username.eq(&request.zid), display_name.eq(&request.zid)))
-                    .execute(c)
-                    .expect("insert into users table failed");
-            }
-        })
-        .await;
+        let user = conn
+            .run(move |c| {
+                let user = users::table
+                    .filter(users::columns::username.eq(&request.zid))
+                    .first::<User>(c)
+                    .optional()
+                    .expect("user find failed");
+                if user.is_none() {
+                    diesel::insert_into(users::table)
+                        .values((
+                            users::columns::username.eq(&request.zid),
+                            users::columns::display_name.eq(&request.zid),
+                        ))
+                        .execute(c)
+                        .expect("insert into users table failed");
+                    users::table
+                        .filter(users::columns::username.eq(&request.zid))
+                        .first::<User>(c)
+                        .expect("user find failed")
+                } else {
+                    user.unwrap()
+                }
+            })
+            .await;
 
-        Json(LoginResponse::Success)
+        let user_id = user.id;
+
+        let current_ranking = conn
+            .run(move |c| {
+                rankings::table
+                    .filter(rankings::columns::user_id.eq(user_id))
+                    .filter(
+                        rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
+                    )
+                    .first::<Ranking>(c)
+                    .optional()
+                    .expect("ranking find failed")
+            })
+            .await;
+
+        let current_elo = current_ranking.and_then(|r| Some(r.elo));
+
+        Json(LoginResponse::Success(LoginSuccess {
+            username: user.username,
+            display_name: user.display_name,
+            current_elo
+        }))
     } else {
         Json(LoginResponse::Failure(LoginFailure {
             message: "incorrect zID or password".to_string(),
