@@ -3,13 +3,13 @@ import {SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
-import {useUserInfo} from "./utils"
+import {useUserInfo} from "./utils/auth"
 
 export const Navbar = () => {
     const {data: user} = useUserInfo()
     const history = useHistory();
 
-    return <HStack justifyContent="space-between" mt={4} mb={10} alignItems="center">
+    return <HStack justifyContent="space-between" alignItems="center">
         <Box display="flex" alignItems="center" onClick={() => history.push("/")} cursor="pointer">
             <img src="https://i.ytimg.com/vi/bDByGe7FgEQ/hqdefault.jpg" height="50" width="50" />
             <Text fontSize="lg" ml={2} fontWeight="bold">MarcComp</Text>

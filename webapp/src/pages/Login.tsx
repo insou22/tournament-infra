@@ -3,9 +3,9 @@ import {useBoolean} from "@chakra-ui/hooks"
 import {Input} from "@chakra-ui/input"
 import {Container, Heading, VStack} from "@chakra-ui/layout"
 import React from "react"
-import {LoggedInContext, login} from "../utils"
+import {LoggedInContext, login} from "../utils/auth"
 import {useMutation, useQueryClient} from "react-query"
-import type {UserInfo} from "../utils"
+import type {UserInfo} from "../utils/auth"
 import {Alert, AlertIcon, AlertTitle, AlertDescription} from "@chakra-ui/alert"
 
 type LoginDetails = {username: string, password: string}

@@ -8,7 +8,7 @@ import {
 import App from './App';
 import './index.css';
 import theme from './theme';
-import {LoggedInContextProvider} from "./utils";
+import {LoggedInContextProvider} from "./utils/auth";
 
 const queryClient = new QueryClient()
 

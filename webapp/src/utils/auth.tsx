@@ -1,7 +1,7 @@
 import {useBoolean} from "@chakra-ui/hooks"
 import React from "react"
 import {useQuery} from "react-query"
-import {api} from "./api"
+import {api} from "../api"
 
 //@ts-ignore
 export const LoggedInContext = React.createContext<ReturnType<typeof useBoolean>>(null)

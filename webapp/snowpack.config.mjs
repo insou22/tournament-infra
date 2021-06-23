@@ -32,4 +32,7 @@ export default {
   buildOptions: {
     /* ... */
   },
+  alias: {
+    src: './src'
+  }
 };
