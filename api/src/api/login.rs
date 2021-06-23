@@ -1,5 +1,6 @@
 use crate::models::{Ranking, User};
 use crate::schema::{rankings, users};
+use crate::api::user::UserInfoResponse;
 use crate::MainDbConn;
 use diesel::prelude::*;
 use rocket::{
@@ -18,15 +19,8 @@ pub struct LoginRequest {
 #[derive(Serialize)]
 #[serde(tag = "status")]
 pub enum LoginResponse {
-    Success(LoginSuccess),
+    Success(UserInfoResponse),
     Failure(LoginFailure),
-}
-
-#[derive(Serialize)]
-pub struct LoginSuccess {
-    username: String,
-    display_name: String,
-    current_elo: Option<i32>,
 }
 
 #[derive(Serialize)]
@@ -112,7 +106,7 @@ pub async fn login(
 
         let current_elo = current_ranking.and_then(|r| Some(r.elo));
 
-        Json(LoginResponse::Success(LoginSuccess {
+        Json(LoginResponse::Success(UserInfoResponse {
             username: user.username,
             display_name: user.display_name,
             current_elo

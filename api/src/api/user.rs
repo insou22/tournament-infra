@@ -10,17 +10,17 @@ use rocket::serde::json::Json;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct ProfileResponse {
-    username: String,
-    display_name: String,
-    current_elo: Option<i32>,
+pub struct UserInfoResponse {
+    pub username: String,
+    pub display_name: String,
+    pub current_elo: Option<i32>,
 }
 
 #[get("/user")]
-pub async fn current_user_profile(
+pub async fn user_info(
     conn: MainDbConn,
     cookies: &CookieJar<'_>,
-) -> Result<Json<ProfileResponse>, Unauthorized<()>> {
+) -> Result<Json<UserInfoResponse>, Unauthorized<()>> {
     match cookies.get_private("zid") {
         None => Err(Unauthorized(None)),
         Some(zid_cookie) => {
@@ -50,7 +50,7 @@ pub async fn current_user_profile(
         
             let current_elo = current_ranking.and_then(|r| Some(r.elo));
             
-            Ok(Json(ProfileResponse {
+            Ok(Json(UserInfoResponse {
                 username: user.username,
                 display_name: user.display_name,
                 current_elo,
@@ -59,49 +59,49 @@ pub async fn current_user_profile(
     }
 }
 
-#[get("/user/<username>")]
-pub async fn user_profile(
-    username: &str,
-    conn: MainDbConn,
-) -> Result<Json<ProfileResponse>, NotFound<()>> {
-    let username = username.to_owned();
+// #[get("/user/<username>")]
+// pub async fn user_profile(
+//     username: &str,
+//     conn: MainDbConn,
+// ) -> Result<Json<ProfileResponse>, NotFound<()>> {
+//     let username = username.to_owned();
 
-    let user = conn
-        .run(|c| {
-            users::table
-                .filter(users::columns::username.eq(username))
-                .first::<User>(c)
-                .optional()
-                .expect("user find failed")
-        })
-        .await;
+//     let user = conn
+//         .run(|c| {
+//             users::table
+//                 .filter(users::columns::username.eq(username))
+//                 .first::<User>(c)
+//                 .optional()
+//                 .expect("user find failed")
+//         })
+//         .await;
 
-    if user.is_none() {
-        return Err(NotFound(()));
-    }
+//     if user.is_none() {
+//         return Err(NotFound(()));
+//     }
 
-    let user = user.unwrap();
+//     let user = user.unwrap();
 
-    let user_id = user.id;
+//     let user_id = user.id;
 
-    let current_ranking = conn
-        .run(move |c| {
-            rankings::table
-                .filter(rankings::columns::user_id.eq(user_id))
-                .filter(
-                    rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
-                )
-                .first::<Ranking>(c)
-                .optional()
-                .expect("ranking find failed")
-        })
-        .await;
+//     let current_ranking = conn
+//         .run(move |c| {
+//             rankings::table
+//                 .filter(rankings::columns::user_id.eq(user_id))
+//                 .filter(
+//                     rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
+//                 )
+//                 .first::<Ranking>(c)
+//                 .optional()
+//                 .expect("ranking find failed")
+//         })
+//         .await;
 
-    let current_elo = current_ranking.and_then(|r| Some(r.elo));
+//     let current_elo = current_ranking.and_then(|r| Some(r.elo));
 
-    return Ok(Json(ProfileResponse {
-        username: user.username,
-        display_name: user.display_name,
-        current_elo,
-    }));
-}
+//     return Ok(Json(ProfileResponse {
+//         username: user.username,
+//         display_name: user.display_name,
+//         current_elo,
+//     }));
+// }

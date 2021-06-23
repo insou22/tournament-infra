@@ -25,7 +25,7 @@ fn rocket() -> _ {
         .mount("/", routes![
             login,
             logout,
-            current_user_profile,
+            user_info,
             //user_profile
         ])
 }
