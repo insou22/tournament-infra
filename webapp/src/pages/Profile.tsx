@@ -1,10 +1,15 @@
 import {Button} from "@chakra-ui/button"
+import {useBoolean} from "@chakra-ui/hooks"
 import {Badge, Center, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
 import {Spinner} from "@chakra-ui/spinner"
 import type {AxiosError} from "axios"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
+import {BinaryListItem} from "src/components/BinaryListItem"
+import {BinaryStatsSummary} from "src/components/BinaryStatSummary"
+import {Loading} from "src/components/Loading"
 import {StatsSummary} from "src/components/StatSummary"
+import {dontRetryOn404} from "src/utils/api"
 import {api, BinaryStats, TournamentStats, UserProfile} from "../api"
 import {getOrdinalSuffix} from "../utils/stats"
 
@@ -20,13 +25,17 @@ const getUserProfile: QueryFunction<UserProfile, ["userProfile", string]> = asyn
             elo: 1534,
             average_turn_run_time_ms: 623
         },
-        current_binary_stats_summary: {
-            wins: 247,
-            losses: 194,
-            draws: 34,
-            win_loss_ratio_percentage_change: 13.55,
-            average_turn_run_time_ms: 623,
-            average_turn_run_time_ms_percentage_change: -14.12
+        current_binary: {
+            hash: "2678afd65ad",
+            created_at: "2021-06-23T23:12:45Z",
+            stats_summary: {
+                wins: 247,
+                losses: 194,
+                draws: 34,
+                win_loss_ratio_percentage_change: 13.55,
+                average_turn_run_time_ms: 623,
+                average_turn_run_time_ms_percentage_change: -14.12
+            }
         }
     }
 
@@ -35,8 +44,10 @@ const getUserProfile: QueryFunction<UserProfile, ["userProfile", string]> = asyn
 }
 
 export const Profile = ({username}: {username: string}) => {
+    const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
+
     const profileQuery = useQuery<unknown, AxiosError, UserProfile, ["userProfile", string]>(["userProfile", username], getUserProfile, {
-        retry: (count, error) => error.response?.status === 404 ? false : count < 2
+        retry: dontRetryOn404,
     })
 
     if (profileQuery.isError && profileQuery.error) {
@@ -52,32 +63,33 @@ export const Profile = ({username}: {username: string}) => {
     }
 
     if (profileQuery.isLoading || !profileQuery.data) {
-        return <Center>
-            <Spinner size="xl" />
-        </Center>
+        return <Loading />
     }
 
     return <Container maxW="container.lg">
         <VStack spacing={4} alignItems="flex-start">
             <Heading size="2xl">{profileQuery.data.display_name}</Heading>
-            <Heading size="lg">July Tournament</Heading>
-            <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
-            <Heading size="md">Recent Games</Heading>
-            <RecentGames />
-            <Text fontSize="sm">See More...</Text>
-            <Heading size="md">Current Binary</Heading>
-            <HStack w="100%">
-                <VStack flexGrow={1} align="flex-start">
-                    <Button variant="link">s76d76f6</Button>
-                    <Text size="sm">Created at 11:32pm on 2021-06-21</Text>
-                </VStack>
-                <BinaryStatsSummary stats={profileQuery.data.current_binary_stats_summary} />
-            </HStack>
-            <Text fontSize="sm">See More...</Text>
-            <Heading size="lg">
+            {profileQuery.data.current_tournament_stats_summary ? <>
+                <Heading size="lg">July Tournament</Heading>
+                <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
+                {profileQuery.data.current_binary && <>
+                    <Heading size="md">Recent Games</Heading>
+                    <RecentGames />
+                    <Text fontSize="sm">See More...</Text>
+                    <Heading size="md">Current Binary</Heading>
+                    <HStack w="100%">
+                        <BinaryListItem binary={profileQuery.data.current_binary} />
+                    </HStack>
+                    <Text fontSize="sm">See More...</Text>
+                </>}
+            </> : <Text>This user is not part of the current tournament.</Text>}
+
+            {/* <Heading size="lg">
                 Previous Tournaments
-                <Button size="xs" ms={3}>Show</Button>
-            </Heading>
+                <Button size="xs" ms={3} onClick={setShowPreviousTournaments.toggle}>
+                    {showPreviousTournaments ? "Hide" : "Show"}
+                </Button>
+            </Heading> */}
             {/* <Heading size="md">June Tournament</Heading>
             <Heading size="md">May Tournament</Heading>
             <Heading size="md">April Tournament</Heading> */}
@@ -95,35 +107,6 @@ const RecentGames = () => {
             <Badge colorScheme="red">-13</Badge>
         </HStack>
     </VStack>
-}
-
-
-
-const BinaryStatsSummary = ({stats}: {stats: BinaryStats}) => {
-    return <StatsSummary stats={[
-        {
-            label: "Wins",
-            value: stats.wins
-        },
-        {
-            label: "Losses",
-            value: stats.losses
-        },
-        {
-            label: "W/L",
-            value: (stats.wins / stats.losses).toFixed(2),
-            change: stats.win_loss_ratio_percentage_change
-        },
-        {
-            label: "Draws",
-            value: stats.draws
-        },
-        {
-            label: "Average Turn Run Time",
-            value: `${stats.average_turn_run_time_ms}ms`,
-            change: stats.average_turn_run_time_ms_percentage_change
-        }
-    ]} />
 }
 
 const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {

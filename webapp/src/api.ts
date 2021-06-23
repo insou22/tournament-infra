@@ -23,9 +23,19 @@ export interface BinaryStats {
     average_turn_run_time_ms_percentage_change: number
 }
 
+export interface Tournament {
+    name: string
+}
+
 export interface UserProfile {
     username: string
     display_name: string
-    current_tournament_stats_summary: TournamentStats
-    current_binary_stats_summary: BinaryStats
+    current_tournament_stats_summary: TournamentStats | null
+    current_binary: Binary | null
+}
+
+export interface Binary {
+    hash: string
+    created_at: string
+    stats_summary: BinaryStats
 }

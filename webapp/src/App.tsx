@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import {Rankings, Login, Spec, Faqs, About, Profile, Settings} from './pages';
 import {LoggedInContext, useUserInfo} from './utils/auth';
+import {Binaries} from './pages/Binaries';
 
 interface AppProps {}
 
@@ -42,6 +43,17 @@ function App({}: AppProps) {
                 {user ? <Profile username={user.username} /> : <Redirect to="/login" />}
             </Route>
             <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
+            {/* <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} /> */}
+            <Route path="/user/:username/binaries" exact render={({match: {params: {username}}}) => <Binaries username={username} />} />
+
+            {/* <Route path="/binary/:hash" exact render={({match: {params: {hash}}}) => <Binary hash={hash} />} /> */}
+            {/* <Route path="/binary/:hash/games" exact render={({match: {params: {hash}}}) => <BinaryGames hash={hash} />} /> */}
+
+            {/* <Route path="/games" exact>
+                <AllGames />
+            </Route> */}
+            {/* <Route path="/game/:id" exact render={({match: {params: {id}}}) => <Game id={id} />} /> */}
+
             <Route path="/settings" exact>
                 {user ? <Settings /> : <Redirect to="/login" />}
             </Route>
