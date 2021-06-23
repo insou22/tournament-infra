@@ -1,13 +1,13 @@
-import React from "react"
+import {Button} from "@chakra-ui/button"
 import {useBoolean} from "@chakra-ui/hooks"
+import {Input} from "@chakra-ui/input"
+import {Container, Heading, VStack} from "@chakra-ui/layout"
+import React from "react"
 import {useHistory} from "react-router"
 import {UserContext} from "../UserContext"
-import {Container, Flex, Heading, Spacer, VStack} from "@chakra-ui/layout"
-import {Input, InputRightElement} from "@chakra-ui/input"
-import {Button} from "@chakra-ui/button"
 import {login} from "../utils"
 
-export const LoginPage = () => {
+export const Login = () => {
     const history = useHistory()
     const {setUser} = React.useContext(UserContext)
     const [username, setUsername] = React.useState("")

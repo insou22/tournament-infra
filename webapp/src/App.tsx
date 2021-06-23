@@ -8,7 +8,7 @@ import {
     Redirect
 } from "react-router-dom";
 import {User, UserContext} from './UserContext';
-import {LoginPage} from './pages/LoginPage';
+import {Rankings, Login, Spec, Faqs, About, Profile} from './pages';
 
 interface AppProps {}
 
@@ -24,26 +24,24 @@ function App({}: AppProps) {
                         <Heading>Home</Heading>
                     </Route>
                     <Route path="/login" exact>
-                        {user ? <Redirect to="/profile" /> : <LoginPage />}
+                        {user ? <Redirect to="/profile" /> : <Login />}
                     </Route>
                     <Route path="/rankings" exact>
-                        <Heading>Current Tournament Rankings</Heading>
+                        <Rankings />
                     </Route>
                     <Route path="/spec" exact>
-                        <Heading>Current Tournament Spec</Heading>
+                        <Spec />
                     </Route>
                     <Route path="/faqs" exact>
-                        <Heading>FAQS</Heading>
+                        <Faqs />
                     </Route>
                     <Route path="/about" exact>
-                        <Heading>About</Heading>
+                        <About/>
                     </Route>
                     <Route path="/profile" exact>
-                        <Heading>Current User's Profile</Heading>
+                        {user ? <Profile username={user.username}/> : <Redirect to="/login" />}
                     </Route>
-                    <Route path="/users/:username" exact>
-                        <Heading>Specific User's Profile</Heading>
-                    </Route>
+                    <Route path="/users/:username" exact render={({match: {params: {username}}}) => <Profile username={username}/>} />
                 </Switch>
             </Container>
         </Box>
