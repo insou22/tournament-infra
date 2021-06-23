@@ -25,7 +25,7 @@ export interface UserInfo {
 }
 
 export const getUserInfo = async () => {
-    return (await api.get<UserInfo>("/profile")).data
+    return (await api.get<UserInfo>("/user")).data
 }
 
 export const LoggedInContextProvider: React.FC<{}> = ({children}) => {

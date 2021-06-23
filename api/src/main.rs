@@ -9,6 +9,7 @@ pub mod cors;
 use api::{
     login::*,
     logout::*,
+    user::*
 };
 
 use rocket_sync_db_pools::database;
@@ -24,5 +25,7 @@ fn rocket() -> _ {
         .mount("/", routes![
             login,
             logout,
+            current_user_profile,
+            //user_profile
         ])
 }

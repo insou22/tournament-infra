@@ -3,7 +3,7 @@ use crate::schema::{rankings, users};
 use crate::MainDbConn;
 use diesel::prelude::*;
 use rocket::{
-    http::{Cookie, CookieJar},
+    http::{Cookie, CookieJar, SameSite},
     serde::json::Json,
 };
 use serde::{Deserialize, Serialize};
@@ -65,6 +65,7 @@ pub async fn login(
             // .secure(true)
             .http_only(true)
             .expires(OffsetDateTime::now_utc() + Duration::weeks(6))
+            .same_site(SameSite::None) // TODO: Find a solution for this being needed.
             .finish();
 
         cookies.add_private(cookie);
