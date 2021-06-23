@@ -8,7 +8,7 @@ import {
     Redirect
 } from "react-router-dom";
 import {Rankings, Login, Spec, Faqs, About, Profile, Settings} from './pages';
-import {LoggedInContext, useUserInfo} from './utils';
+import {LoggedInContext, useUserInfo} from './utils/auth';
 
 interface AppProps {}
 

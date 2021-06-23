@@ -1,53 +1,32 @@
 import {Button} from "@chakra-ui/button"
-import {Box, Center, Container, Heading, VStack, Text, HStack, Badge} from "@chakra-ui/layout"
+import {Badge, Center, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
 import {Spinner} from "@chakra-ui/spinner"
-import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, StatArrow} from "@chakra-ui/stat"
 import type {AxiosError} from "axios"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
-import {api} from "../api"
-
-
-
-interface Binary {
-    id: number
-    created_at: string,
-    time_taken_ms: number,
-    timed_out: boolean,
-
-}
-
-interface Tournament {
-    id: number
-    label: string
-}
-
-type StatsMixin = {stats: Stats}
-
-interface Stats {
-    wins: number
-    losses: number
-    draws: number
-    elo: number
-    average_turn_run_time_ms: number
-}
-
-interface UserProfile {
-    username: string
-    display_name: string
-    current_tournament_stats_summary: Stats
-}
+import {StatsSummary} from "src/components/StatSummary"
+import {api, BinaryStats, TournamentStats, UserProfile} from "../api"
+import {getOrdinalSuffix} from "../utils/stats"
 
 const getUserProfile: QueryFunction<UserProfile, ["userProfile", string]> = async ({queryKey: [, username]}) => {
     return {
         username: "marcchee",
         display_name: "Marc Chee",
         current_tournament_stats_summary: {
+            ranking: 4,
             wins: 247,
             losses: 194,
             draws: 34,
             elo: 1534,
             average_turn_run_time_ms: 623
+        },
+        current_binary_stats_summary: {
+            wins: 247,
+            losses: 194,
+            draws: 34,
+            win_loss_ratio_percentage_change: 13.55,
+            average_turn_run_time_ms: 623,
+            average_turn_run_time_ms_percentage_change: -14.12
         }
     }
 
@@ -92,7 +71,7 @@ export const Profile = ({username}: {username: string}) => {
                     <Button variant="link">s76d76f6</Button>
                     <Text size="sm">Created at 11:32pm on 2021-06-21</Text>
                 </VStack>
-                <BinaryStatsSummary stats={profileQuery.data.current_tournament_stats_summary} changes={{win_loss_ratio: 13.55, average_turn_run_time_ms: -17.55}} />
+                <BinaryStatsSummary stats={profileQuery.data.current_binary_stats_summary} />
             </HStack>
             <Text fontSize="sm">See More...</Text>
             <Heading size="lg">
@@ -118,28 +97,9 @@ const RecentGames = () => {
     </VStack>
 }
 
-const StatsSummary = ({stats}: {
-    stats: {
-        label: string,
-        value: number | string,
-        change?: number
-    }[]
-}) => {
-    return <Box borderColor="whiteAlpha.300" borderStyle="solid" borderWidth="1px" borderRadius={12} w="100%">
-        <StatGroup p={2}>
-            {stats.map((stat, i) => <Stat key={i}>
-                <StatLabel>{stat.label}</StatLabel>
-                <StatNumber>{stat.value}</StatNumber>
-                {stat.change !== undefined && <StatHelpText>
-                    <StatArrow type={stat.change < 0 ? "decrease" : "increase"} />
-                    {stat.change}%
-                </StatHelpText>}
-            </Stat>)}
-        </StatGroup>
-    </Box>
-}
 
-const BinaryStatsSummary = ({stats, changes}: {stats: Stats, changes: {win_loss_ratio: number, average_turn_run_time_ms: number}}) => {
+
+const BinaryStatsSummary = ({stats}: {stats: BinaryStats}) => {
     return <StatsSummary stats={[
         {
             label: "Wins",
@@ -152,7 +112,7 @@ const BinaryStatsSummary = ({stats, changes}: {stats: Stats, changes: {win_loss_
         {
             label: "W/L",
             value: (stats.wins / stats.losses).toFixed(2),
-            change: changes.win_loss_ratio
+            change: stats.win_loss_ratio_percentage_change
         },
         {
             label: "Draws",
@@ -161,13 +121,17 @@ const BinaryStatsSummary = ({stats, changes}: {stats: Stats, changes: {win_loss_
         {
             label: "Average Turn Run Time",
             value: `${stats.average_turn_run_time_ms}ms`,
-            change: changes.average_turn_run_time_ms
+            change: stats.average_turn_run_time_ms_percentage_change
         }
     ]} />
 }
 
-const TournamentStatsSummary = ({stats}: {stats: Stats}) => {
+const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
     return <StatsSummary stats={[
+        {
+            label: "Ranking",
+            value: `${stats.ranking}${getOrdinalSuffix(stats.ranking)}`
+        },
         {
             label: "Rating",
             value: stats.elo
