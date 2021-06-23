@@ -7,16 +7,15 @@ import {
     Route,
     Redirect
 } from "react-router-dom";
-import {User, UserContext} from './UserContext';
-import {Rankings, Login, Spec, Faqs, About, Profile} from './pages';
+import {Rankings, Login, Spec, Faqs, About, Profile, Settings} from './pages';
+import {LoggedInContext, useUserInfo} from './utils';
 
 interface AppProps {}
 
 function App({}: AppProps) {
-    const [user, setUser] = React.useState<User | null>(null)
+    const {data: user} = useUserInfo()
 
-    return <UserContext.Provider value={{user, setUser}}>
-        <Box w="100%" height="100%">
+    return <Box w="100%" height="100%">
             <Container maxW="container.xl">
                 <Navbar />
                 <Switch>
@@ -42,10 +41,12 @@ function App({}: AppProps) {
                         {user ? <Profile username={user.username}/> : <Redirect to="/login" />}
                     </Route>
                     <Route path="/users/:username" exact render={({match: {params: {username}}}) => <Profile username={username}/>} />
+                    <Route path="/settings" exact>
+                        {user ? <Settings /> : <Redirect to="/login" />}
+                    </Route>
                 </Switch>
             </Container>
         </Box>
-    </UserContext.Provider>
 }
 
 export default App;

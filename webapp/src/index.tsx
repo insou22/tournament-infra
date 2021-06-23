@@ -1,22 +1,29 @@
 import {ChakraProvider, ColorModeScript} from "@chakra-ui/react";
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {QueryClient, QueryClientProvider} from "react-query";
 import {
     BrowserRouter as Router
 } from "react-router-dom";
 import App from './App';
 import './index.css';
 import theme from './theme';
+import {LoggedInContextProvider} from "./utils";
 
+const queryClient = new QueryClient()
 
 ReactDOM.render(<>
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <React.StrictMode>
-        <ChakraProvider theme={theme}>
-            <Router>
-                <App />
-            </Router>
-        </ChakraProvider>
+        <QueryClientProvider client={queryClient}>
+            <LoggedInContextProvider>
+                <ChakraProvider theme={theme}>
+                    <Router>
+                        <App />
+                    </Router>
+                </ChakraProvider>
+            </LoggedInContextProvider>
+        </QueryClientProvider>
     </React.StrictMode>
 </>,
     document.getElementById('root')

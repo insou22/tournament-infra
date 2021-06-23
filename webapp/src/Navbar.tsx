@@ -3,10 +3,10 @@ import {SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
-import {UserContext} from "./UserContext"
+import {useUserInfo} from "./utils"
 
 export const Navbar = () => {
-    const {user, setUser} = React.useContext(UserContext)
+    const {data: user} = useUserInfo()
     const history = useHistory();
 
     return <HStack justifyContent="space-between" mt={4} mb={10} alignItems="center">
@@ -23,7 +23,7 @@ export const Navbar = () => {
         {user ? <HStack spacing={2}>
             <VStack alignItems="flex-end" spacing={1}>
                 <Button fontSize="md" variant="link" onClick={() => history.push("/profile")}>{user.display_name}</Button>
-                <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unranked"}</Text>
+                <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
             </VStack>
             <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />
         </HStack> : <NavbarLink text="Login" path="/login" exact={true} />}
