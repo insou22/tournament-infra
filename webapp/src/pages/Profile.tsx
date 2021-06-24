@@ -34,7 +34,7 @@ export const Profile = ({username}: {username: string}) => {
     }
 
     return <VStackPageWrapper>
-        <Heading size="2xl">{profileQuery.data.display_name}</Heading>
+        <Heading>{profileQuery.data.display_name}</Heading>
         {profileQuery.data.current_tournament_stats_summary ? <>
             <Heading size="lg">July Tournament</Heading>
             <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
@@ -63,7 +63,7 @@ export const Profile = ({username}: {username: string}) => {
 const LatestGames = () => {
     return <VStack>
         <HStack>
-            <Button variant="link">Marc Chee (9001) vs Hamish Cox (1337)</Button>
+            <ButtonLink href="/game/12">Marc Chee (9001) vs Hamish Cox (1337)</ButtonLink>
             <Badge variant="solid" colorScheme="green">Won</Badge>
             <Badge colorScheme="green">+23</Badge>
             <Text>/</Text>

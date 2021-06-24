@@ -5,7 +5,7 @@ import './App.css';
 import {Loading} from './components/Loading';
 import {Navbar} from './components/Navbar';
 import {useUserInfo} from './hooks/useUserInfo';
-import {About, Faqs, Login, Profile, Rankings, Settings, Spec} from './pages';
+import {About, Faqs, Game, Login, Profile, Rankings, Settings, Spec} from './pages';
 import {Binaries} from './pages/Binaries';
 
 interface AppProps {}
@@ -49,7 +49,7 @@ function App({}: AppProps) {
             {/* <Route path="/games" exact>
                 <AllGames />
             </Route> */}
-            {/* <Route path="/game/:id" exact render={({match: {params: {id}}}) => <Game id={id} />} /> */}
+            <Route path="/game/:id" exact render={({match: {params: {id}}}) => <Game id={id} />} />
 
             <Route path="/settings" exact>
                 {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
