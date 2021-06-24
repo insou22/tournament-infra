@@ -3,7 +3,7 @@ import {SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
-import {useUserInfo} from "./utils/auth"
+import {useUserInfo} from "src/hooks/useUserInfo"
 
 export const Navbar = () => {
     const {data: user} = useUserInfo()

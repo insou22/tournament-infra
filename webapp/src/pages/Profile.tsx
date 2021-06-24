@@ -1,54 +1,20 @@
 import {Button} from "@chakra-ui/button"
 import {useBoolean} from "@chakra-ui/hooks"
-import {Badge, Center, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
-import {Spinner} from "@chakra-ui/spinner"
-import type {AxiosError} from "axios"
+import {Badge, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
 import React from "react"
-import {QueryFunction, useQuery} from "react-query"
+import {useHistory} from "react-router-dom"
 import {BinaryListItem} from "src/components/BinaryListItem"
-import {BinaryStatsSummary} from "src/components/BinaryStatSummary"
 import {Loading} from "src/components/Loading"
 import {StatsSummary} from "src/components/StatSummary"
-import {dontRetryOn404} from "src/utils/api"
-import {api, BinaryStats, TournamentStats, UserProfile} from "../api"
+import {VStackPageWrapper} from "src/components/VStackPageWrapper"
+import {useUserProfile} from "src/hooks/useUserProfile"
+import type {TournamentStats} from "../api"
 import {getOrdinalSuffix} from "../utils/stats"
 
-const getUserProfile: QueryFunction<UserProfile, ["userProfile", string]> = async ({queryKey: [, username]}) => {
-    return {
-        username: "marcchee",
-        display_name: "Marc Chee",
-        current_tournament_stats_summary: {
-            ranking: 4,
-            wins: 247,
-            losses: 194,
-            draws: 34,
-            elo: 1534,
-            average_turn_run_time_ms: 623
-        },
-        current_binary: {
-            hash: "2678afd65ad",
-            created_at: "2021-06-23T23:12:45Z",
-            stats_summary: {
-                wins: 247,
-                losses: 194,
-                draws: 34,
-                win_loss_ratio_percentage_change: 13.55,
-                average_turn_run_time_ms: 623,
-                average_turn_run_time_ms_percentage_change: -14.12
-            }
-        }
-    }
-
-    const response = await api.get<UserProfile>(`/user/${username}`)
-    return response.data
-}
-
 export const Profile = ({username}: {username: string}) => {
-    const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
-
-    const profileQuery = useQuery<unknown, AxiosError, UserProfile, ["userProfile", string]>(["userProfile", username], getUserProfile, {
-        retry: dontRetryOn404,
-    })
+    // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
+    const profileQuery = useUserProfile(username)
+    const history = useHistory()
 
     if (profileQuery.isError && profileQuery.error) {
         if (profileQuery.error?.response?.status === 404) {
@@ -66,38 +32,34 @@ export const Profile = ({username}: {username: string}) => {
         return <Loading />
     }
 
-    return <Container maxW="container.lg">
-        <VStack spacing={4} alignItems="flex-start">
-            <Heading size="2xl">{profileQuery.data.display_name}</Heading>
-            {profileQuery.data.current_tournament_stats_summary ? <>
-                <Heading size="lg">July Tournament</Heading>
-                <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
-                {profileQuery.data.current_binary && <>
-                    <Heading size="md">Recent Games</Heading>
-                    <RecentGames />
-                    <Text fontSize="sm">See More...</Text>
-                    <Heading size="md">Current Binary</Heading>
-                    <HStack w="100%">
-                        <BinaryListItem binary={profileQuery.data.current_binary} />
-                    </HStack>
-                    <Text fontSize="sm">See More...</Text>
-                </>}
-            </> : <Text>This user is not part of the current tournament.</Text>}
+    return <VStackPageWrapper>
+        <Heading size="2xl">{profileQuery.data.display_name}</Heading>
+        {profileQuery.data.current_tournament_stats_summary ? <>
+            <Heading size="lg">July Tournament</Heading>
+            <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
+            {profileQuery.data.current_binary && <>
+                <Heading size="md">Latest Games</Heading>
+                <LatestGames />
+                <Button variant="link" size="sm">See More...</Button>
+                <Heading size="md">Current Binary</Heading>
+                <BinaryListItem binary={profileQuery.data.current_binary} />
+                <Button variant="link" size="sm" onClick={() => history.push(`/user/${username}/binaries`)}>See More...</Button>
+            </>}
+        </> : <Text>This user is not part of the current tournament.</Text>}
 
-            {/* <Heading size="lg">
-                Previous Tournaments
-                <Button size="xs" ms={3} onClick={setShowPreviousTournaments.toggle}>
-                    {showPreviousTournaments ? "Hide" : "Show"}
-                </Button>
-            </Heading> */}
-            {/* <Heading size="md">June Tournament</Heading>
-            <Heading size="md">May Tournament</Heading>
-            <Heading size="md">April Tournament</Heading> */}
-        </VStack>
-    </Container>
+        {/* <Heading size="lg">
+            Previous Tournaments
+            <Button size="xs" ms={3} onClick={setShowPreviousTournaments.toggle}>
+                {showPreviousTournaments ? "Hide" : "Show"}
+            </Button>
+        </Heading> */}
+        {/* <Heading size="md">June Tournament</Heading>
+        <Heading size="md">May Tournament</Heading>
+        <Heading size="md">April Tournament</Heading> */}
+    </VStackPageWrapper>
 }
 
-const RecentGames = () => {
+const LatestGames = () => {
     return <VStack>
         <HStack>
             <Button variant="link">Marc Chee (9001) vs Hamish Cox (1337)</Button>

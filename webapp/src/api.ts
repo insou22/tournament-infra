@@ -18,9 +18,9 @@ export interface BinaryStats {
     wins: number
     losses: number
     draws: number
-    win_loss_ratio_percentage_change: number
+    win_loss_ratio_percentage_change?: number
     average_turn_run_time_ms: number
-    average_turn_run_time_ms_percentage_change: number
+    average_turn_run_time_ms_percentage_change?: number
 }
 
 export interface Tournament {

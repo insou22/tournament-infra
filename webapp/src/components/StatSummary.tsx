@@ -16,7 +16,7 @@ export const StatsSummary = ({stats}: {
                 <StatNumber>{stat.value}</StatNumber>
                 {stat.change !== undefined && <StatHelpText>
                     <StatArrow type={stat.change < 0 ? "decrease" : "increase"} />
-                    {stat.change}%
+                    {stat.change.toFixed(2)}%
                 </StatHelpText>}
             </Stat>)}
         </StatGroup>

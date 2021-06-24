@@ -1,0 +1,1 @@
+// A single game is the only circumstance where we need the user you navigated from for breadcrumbs, so location state should be used here to determine that.

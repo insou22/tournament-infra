@@ -1,14 +1,12 @@
 import {Box, Container, Heading} from '@chakra-ui/layout';
 import React from 'react';
-import './App.css';
-import {Navbar} from './Navbar';
 import {
-    Switch,
-    Route,
-    Redirect
+    Redirect, Route, Switch
 } from "react-router-dom";
-import {Rankings, Login, Spec, Faqs, About, Profile, Settings} from './pages';
-import {LoggedInContext, useUserInfo} from './utils/auth';
+import './App.css';
+import {Navbar} from './components/Navbar';
+import {useUserInfo} from './hooks/useUserInfo';
+import {About, Faqs, Login, Profile, Rankings, Settings, Spec} from './pages';
 import {Binaries} from './pages/Binaries';
 
 interface AppProps {}
