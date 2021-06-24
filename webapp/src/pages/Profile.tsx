@@ -1,6 +1,6 @@
 import {useBoolean} from "@chakra-ui/hooks"
 import {Badge, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
-import {Divider} from "@chakra-ui/react"
+import {Box, Divider, Grid, GridItem} from "@chakra-ui/react"
 import React from "react"
 import {useHistory} from "react-router-dom"
 import {BinaryListItem} from "src/components/BinaryListItem"
@@ -62,27 +62,28 @@ export const Profile = ({username}: {username: string}) => {
 }
 
 const LatestGames = () => {
-    return <VStack>
+    return <Grid rowGap={4} columnGap={2} templateColumns="repeat(2, max-content)">
+        <GridItem>
+            <Badge variant="solid" colorScheme="green" w="100%" textAlign="center">Won</Badge>
+        </GridItem>
         <HStack>
-            <ButtonLink href="/game/12">Marc Chee (9001) vs Hamish Cox (1337)</ButtonLink>
-            <Badge variant="solid" colorScheme="green">Won</Badge>
+            <Text>Marc Chee (9001)</Text>
             <Badge colorScheme="green">+23</Badge>
-            <Text>/</Text>
+            <Text>vs Hamish Cox (1337)</Text>
             <Badge colorScheme="red">-13</Badge>
         </HStack>
-    </VStack>
+        
+        <GridItem>
+            <Badge variant="solid" colorScheme="red" w="100%" textAlign="center">Lost</Badge>
+        </GridItem>
+        <HStack>
+            <Text>Marc Chee (901)</Text>
+            <Badge colorScheme="red">-13</Badge>
+            <Text>vs Chicken (1234)</Text>
+            <Badge colorScheme="green">+23</Badge>
+        </HStack>
+    </Grid>
 }
-
-// Potential other LatestGames format.
-// <ButtonLink href="/game/12">
-//     <HStack>
-//         <Badge variant="solid" colorScheme="green">Won</Badge>
-//         <Text>Marc Chee (9001)</Text>
-//         <Badge colorScheme="green">+23</Badge>
-//         <Text> vs Hamish Cox (1337)</Text>
-//         <Badge colorScheme="red">-13</Badge>                
-//     </HStack>
-// </ButtonLink>
 
 const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
     return <StatsSummary stats={[

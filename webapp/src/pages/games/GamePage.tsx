@@ -1,10 +1,10 @@
 // A single game is the only circumstance where we need the user you navigated from for breadcrumbs, so location state should be used here to determine that.
 
 import {ChevronDownIcon} from "@chakra-ui/icons"
-import {Badge, Box, Button, Code, Collapse, Heading, HStack, IconButton, StatDownArrow, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useBoolean} from "@chakra-ui/react"
+import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useBoolean} from "@chakra-ui/react"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
-import type {Binary, Game, Player, PlayerResult, Stream, Turn, UserProfile} from "src/api"
+import type {Game, Player, PlayerResult, Stream, Turn} from "src/api"
 import {BinaryListItem} from "src/components/BinaryListItem"
 import {ButtonLink} from "src/components/ButtonLink"
 import {Loading} from "src/components/Loading"
