@@ -1,6 +1,6 @@
-import {Button} from "@chakra-ui/button"
 import {useBoolean} from "@chakra-ui/hooks"
 import {Badge, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
+import {Divider} from "@chakra-ui/react"
 import React from "react"
 import {useHistory} from "react-router-dom"
 import {BinaryListItem} from "src/components/BinaryListItem"
@@ -41,7 +41,8 @@ export const Profile = ({username}: {username: string}) => {
             {profileQuery.data.current_binary && <>
                 <Heading size="md">Latest Games</Heading>
                 <LatestGames />
-                <Button variant="link" size="sm">See More...</Button>
+                <ButtonLink href={`/user/${username}/games`} size="sm">See More...</ButtonLink>
+                <Divider />
                 <Heading size="md">Current Binary</Heading>
                 <BinaryListItem binary={profileQuery.data.current_binary} />
                 <ButtonLink href={`/user/${username}/binaries`} size="sm">See More...</ButtonLink>
@@ -71,6 +72,17 @@ const LatestGames = () => {
         </HStack>
     </VStack>
 }
+
+// Potential other LatestGames format.
+// <ButtonLink href="/game/12">
+//     <HStack>
+//         <Badge variant="solid" colorScheme="green">Won</Badge>
+//         <Text>Marc Chee (9001)</Text>
+//         <Badge colorScheme="green">+23</Badge>
+//         <Text> vs Hamish Cox (1337)</Text>
+//         <Badge colorScheme="red">-13</Badge>                
+//     </HStack>
+// </ButtonLink>
 
 const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
     return <StatsSummary stats={[

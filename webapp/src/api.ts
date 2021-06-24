@@ -39,3 +39,26 @@ export interface Binary {
     created_at: string
     stats_summary: BinaryStats
 }
+
+export type Stream = "stdin" | "stdout" | "stderr"
+
+export interface Turn {
+    username: string,
+    move: string,
+    streams: Record<Stream, string>,
+    run_time: number
+}
+
+export type PlayerResult = "won" | "lost" | "drew"
+
+export interface Player {
+    binary: Binary
+    user_profile: UserProfile
+    elo_before_game: number,
+    elo_change: number
+    result: PlayerResult
+}
+
+export interface Game {
+    players: Player[]
+}

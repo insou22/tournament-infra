@@ -9,7 +9,7 @@ export const StatsSummary = ({stats}: {
         change?: number
     }[]
 }) => {
-    return <Box borderColor="whiteAlpha.300" borderStyle="solid" borderWidth="1px" borderRadius={12} w="100%">
+    return <Box borderColor="whiteAlpha.300" borderStyle="none" borderWidth="1px" borderRadius={12} w="100%" bg="whiteAlpha.100">
         <StatGroup p={2}>
             {stats.map((stat, i) => <Stat key={i}>
                 <StatLabel>{stat.label}</StatLabel>

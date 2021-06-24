@@ -9,34 +9,10 @@ import {Loading} from "src/components/Loading"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
 import {useUserProfile} from "src/hooks/useUserProfile"
 import {dontRetryOn404} from "src/utils/api"
+import * as marcchee from "src/mocks/marcchee"
 
 const getBinaries: QueryFunction<Binary[], ["binaries", string]> = async ({queryKey: [, username]}) => {
-    return [
-        {
-            hash: "65d687f5fa",
-            created_at: "2021-05-12T23:23:23Z",
-            stats_summary: {
-                wins: 123,
-                losses: 234,
-                win_loss_ratio_percentage_change: 23.40,
-                draws: 23,
-                average_turn_run_time_ms: 957,
-                average_turn_run_time_ms_percentage_change: 1
-            }
-        },
-        {
-            hash: "war3drwd4w",
-            created_at: "2021-05-12T23:24:23Z",
-            stats_summary: {
-                wins: 1234,
-                losses: 243,
-                win_loss_ratio_percentage_change: -10.40,
-                draws: 2,
-                average_turn_run_time_ms: 250,
-                average_turn_run_time_ms_percentage_change: -14
-            }
-        }
-    ]
+    return marcchee.binaries
 }
 
 const BreadcrumbLinkButton: React.FC<{href: string}> = ({href, children}) => {
@@ -50,7 +26,7 @@ const BreadcrumbLink: React.FC<{href: string}> = ({children, href}) => <ChakraBr
     {children}
 </ChakraBreadcrumbLink>
 
-export const Binaries = ({username}: {username: string}) => {
+export const BinariesPage = ({username}: {username: string}) => {
     const profileQuery = useUserProfile(username)
     const binaryQuery = useQuery<unknown, AxiosError, Binary[], ["binaries", string]>(["binaries", username], getBinaries, {
         retry: dontRetryOn404
