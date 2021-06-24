@@ -66,22 +66,26 @@ const LatestGames = () => {
         <GridItem>
             <Badge variant="solid" colorScheme="green" w="100%" textAlign="center">Won</Badge>
         </GridItem>
-        <HStack>
-            <Text>Marc Chee (9001)</Text>
-            <Badge colorScheme="green">+23</Badge>
-            <Text>vs Hamish Cox (1337)</Text>
-            <Badge colorScheme="red">-13</Badge>
-        </HStack>
-        
+        <ButtonLink href="/game/12">
+            <HStack>
+                <Text>Marc Chee (9001)</Text>
+                <Badge colorScheme="green">+23</Badge>
+                <Text>vs Hamish Cox (1337)</Text>
+                <Badge colorScheme="red">-13</Badge>
+            </HStack>
+        </ButtonLink>
+
         <GridItem>
             <Badge variant="solid" colorScheme="red" w="100%" textAlign="center">Lost</Badge>
         </GridItem>
-        <HStack>
-            <Text>Marc Chee (901)</Text>
-            <Badge colorScheme="red">-13</Badge>
-            <Text>vs Chicken (1234)</Text>
-            <Badge colorScheme="green">+23</Badge>
-        </HStack>
+        <ButtonLink href="/game/12">
+            <HStack>
+                <Text>Marc Chee (901)</Text>
+                <Badge colorScheme="red">-13</Badge>
+                <Text>vs Chicken (1234)</Text>
+                <Badge colorScheme="green">+23</Badge>
+            </HStack>
+        </ButtonLink>
     </Grid>
 }
 
