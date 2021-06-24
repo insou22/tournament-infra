@@ -3,7 +3,7 @@ import {useBoolean} from "@chakra-ui/hooks"
 import {Input} from "@chakra-ui/input"
 import {Container, Heading, VStack} from "@chakra-ui/layout"
 import React from "react"
-import {LoggedInContext, login} from "../utils/auth"
+import {CheckUserInfoContext, login} from "../utils/auth"
 import {useMutation, useQueryClient} from "react-query"
 import type {UserInfo} from "../utils/auth"
 import {Alert, AlertIcon, AlertTitle, AlertDescription} from "@chakra-ui/alert"
@@ -15,14 +15,14 @@ export const Login = () => {
     const [password, setPassword] = React.useState("")
     const [showPassword, setShowPassword] = useBoolean(false)
     const queryClient = useQueryClient()
-    const [, setLoggedIn] = React.useContext(LoggedInContext)
+    const [, setCheckUserInfo] = React.useContext(CheckUserInfoContext)
 
     const mutation = useMutation<UserInfo, {message: string}, LoginDetails, unknown>(async ({username, password}) => {
         return await login(username, password)
     }, {
         onSuccess: user => {
             queryClient.setQueryData("currentUserInfo", user)
-            setLoggedIn.on()
+            setCheckUserInfo.on()
         }
     })
 

@@ -1,13 +1,29 @@
 import {Button, IconButton} from "@chakra-ui/button"
 import {SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
+import {Spinner} from "@chakra-ui/react"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
 import {useUserInfo} from "src/hooks/useUserInfo"
 
 export const Navbar = () => {
-    const {data: user} = useUserInfo()
+    const {user, isLoading} = useUserInfo()
     const history = useHistory();
+
+    let userControls;
+    if (isLoading) {
+        userControls = <Spinner size="sm" />
+    } else if (user) {
+        userControls = <HStack spacing={2}>
+            <VStack alignItems="flex-end" spacing={1}>
+                <Button fontSize="md" variant="link" onClick={() => history.push("/profile")}>{user.display_name}</Button>
+                <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
+            </VStack>
+            <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />
+        </HStack>
+    } else {
+        userControls = <NavbarLink text="Login" path="/login" exact={true} />
+    }
 
     return <HStack justifyContent="space-between" alignItems="center">
         <Box display="flex" alignItems="center" onClick={() => history.push("/")} cursor="pointer">
@@ -20,13 +36,7 @@ export const Navbar = () => {
             <NavbarLink text="Spec" path="/spec" exact={false} />
             <NavbarLink text="Rankings" path="/rankings" exact={false} />
         </HStack>
-        {user ? <HStack spacing={2}>
-            <VStack alignItems="flex-end" spacing={1}>
-                <Button fontSize="md" variant="link" onClick={() => history.push("/profile")}>{user.display_name}</Button>
-                <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
-            </VStack>
-            <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />
-        </HStack> : <NavbarLink text="Login" path="/login" exact={true} />}
+        {userControls}
     </HStack>
 }
 
@@ -41,5 +51,5 @@ const NavbarIconLink = ({path, exact, icon, "aria-label": label, ...rest}: {"ari
     const history = useHistory()
     const match = useRouteMatch({path, exact})
 
-    return <IconButton aria-label={label} onClick={() => history.push(path)} variant={match ? "solid" : "ghost"} icon={icon} {...rest}/>
+    return <IconButton aria-label={label} onClick={() => history.push(path)} variant={match ? "solid" : "ghost"} icon={icon} {...rest} />
 }

@@ -1,10 +1,9 @@
 import {useBoolean} from "@chakra-ui/hooks"
 import React from "react"
-import {useQuery} from "react-query"
 import {api} from "../api"
 
 //@ts-ignore
-export const LoggedInContext = React.createContext<ReturnType<typeof useBoolean>>(null)
+export const CheckUserInfoContext = React.createContext<ReturnType<typeof useBoolean>>(null)
 
 export const logout = async () => {
     await api.post("/logout")
@@ -23,10 +22,10 @@ export interface UserInfo {
     current_elo: number | null
 }
 
-export const LoggedInContextProvider: React.FC<{}> = ({children}) => {
-    const values = useBoolean(false)
+export const CheckUserInfoContextProvider: React.FC<{}> = ({children}) => {
+    const values = useBoolean(true)
 
-    return <LoggedInContext.Provider value={values}>
+    return <CheckUserInfoContext.Provider value={values}>
         {children}
-    </LoggedInContext.Provider>
+    </CheckUserInfoContext.Provider>
 }

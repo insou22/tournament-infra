@@ -1,9 +1,8 @@
 import {Box, Container, Heading} from '@chakra-ui/layout';
 import React from 'react';
-import {
-    Redirect, Route, Switch
-} from "react-router-dom";
+import {Redirect, Route, Switch} from "react-router-dom";
 import './App.css';
+import {Loading} from './components/Loading';
 import {Navbar} from './components/Navbar';
 import {useUserInfo} from './hooks/useUserInfo';
 import {About, Faqs, Login, Profile, Rankings, Settings, Spec} from './pages';
@@ -12,7 +11,7 @@ import {Binaries} from './pages/Binaries';
 interface AppProps {}
 
 function App({}: AppProps) {
-    const {data: user} = useUserInfo()
+    const {user, isLoading} = useUserInfo()
 
     return <Container maxW="container.xl">
         <Box pt={4} pb={10}>
@@ -23,7 +22,7 @@ function App({}: AppProps) {
                 <Heading>Home</Heading>
             </Route>
             <Route path="/login" exact>
-                {user ? <Redirect to="/profile" /> : <Login />}
+                {isLoading ? <Loading /> : (user ? <Redirect to="/profile" /> : <Login />)}
             </Route>
             <Route path="/rankings" exact>
                 <Rankings />
@@ -38,7 +37,7 @@ function App({}: AppProps) {
                 <About />
             </Route>
             <Route path="/profile" exact>
-                {user ? <Profile username={user.username} /> : <Redirect to="/login" />}
+                {isLoading ? <Loading /> : (user ? <Profile username={user.username} /> : <Redirect to="/login" />)}
             </Route>
             <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
             {/* <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} /> */}
@@ -53,7 +52,7 @@ function App({}: AppProps) {
             {/* <Route path="/game/:id" exact render={({match: {params: {id}}}) => <Game id={id} />} /> */}
 
             <Route path="/settings" exact>
-                {user ? <Settings /> : <Redirect to="/login" />}
+                {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
             </Route>
         </Switch>
     </Container>

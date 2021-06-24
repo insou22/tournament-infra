@@ -8,7 +8,7 @@ import {
 import App from './App';
 import './index.css';
 import theme from './theme';
-import {LoggedInContextProvider} from "./utils/auth";
+import {CheckUserInfoContextProvider} from "./utils/auth";
 
 const queryClient = new QueryClient()
 
@@ -16,13 +16,13 @@ ReactDOM.render(<>
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
-            <LoggedInContextProvider>
+            <CheckUserInfoContextProvider>
                 <ChakraProvider theme={theme}>
                     <Router>
                         <App />
                     </Router>
                 </ChakraProvider>
-            </LoggedInContextProvider>
+            </CheckUserInfoContextProvider>
         </QueryClientProvider>
     </React.StrictMode>
 </>,
