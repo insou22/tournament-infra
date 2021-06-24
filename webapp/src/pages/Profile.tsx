@@ -4,6 +4,7 @@ import {Badge, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout
 import React from "react"
 import {useHistory} from "react-router-dom"
 import {BinaryListItem} from "src/components/BinaryListItem"
+import {ButtonLink} from "src/components/ButtonLink"
 import {Loading} from "src/components/Loading"
 import {StatsSummary} from "src/components/StatSummary"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
@@ -43,7 +44,7 @@ export const Profile = ({username}: {username: string}) => {
                 <Button variant="link" size="sm">See More...</Button>
                 <Heading size="md">Current Binary</Heading>
                 <BinaryListItem binary={profileQuery.data.current_binary} />
-                <Button variant="link" size="sm" onClick={() => history.push(`/user/${username}/binaries`)}>See More...</Button>
+                <ButtonLink href={`/user/${username}/binaries`} size="sm">See More...</ButtonLink>
             </>}
         </> : <Text>This user is not part of the current tournament.</Text>}
 

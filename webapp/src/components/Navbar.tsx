@@ -5,6 +5,7 @@ import {Spinner} from "@chakra-ui/react"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
 import {useUserInfo} from "src/hooks/useUserInfo"
+import {ButtonLink} from "./ButtonLink"
 
 export const Navbar = () => {
     const {user, isLoading} = useUserInfo()
@@ -16,7 +17,7 @@ export const Navbar = () => {
     } else if (user) {
         userControls = <HStack spacing={2}>
             <VStack alignItems="flex-end" spacing={1}>
-                <Button fontSize="md" variant="link" onClick={() => history.push("/profile")}>{user.display_name}</Button>
+                <ButtonLink size="md" href="/profile">{user.display_name}</ButtonLink>
                 <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
             </VStack>
             <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />

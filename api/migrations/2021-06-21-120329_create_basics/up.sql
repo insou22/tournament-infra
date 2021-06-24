@@ -19,6 +19,7 @@ CREATE TABLE games (
     created_at INTEGER NOT NULL,
     completed_at INTEGER,
     points INTEGER,
+    elo_before_game INTEGER,
     elo_change INTEGER,
     FOREIGN KEY (user_id) REFERENCES users (id),
     PRIMARY KEY (id, user_id)

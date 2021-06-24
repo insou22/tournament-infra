@@ -17,6 +17,7 @@ table! {
         created_at -> Integer,
         completed_at -> Nullable<Integer>,
         points -> Nullable<Integer>,
+        elo_before_game -> Nullable<Integer>,
         elo_change -> Nullable<Integer>,
     }
 }
