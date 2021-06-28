@@ -1,7 +1,9 @@
 #![allow(unused)]
+use serde::{Serialize, Deserialize};
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize, Clone)]
 pub struct User {
+    #[serde(skip)]
     pub id: i32,
     pub username: String,
     pub display_name: String,
@@ -25,14 +27,18 @@ pub struct Game {
     elo_change: Option<i32>,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Binary {
-    id: i32,
-    user_id: i32,
-    tournament_id: i32,
-    created_at: i32,
-    time_taken_ms: Option<i32>,
-    timed_out: Option<bool>,
+    #[serde(skip)]
+    pub id: i32,
+    #[serde(skip)]
+    pub user_id: i32,
+    #[serde(skip)]
+    pub tournament_id: i32,
+    pub created_at: i32,
+    pub hash: String,
+    pub time_taken_ms: Option<i32>,
+    pub timed_out: Option<bool>,
 }
 
 #[derive(Queryable)]

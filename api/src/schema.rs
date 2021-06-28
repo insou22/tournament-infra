@@ -4,6 +4,7 @@ table! {
         user_id -> Integer,
         tournament_id -> Integer,
         created_at -> Integer,
+        hash -> Text,
         time_taken_ms -> Nullable<Integer>,
         timed_out -> Nullable<Bool>,
     }
@@ -14,6 +15,7 @@ table! {
         id -> Integer,
         user_id -> Integer,
         tournament_id -> Integer,
+        binary_id -> Integer,
         created_at -> Integer,
         completed_at -> Nullable<Integer>,
         points -> Nullable<Integer>,

@@ -16,6 +16,7 @@ CREATE TABLE games (
     id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
+    binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     completed_at INTEGER,
     points INTEGER,
@@ -30,6 +31,7 @@ CREATE TABLE binaries (
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
+    hash VARCHAR(256) NOT NULL,
     time_taken_ms INTEGER,
     timed_out BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES users (id)
