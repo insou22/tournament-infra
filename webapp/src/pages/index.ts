@@ -1,7 +1,9 @@
 import {About} from "./About";
 import {BinariesPage} from "./BinariesPage";
+import {BinaryPage} from "./BinaryPage";
 import {Faqs} from "./Faqs";
-import {GamePage} from "./games/GamePage";
+import {AllGames} from "./AllGames";
+import {GamePage} from "./GamePage";
 import {Login} from "./Login";
 import {Profile} from "./Profile";
 import {Rankings} from "./Rankings";
@@ -17,5 +19,7 @@ export {
     About,
     Profile,
     GamePage,
-    BinariesPage
+    BinariesPage,
+    BinaryPage,
+    AllGames
 };

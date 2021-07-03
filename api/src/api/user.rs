@@ -17,7 +17,7 @@ pub struct UserInfoResponse {
     pub current_elo: Option<i32>,
 }
 
-#[get("/user")]
+#[get("/userinfo")]
 pub async fn user_info(
     conn: MainDbConn,
     cookies: &CookieJar<'_>,

@@ -36,6 +36,7 @@ export const Navbar = () => {
             <NavbarLink text="FAQs" path="/faqs" exact={false} />
             <NavbarLink text="Spec" path="/spec" exact={false} />
             <NavbarLink text="Rankings" path="/rankings" exact={false} />
+            <NavbarLink text="Games" path="/games" exact={false} />
         </HStack>
         {userControls}
     </HStack>

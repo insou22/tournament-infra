@@ -1,34 +1,20 @@
-// A single game is the only circumstance where we need the user you navigated from for breadcrumbs, so location state should be used here to determine that.
-
 import {ChevronDownIcon} from "@chakra-ui/icons"
-import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useBoolean} from "@chakra-ui/react"
+import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBoolean} from "@chakra-ui/react"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
-import type {Game, Player, PlayerResult, Stream, Turn} from "src/api"
+import type {Game, Player, Stream, Turn} from "src/api"
 import {BinaryListItem} from "src/components/BinaryListItem"
 import {ButtonLink} from "src/components/ButtonLink"
 import {Loading} from "src/components/Loading"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
+import {useBinary} from "src/hooks/useBinary"
 import {marcVsHamish} from "src/mocks/games"
 import {dontRetryOn404} from "src/utils/api"
+import {resultProps} from "src/utils/results"
+import {formatTimestamp} from "src/utils/time"
 
 const getGame: QueryFunction<Game, ["game", string]> = async () => {
     return marcVsHamish
-}
-
-const resultProps: Record<PlayerResult, {label: string, color: string}> = {
-    won: {
-        label: "Won",
-        color: "green"
-    },
-    lost: {
-        label: "Lost",
-        color: "red"
-    },
-    drew: {
-        label: "Drew",
-        color: "purple"
-    }
 }
 
 export const GamePage = ({id}: {id: string}) => {
@@ -72,12 +58,18 @@ export const GamePage = ({id}: {id: string}) => {
         retry: dontRetryOn404
     })
 
-    if (gameQuery.isLoading) {
+    if (gameQuery.isLoading || !gameQuery.data) {
         return <Loading />
     }
 
+    const times = formatTimestamp(gameQuery.data.created_at)
+
     return <VStackPageWrapper>
-        <Heading>Game {id}</Heading>
+        {/* TODO: Add breadcrumbs. A single game is the only circumstance where we need the user/binary you navigated from for breadcrumbs, so location state should be used here to determine that. */}
+        <HStack w="100%" justifyContent="space-between">
+            <Heading>Game {id}</Heading>
+            <Tooltip hasArrow label={times.localised}><Text fontSize="xl">{times.relative}</Text></Tooltip>
+        </HStack>
         <Heading size="lg">Players</Heading>
         {gameQuery.data?.players.map((p, i) => <PlayerListItem key={i} player={p} />)}
         <Heading size="lg">Turns</Heading>
@@ -92,7 +84,7 @@ export const GamePage = ({id}: {id: string}) => {
                 </Tr>
             </Thead>
             <Tbody>
-                {turns.map((t, i) => <>
+                {turns.map((t, i) => <React.Fragment key={i}>
                     <Tr>
                         <Td border="none">{i + 1}</Td>
                         <Td border="none">{t.username}</Td>
@@ -101,13 +93,13 @@ export const GamePage = ({id}: {id: string}) => {
                         <Td border="none" display="flex" justifyContent="flex-end"><IconButton size="xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} /></Td>
                     </Tr>
                     <Tr height={0}>
-                        <Td colspan={5} p={0}>
+                        <Td colSpan={5} p={0}>
                             <Collapse in={expanded === i} animateOpacity>
                                 <StreamTabs tabIndex={tabIndex} onChange={i => setTabIndex(i)} streams={t.streams} />
                             </Collapse>
                         </Td>
                     </Tr>
-                </>)}
+                </React.Fragment>)}
             </Tbody>
         </Table>
     </VStackPageWrapper>
@@ -115,10 +107,13 @@ export const GamePage = ({id}: {id: string}) => {
 
 const PlayerListItem = ({player}: {player: Player}) => {
     const [show, setShow] = useBoolean()
+
+    const binaryQuery = useBinary(player.username, player.binary_hash)
+
     return <>
         <HStack>
-            <ButtonLink href="/user/username">
-                {player.user_profile.display_name} ({player.elo_before_game})
+            <ButtonLink href={`/user/${player.username}`}>
+                {player.display_name} ({player.elo_before_game})
             </ButtonLink>
             <Badge variant="solid" colorScheme={resultProps[player.result].color}>
                 {resultProps[player.result].label}
@@ -132,7 +127,7 @@ const PlayerListItem = ({player}: {player: Player}) => {
             </Button>
         </HStack>
         <Collapse in={show} animateOpacity style={{width: "100%"}}>
-            <BinaryListItem binary={player.binary} />
+            {binaryQuery.data ? <BinaryListItem binary={binaryQuery.data} username={player.username} /> : <Loading />}
         </Collapse>
     </>
 }

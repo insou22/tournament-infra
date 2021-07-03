@@ -1,25 +1,53 @@
-import {Heading, Text} from "@chakra-ui/layout"
-import {HStack, Select, Table, Tbody, Td, Th, Thead, Tr, VStack} from "@chakra-ui/react"
+import {Heading} from "@chakra-ui/layout"
+import {Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
+import type {AxiosError} from "axios"
 import React from "react"
+import {QueryFunction, useQuery} from "react-query"
+import type {Ranking} from "src/api"
 import {ButtonLink} from "src/components/ButtonLink"
+import {Loading} from "src/components/Loading"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
+import {getOrdinalSuffix} from "src/utils/stats"
 
-type Sort = "ranking" | "win_loss"
+
+const getRankings: QueryFunction<Ranking[], ["rankings"]> = async () => {
+    return [
+        {
+            username: "chicken",
+            display_name: "Chicken",
+            rating: 9001,
+            win_loss: Infinity
+        },
+        {
+            username: "marcchee",
+            display_name: "Marc Chee",
+            rating: 4200,
+            win_loss: 1
+        },
+        {
+            username: "hamishwhc",
+            display_name: "HamishWHC",
+            rating: 1337,
+            win_loss: 6 / 9
+        },
+        {
+            username: "evil-izzy",
+            display_name: "Evil Izzy",
+            rating: 666,
+            win_loss: 0.5
+        }
+    ]
+}
 
 export const Rankings = () => {
-    const [sort, setSort] = React.useState<Sort>("ranking")
+    const rankingsQuery = useQuery<unknown, AxiosError, Ranking[], ["rankings"]>(["rankings"], getRankings)
+
+    if (rankingsQuery.isLoading || !rankingsQuery.data) {
+        return <Loading />
+    }
 
     return <VStackPageWrapper>
         <Heading>Current Tournament Rankings</Heading>
-        <HStack>
-            <VStack align="flex-start">
-                <Text>Sort By:</Text>
-                <Select value={sort} onChange={e => setSort(e.target.value as Sort)}>
-                    <option selected value="ranking">Ranking</option>
-                    <option value="win_loss">W/L</option>
-                </Select>
-            </VStack>
-        </HStack>
         <Table>
             <Thead>
                 <Tr>
@@ -30,24 +58,12 @@ export const Rankings = () => {
                 </Tr>
             </Thead>
             <Tbody>
-                <Tr>
-                    <Td>1st</Td>
-                    <Td>Chicken</Td>
-                    <Td>9001</Td>
-                    <Td>100</Td>
-                </Tr>
-                <Tr>
-                    <Td>2nd</Td>
-                    <Td><ButtonLink href={`/user/marcchee`}>Marc Chee</ButtonLink></Td>
-                    <Td>2400</Td>
-                    <Td>3.4</Td>
-                </Tr>
-                <Tr>
-                    <Td>3rd</Td>
-                    <Td>Evil Izzy</Td>
-                    <Td>2400</Td>
-                    <Td>1.2</Td>
-                </Tr>
+                {rankingsQuery.data.map((r, i) => <Tr fontSize={i == 0 ? "2xl" : i == 1 ? "xl" : i == 2 ? "lg" : "md"}>
+                    <Td>{i+1}{getOrdinalSuffix(i+1)}</Td>
+                    <Td><ButtonLink href={`/user/${r.username}`} size="inherit">{r.display_name}</ButtonLink></Td>
+                    <Td>{r.rating}</Td>
+                    <Td>{r.win_loss.toFixed(2)}</Td>
+                </Tr>)}
             </Tbody>
         </Table>
     </VStackPageWrapper>

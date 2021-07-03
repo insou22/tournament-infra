@@ -3,7 +3,8 @@ import type {Binary, UserProfile} from "src/api"
 export const binaries: Binary[] = [
     {
         hash: "3132as2323d",
-        created_at: "2021-06-23T23:12:45Z",
+        created_at: 1625273796054,
+        compile_result: {status: "success", time_taken_ms: 96},
         stats_summary: {
             wins: 234,
             losses: 543,
@@ -15,7 +16,8 @@ export const binaries: Binary[] = [
     },
     {
         hash: "67s5f678sdg67",
-        created_at: "2021-05-12T23:23:23Z",
+        created_at: 1625273796054,
+        compile_result: {status: "success", time_taken_ms: 96},
         stats_summary: {
             wins: 433,
             losses: 563,
@@ -27,7 +29,8 @@ export const binaries: Binary[] = [
     },
     {
         hash: "fse568sef",
-        created_at: "2021-05-12T23:24:23Z",
+        created_at: 1625273796054,
+        compile_result: {status: "success", time_taken_ms: 96},
         stats_summary: {
             wins: 345,
             losses: 312,

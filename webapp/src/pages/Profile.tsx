@@ -5,17 +5,18 @@ import React from "react"
 import {useHistory} from "react-router-dom"
 import {BinaryListItem} from "src/components/BinaryListItem"
 import {ButtonLink} from "src/components/ButtonLink"
+import {GameList} from "src/components/GameList"
 import {Loading} from "src/components/Loading"
 import {StatsSummary} from "src/components/StatSummary"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
 import {useUserProfile} from "src/hooks/useUserProfile"
+import {allGames, marcVsHamish} from "src/mocks/games"
 import type {TournamentStats} from "../api"
 import {getOrdinalSuffix} from "../utils/stats"
 
 export const Profile = ({username}: {username: string}) => {
     // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
     const profileQuery = useUserProfile(username)
-    const history = useHistory()
 
     if (profileQuery.isError && profileQuery.error) {
         if (profileQuery.error?.response?.status === 404) {
@@ -40,11 +41,11 @@ export const Profile = ({username}: {username: string}) => {
             <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
             {profileQuery.data.current_binary && <>
                 <Heading size="md">Latest Games</Heading>
-                <LatestGames />
+                <GameList games={allGames} username={username} />
                 <ButtonLink href={`/user/${username}/games`} size="sm">See More...</ButtonLink>
                 <Divider />
                 <Heading size="md">Current Binary</Heading>
-                <BinaryListItem binary={profileQuery.data.current_binary} />
+                <BinaryListItem binary={profileQuery.data.current_binary} username={username} />
                 <ButtonLink href={`/user/${username}/binaries`} size="sm">See More...</ButtonLink>
             </>}
         </> : <Text>This user is not part of the current tournament.</Text>}
@@ -62,7 +63,7 @@ export const Profile = ({username}: {username: string}) => {
 }
 
 const LatestGames = () => {
-    return <Grid rowGap={4} columnGap={2} templateColumns="repeat(2, max-content)">
+    return <Grid rowGap={2} columnGap={2} templateColumns="repeat(2, max-content)">
         <GridItem>
             <Badge variant="solid" colorScheme="green" w="100%" textAlign="center">Won</Badge>
         </GridItem>

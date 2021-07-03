@@ -36,7 +36,14 @@ export interface UserProfile {
 
 export interface Binary {
     hash: string
-    created_at: string
+    created_at: number
+    compile_result: {
+        status: "success"
+        time_taken_ms: number
+    } | {
+        status: "failure"
+        reason: "timed_out" | "error"
+    } | null
     stats_summary: BinaryStats
 }
 
@@ -52,13 +59,24 @@ export interface Turn {
 export type PlayerResult = "won" | "lost" | "drew"
 
 export interface Player {
-    binary: Binary
-    user_profile: UserProfile
+    binary_hash: string
+    username: string,
+    display_name: string
     elo_before_game: number,
     elo_change: number
     result: PlayerResult
 }
 
 export interface Game {
+    id: number
+    created_at: number
+    completed_at: number | null
     players: Player[]
+}
+
+export interface Ranking {
+    username: string
+    display_name: string
+    rating: number
+    win_loss: number
 }
