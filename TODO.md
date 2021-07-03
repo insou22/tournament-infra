@@ -1,4 +1,4 @@
-@insou22 here's my list of endpoints I need. I'll try and do some myself. let me know if there are any issues or questions. none of this schema is designed for multiple tournaments (my current user profile code assumes a tournament id of 1 for example), but writing code with that future change in mind would be good (current plan is to just add `/tournament/:id` in front of each endpoint when looking for data from past tournaments).
+@insou22 here's my list of endpoints I need. I'll try and do some myself. let me know if there are any issues or questions. none of this schema is designed for multiple tournaments (my current user profile code assumes a tournament id of 1 for example), but writing code with that future change in mind would be good (current plan is to just add `/tournament/:id` in front of each endpoint when looking for data from past tournaments). implement pagination however you want.
 
 # User Profiles
 ## GET /user, GET /user/:username
@@ -137,4 +137,23 @@ Response:
         etc.
     ]
 }
+```
+
+# Rankings
+## GET /rankings
+Returns a list of all players in rating order.
+
+No request body.
+
+Response:
+```
+[
+    {
+        username: string
+        display_name: string
+        rating: number
+        win_loss: number
+    },
+    etc.
+]
 ```
