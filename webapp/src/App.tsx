@@ -13,45 +13,47 @@ function App({}: AppProps) {
     const {user, isLoading} = useUserInfo()
 
     return <Container maxW="container.xl">
-        <Box pt={4} pb={10}>
+        <Box py={4}>
             <Navbar />
         </Box>
-        <Switch>
-            <Route path="/" exact>
-                <Heading>Home</Heading>
-            </Route>
-            <Route path="/login" exact>
-                {isLoading ? <Loading /> : (user ? <Redirect to="/profile" /> : <Login />)}
-            </Route>
-            <Route path="/rankings" exact>
-                <Rankings />
-            </Route>
-            <Route path="/spec" exact>
-                <Spec />
-            </Route>
-            <Route path="/faqs" exact>
-                <Faqs />
-            </Route>
-            <Route path="/about" exact>
-                <About />
-            </Route>
-            <Route path="/profile" exact>
-                {isLoading ? <Loading /> : (user ? <Profile username={user.username} /> : <Redirect to="/login" />)}
-            </Route>
-            <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
-            <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} />
-            <Route path="/user/:username/binaries" exact render={({match: {params: {username}}}) => <BinariesPage username={username} />} />
-            <Route path="/user/:username/binary/:hash" exact render={({match: {params: {hash, username}}}) => <BinaryPage hash={hash} username={username}/>} />
+        <Box py={6}>
+            <Switch>
+                <Route path="/" exact>
+                    <Heading>Home</Heading>
+                </Route>
+                <Route path="/login" exact>
+                    {isLoading ? <Loading /> : (user ? <Redirect to="/profile" /> : <Login />)}
+                </Route>
+                <Route path="/rankings" exact>
+                    <Rankings />
+                </Route>
+                <Route path="/spec" exact>
+                    <Spec />
+                </Route>
+                <Route path="/faqs" exact>
+                    <Faqs />
+                </Route>
+                <Route path="/about" exact>
+                    <About />
+                </Route>
+                <Route path="/profile" exact>
+                    {isLoading ? <Loading /> : (user ? <Profile username={user.username} /> : <Redirect to="/login" />)}
+                </Route>
+                <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
+                <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} />
+                <Route path="/user/:username/binaries" exact render={({match: {params: {username}}}) => <BinariesPage username={username} />} />
+                <Route path="/user/:username/binary/:hash" exact render={({match: {params: {hash, username}}}) => <BinaryPage hash={hash} username={username} />} />
 
-            <Route path="/games" exact>
-                <AllGames />
-            </Route>
-            <Route path="/game/:id" exact render={({match: {params: {id}}}) => <GamePage id={id} />} />
+                <Route path="/games" exact>
+                    <AllGames />
+                </Route>
+                <Route path="/game/:id" exact render={({match: {params: {id}}}) => <GamePage id={id} />} />
 
-            <Route path="/settings" exact>
-                {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
-            </Route>
-        </Switch>
+                <Route path="/settings" exact>
+                    {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
+                </Route>
+            </Switch>
+        </Box>
     </Container>
 }
 
