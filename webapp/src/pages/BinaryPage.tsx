@@ -1,17 +1,18 @@
 import {Alert, AlertDescription, AlertIcon, AlertTitle, Breadcrumb, BreadcrumbItem, Heading, HStack, Text, Tooltip} from "@chakra-ui/react"
 import type {AxiosError} from "axios"
 import React from "react"
-import {QueryFunction, useQuery} from "react-query"
-import type {Binary, Game} from "src/api"
+import {useQuery} from "react-query"
+import type {Game} from "src/api"
+import {BinaryStatsSummary} from "src/components/BinaryStatSummary"
 import {BreadcrumbLink} from "src/components/BreadcrumbLink"
+import {GameList} from "src/components/GameList"
+import {Loading} from "src/components/Loading"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
+import {useBinary} from "src/hooks/useBinary"
 import {useUserProfile} from "src/hooks/useUserProfile"
 import {dontRetryOn404} from "src/utils/api"
-import {formatTimestamp} from "src/utils/time"
-import {Loading} from "src/components/Loading"
-import {GameList} from "src/components/GameList"
 import {getFilteredGamesList} from "src/utils/games"
-import {useBinary} from "src/hooks/useBinary"
+import {formatTimestamp} from "src/utils/time"
 
 export const BinaryPage = ({username, hash}: {username: string, hash: string}) => {
     const profileQuery = useUserProfile(username)
@@ -36,6 +37,7 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
                 <Text fontWeight="bold">Compile Time:</Text>
                 <Text>{binaryQuery.data.compile_result.time_taken_ms}ms</Text>
             </HStack>
+            <BinaryStatsSummary stats={binaryQuery.data.stats_summary} />
             <Heading size="lg">Latest Games</Heading>
             <BinaryGameList username={username} hash={hash} />
         </>

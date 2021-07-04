@@ -9,6 +9,7 @@ import {Profile} from "./Profile";
 import {Rankings} from "./Rankings";
 import {Settings} from "./Settings";
 import {Spec} from "./Spec";
+import {PlayerGames} from "./PlayerGames";
 
 export {
     Rankings,
@@ -21,5 +22,6 @@ export {
     GamePage,
     BinariesPage,
     BinaryPage,
-    AllGames
+    AllGames,
+    PlayerGames
 };

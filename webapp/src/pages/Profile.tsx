@@ -1,8 +1,7 @@
-import {useBoolean} from "@chakra-ui/hooks"
-import {Badge, Container, Heading, HStack, Text, VStack} from "@chakra-ui/layout"
-import {Box, Divider, Grid, GridItem} from "@chakra-ui/react"
+import {Badge, Container, Heading, HStack, Text} from "@chakra-ui/layout"
+import {Divider, Grid, GridItem} from "@chakra-ui/react"
 import React from "react"
-import {useHistory} from "react-router-dom"
+import {useQuery} from "react-query"
 import {BinaryListItem} from "src/components/BinaryListItem"
 import {ButtonLink} from "src/components/ButtonLink"
 import {GameList} from "src/components/GameList"
@@ -10,13 +9,20 @@ import {Loading} from "src/components/Loading"
 import {StatsSummary} from "src/components/StatSummary"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
 import {useUserProfile} from "src/hooks/useUserProfile"
-import {allGames, marcVsHamish} from "src/mocks/games"
+import {allGames} from "src/mocks/games"
+import {dontRetryOn404} from "src/utils/api"
+import {getFilteredGamesList} from "src/utils/games"
 import type {TournamentStats} from "../api"
 import {getOrdinalSuffix} from "../utils/stats"
 
 export const Profile = ({username}: {username: string}) => {
     // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
     const profileQuery = useUserProfile(username)
+
+    const gamesQuery = useQuery(["games", {username}], getFilteredGamesList, {
+        retry: dontRetryOn404,
+        enabled: !!(profileQuery.data)
+    })
 
     if (profileQuery.isError && profileQuery.error) {
         if (profileQuery.error?.response?.status === 404) {
@@ -41,7 +47,7 @@ export const Profile = ({username}: {username: string}) => {
             <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
             {profileQuery.data.current_binary && <>
                 <Heading size="md">Latest Games</Heading>
-                <GameList games={allGames} username={username} />
+                {gamesQuery.data ? <GameList games={gamesQuery.data} username={username} /> : <Loading />}
                 <ButtonLink href={`/user/${username}/games`} size="sm">See More...</ButtonLink>
                 <Divider />
                 <Heading size="md">Current Binary</Heading>
@@ -60,34 +66,6 @@ export const Profile = ({username}: {username: string}) => {
         <Heading size="md">May Tournament</Heading>
         <Heading size="md">April Tournament</Heading> */}
     </VStackPageWrapper>
-}
-
-const LatestGames = () => {
-    return <Grid rowGap={2} columnGap={2} templateColumns="repeat(2, max-content)">
-        <GridItem>
-            <Badge variant="solid" colorScheme="green" w="100%" textAlign="center">Won</Badge>
-        </GridItem>
-        <ButtonLink href="/game/12">
-            <HStack>
-                <Text>Marc Chee (9001)</Text>
-                <Badge colorScheme="green">+23</Badge>
-                <Text>vs Hamish Cox (1337)</Text>
-                <Badge colorScheme="red">-13</Badge>
-            </HStack>
-        </ButtonLink>
-
-        <GridItem>
-            <Badge variant="solid" colorScheme="red" w="100%" textAlign="center">Lost</Badge>
-        </GridItem>
-        <ButtonLink href="/game/12">
-            <HStack>
-                <Text>Marc Chee (901)</Text>
-                <Badge colorScheme="red">-13</Badge>
-                <Text>vs Chicken (1234)</Text>
-                <Badge colorScheme="green">+23</Badge>
-            </HStack>
-        </ButtonLink>
-    </Grid>
 }
 
 const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {

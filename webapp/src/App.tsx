@@ -5,7 +5,7 @@ import './App.css';
 import {Loading} from './components/Loading';
 import {Navbar} from './components/Navbar';
 import {useUserInfo} from './hooks/useUserInfo';
-import {About, Faqs, Login, GamePage, BinariesPage, Profile, Rankings, Settings, Spec, BinaryPage, AllGames} from './pages';
+import {About, Faqs, Login, GamePage, BinariesPage, Profile, Rankings, Settings, Spec, BinaryPage, AllGames, PlayerGames} from './pages';
 
 interface AppProps {}
 
@@ -39,7 +39,7 @@ function App({}: AppProps) {
                 {isLoading ? <Loading /> : (user ? <Profile username={user.username} /> : <Redirect to="/login" />)}
             </Route>
             <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
-            {/* <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} /> */}
+            <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} />
             <Route path="/user/:username/binaries" exact render={({match: {params: {username}}}) => <BinariesPage username={username} />} />
             <Route path="/user/:username/binary/:hash" exact render={({match: {params: {hash, username}}}) => <BinaryPage hash={hash} username={username}/>} />
 
