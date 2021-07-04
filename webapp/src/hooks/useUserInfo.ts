@@ -7,7 +7,7 @@ import {CheckUserInfoContext, UserInfo} from "src/utils/auth"
 
 const getUserInfo = async () => {
     console.log("fetching")
-    return (await api.get<UserInfo>("/user")).data
+    return (await api.get<UserInfo>("/userinfo")).data
 }
 
 export const useUserInfo = () => {

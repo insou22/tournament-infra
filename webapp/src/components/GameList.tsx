@@ -1,4 +1,4 @@
-import {Grid, GridItem, Badge, Text, Tooltip} from "@chakra-ui/react"
+import {Badge, Grid, GridItem, Text, Tooltip} from "@chakra-ui/react"
 import React from "react"
 import {useHistory} from "react-router-dom"
 import type {Game} from "src/api"

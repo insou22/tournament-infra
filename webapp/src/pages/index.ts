@@ -1,27 +1,27 @@
 import {About} from "./About";
+import {AllGames} from "./AllGames";
 import {BinariesPage} from "./BinariesPage";
 import {BinaryPage} from "./BinaryPage";
 import {Faqs} from "./Faqs";
-import {AllGames} from "./AllGames";
 import {GamePage} from "./GamePage";
 import {Login} from "./Login";
+import {PlayerGames} from "./PlayerGames";
 import {Profile} from "./Profile";
 import {Rankings} from "./Rankings";
 import {Settings} from "./Settings";
 import {Spec} from "./Spec";
-import {PlayerGames} from "./PlayerGames";
 
 export {
-    Rankings,
-    Login,
-    Spec,
-    Settings,
-    Faqs,
     About,
-    Profile,
-    GamePage,
+    AllGames,
     BinariesPage,
     BinaryPage,
-    AllGames,
-    PlayerGames
+    Faqs,
+    GamePage,
+    Login,
+    PlayerGames,
+    Profile,
+    Rankings,
+    Settings,
+    Spec,
 };

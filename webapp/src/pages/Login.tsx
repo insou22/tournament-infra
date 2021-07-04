@@ -42,7 +42,7 @@ export const Login = () => {
                     {showPassword ? "Hide" : "Show"}
                 </Button>
             </InputRightElement> */}
-            <Button onClick={() => mutation.mutate({username, password})} disabled={mutation.isLoading}>Login</Button>
+            <Button onClick={() => mutation.mutate({username, password})} isLoading={mutation.isLoading}>Login</Button>
         </VStack>
     </Container>
 }

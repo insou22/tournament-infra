@@ -5,7 +5,7 @@ import './App.css';
 import {Loading} from './components/Loading';
 import {Navbar} from './components/Navbar';
 import {useUserInfo} from './hooks/useUserInfo';
-import {About, Faqs, Login, GamePage, BinariesPage, Profile, Rankings, Settings, Spec, BinaryPage, AllGames, PlayerGames} from './pages';
+import {About, AllGames, BinariesPage, BinaryPage, Faqs, GamePage, Login, PlayerGames, Profile, Rankings, Settings, Spec} from './pages';
 
 interface AppProps {}
 

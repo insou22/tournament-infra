@@ -1,12 +1,12 @@
 import {Heading} from "@chakra-ui/layout"
-import {Button, FormControl, FormLabel, HStack, Input, Select, useColorMode} from "@chakra-ui/react"
+import {Button, FormControl, FormLabel, HStack, Input} from "@chakra-ui/react"
 import type {AxiosError} from "axios"
 import React from "react"
 import {useMutation, useQueryClient} from "react-query"
 import {api, UserProfile} from "src/api"
 import {VStackPageWrapper} from "src/components/VStackPageWrapper"
 import {useUserInfo} from "src/hooks/useUserInfo"
-import {CheckUserInfoContext, logout, UserInfo} from "src/utils/auth"
+import {CheckUserInfoContext, logout} from "src/utils/auth"
 
 export type UserProfilePatch = Pick<UserProfile, "display_name">
 
@@ -15,7 +15,7 @@ export const Settings = () => {
     const [, setCheckUserInfo] = React.useContext(CheckUserInfoContext)
     const userInfo = useUserInfo()
     const [formData, setFormData] = React.useState<UserProfilePatch>({display_name: ""})
-    const {colorMode, setColorMode} = useColorMode()
+    // const {colorMode, setColorMode} = useColorMode()
 
     React.useEffect(() => {
         setFormData(prev => ({
@@ -43,14 +43,14 @@ export const Settings = () => {
     return <VStackPageWrapper>
         <HStack w="100%" justifyContent="space-between">
             <Heading>Settings</Heading>
-            <Button variant="solid" colorScheme="red" onClick={() => logoutMutation.mutate()}>Logout</Button>
+            <Button variant="solid" colorScheme="red" onClick={() => logoutMutation.mutate()} isLoading={logoutMutation.isLoading}>Logout</Button>
         </HStack>
         <HStack alignItems="flex-end">
             <FormControl>
                 <FormLabel>Display Name</FormLabel>
                 <Input placeholder={userInfo.user!.username} w="xs" value={formData.display_name} onChange={(e) => setFormData(p => ({...p, display_name: e.target.value}))} disabled={userProfileMutation.isLoading} />
             </FormControl>
-            <Button variant="solid" colorScheme="green" onClick={() => userProfileMutation.mutate({profilePatch: formData, username: userInfo.user!.username})} disabled={userProfileMutation.isLoading}>Save</Button>
+            <Button variant="solid" colorScheme="green" onClick={() => userProfileMutation.mutate({profilePatch: formData, username: userInfo.user!.username})} isLoading={userProfileMutation.isLoading}>Save</Button>
         </HStack>
         {/* <FormControl>
             <FormLabel>Appearance</FormLabel>
