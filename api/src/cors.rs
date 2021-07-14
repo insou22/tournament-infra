@@ -26,18 +26,19 @@ impl Fairing for Cors {
         }
     }
 
-    async fn on_ignite(&self, mut rocket: Rocket<Build>) -> fairing::Result {
-        let routes = rocket.routes()
-            .filter(|route| route.method != Method::Options)
-            .map(|route| route.uri.as_str().to_string())
-            .collect::<Vec<_>>();
+    // Calling rocket.mount() on every route breaks dynamic routing!
+    // async fn on_ignite(&self, mut rocket: Rocket<Build>) -> fairing::Result {
+    //     let routes = rocket.routes()
+    //         .filter(|route| route.method != Method::Options)
+    //         .map(|route| route.uri.as_str().to_string())
+    //         .collect::<Vec<_>>();
         
-        for route in routes {
-            rocket = rocket.mount(route, routes![cors_handler]);
-        }
+    //     for route in routes {
+    //         rocket = rocket.mount(route, routes![cors_handler]);
+    //     }
 
-        Ok(rocket)
-    }
+    //     Ok(rocket)
+    // }
 
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
         // TODO: Revisit CORS down when we have a domain
