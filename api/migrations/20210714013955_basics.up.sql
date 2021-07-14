@@ -41,7 +41,7 @@ CREATE TABLE turns (
     id INTEGER PRIMARY KEY NOT NULL,
     game_id INTEGER NOT NULL,
     turn_number INTEGER NOT NULL,
-    player_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     time_taken_ms INTEGER,
@@ -51,7 +51,7 @@ CREATE TABLE turns (
     stderr TEXT,
     stdin TEXT,
     FOREIGN KEY (game_id) REFERENCES games (id),
-    FOREIGN KEY (player_id) REFERENCES games (user_id),
+    FOREIGN KEY (user_id) REFERENCES games (user_id),
     FOREIGN KEY (binary_id) REFERENCES binaries (id),
     UNIQUE (game_id, turn_number)
 );

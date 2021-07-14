@@ -5,15 +5,9 @@ authors = ["insou22 <zac.kologlu@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rocket  = { version = "0.5.0-rc.1", features = ["secrets", "json"] }
-serde   = { version = "1.0", features = ["derive"] }
-diesel  = { version = "1.4", features = ["sqlite"] }
-dotenv  = "0.15"
+rocket = { version = "0.5.0-rc.1", features = ["secrets", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+dotenv = "0.15"
 reqwest = { version = "0.11", features = [] }
-time    = { version = "0.2", features = ["std"] }
-
-[dependencies.rocket_sync_db_pools]
-version = "0.1.0-rc.1"
-default-features = false
-features = ["diesel_sqlite_pool"]
-
+time = { version = "0.2", features = ["std"] }
+sqlx = { version = "0.5", features = ["runtime-tokio-native-tls", "macros", "migrate", "sqlite", "offline"] }

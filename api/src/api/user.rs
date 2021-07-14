@@ -1,53 +1,44 @@
-use crate::MainDbConn;
-use crate::{
-    models::{Binary, Ranking, User},
-    schema::{binaries, games, rankings, turns, users},
-};
-use diesel::dsl::avg;
-use diesel::prelude::*;
+use crate::models;
 use rocket::http::CookieJar;
 use rocket::response::status::{NotFound, Unauthorized};
 use rocket::serde::json::Json;
 use serde::Serialize;
+use rocket::tokio::try_join;
 
 #[derive(Serialize)]
 pub struct UserInfoResponse {
     pub username: String,
     pub display_name: String,
-    pub current_elo: Option<i32>,
+    pub current_elo: Option<i64>,
 }
 
 #[get("/userinfo")]
 pub async fn user_info(
-    conn: MainDbConn,
+    pool: &rocket::State<sqlx::SqlitePool>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<UserInfoResponse>, Unauthorized<()>> {
     match cookies.get_private("zid") {
         None => Err(Unauthorized(None)),
         Some(zid_cookie) => {
-            let user = conn
-                .run(move |c| {
-                    users::table
-                        .filter(users::columns::username.eq(zid_cookie.value()))
-                        .first::<User>(c)
-                        .expect("user find failed")
-                })
-                .await;
-            let user_id = user.id;
+            let zid = zid_cookie.value();
 
-            let current_ranking = conn
-                .run(move |c| {
-                    rankings::table
-                        .filter(rankings::columns::user_id.eq(user_id))
-                        .filter(
-                            rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
-                        )
-                        .first::<Ranking>(c)
-                        .optional()
-                        .expect("ranking find failed")
-                })
-                .await;
-            let current_elo = current_ranking.and_then(|r| Some(r.elo));
+            let user = sqlx::query_as!(models::User, "SELECT * FROM users WHERE username=?", zid)
+                .fetch_one(pool.inner())
+                .await
+                .expect("user fetch failed");
+
+            let ranking = sqlx::query_as!(
+                models::Ranking,
+                "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?",
+                user.id,
+                1
+            )
+            .fetch_optional(pool.inner())
+            .await
+            .expect("optional ranking fetch failed");
+
+            let current_elo = ranking.and_then(|r| Some(r.elo));
+
             Ok(Json(UserInfoResponse {
                 username: user.username,
                 display_name: user.display_name,
@@ -59,56 +50,105 @@ pub async fn user_info(
 
 #[derive(Serialize)]
 pub struct TournamentStats {
-    pub ranking: u32,
-    pub wins: u32,
-    pub losses: u32,
-    pub draws: u32,
-    pub elo: u32,
-    pub average_turn_run_time_ms: u32,
+    pub ranking: i32,
+    pub wins: i32,
+    pub losses: i32,
+    pub draws: i32,
+    pub win_loss: f64,
+    pub elo: i64,
+    pub average_turn_run_time_ms: f64,
 }
 
 #[derive(Serialize)]
 pub struct BinaryStats {
-    pub wins: usize,
-    pub losses: usize,
-    pub draws: usize,
-    pub win_loss: f32,
-    pub win_loss_ratio_percentage_change: Option<f32>,
-    pub average_turn_run_time_ms: usize,
-    pub average_turn_run_time_ms_percentage_change: Option<f32>,
+    pub wins: i32,
+    pub losses: i32,
+    pub draws: i32,
+    pub win_loss: f64,
+    pub win_loss_ratio_percentage_change: Option<f64>,
+    pub average_turn_run_time_ms: f64,
+    pub average_turn_run_time_ms_percentage_change: Option<f64>,
 }
 
 #[derive(Serialize)]
 pub struct BinaryResponse {
     #[serde(flatten)]
-    pub binary: Binary,
+    pub binary: models::Binary,
     pub stats_summary: BinaryStats,
 }
 
 #[derive(Serialize)]
 pub struct UserProfileResponse {
     #[serde(flatten)]
-    pub user: User,
+    pub user: models::User,
     pub current_tournament_stats_summary: Option<TournamentStats>,
     pub current_binary: Option<BinaryResponse>,
 }
 
+async fn get_tournament_stats_summary(
+    user: &models::User,
+    pool: &sqlx::SqlitePool,
+) -> Option<TournamentStats> {
+    match sqlx::query_as!(models::Ranking, "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?", user.id, 1).fetch_optional(pool).await.expect("ranking fetch failed") {
+        None => None,
+        Some(ranking) => {
+            let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
+                sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE elo > ? AND tournament_id=?", ranking.elo, 1).fetch_one(pool),
+                sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", user.id, 1, 2).fetch_one(pool),
+                sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", user.id, 1, 1).fetch_one(pool),
+                sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", user.id, 1, 0).fetch_one(pool),
+                sqlx::query!(r#"SELECT AVG(time_taken_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?"#, user.id, 1).fetch_one(pool)
+            ).expect("a tournament stats fetch failed");
+
+            Some(TournamentStats {
+                ranking: position_record.result,
+                elo: ranking.elo,
+                win_loss: wins_record.result as f64 / losses_record.result as f64,
+                wins: wins_record.result,
+                losses: losses_record.result,
+                draws: draws_record.result,
+                average_turn_run_time_ms: average_turn_run_time_ms_record.result,
+            })
+        }
+    }
+}
+
+async fn get_binary_stats_summary(
+    binary: &models::Binary,
+    pool: &sqlx::SqlitePool,
+) -> BinaryStats {
+    // TODO: Condense first three of these into one query using GROUP BY.
+    let (wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
+        sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE binary_id=? AND tournament_id=? AND points=?", binary.id, 1, 2).fetch_one(pool),
+        sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE binary_id=? AND tournament_id=? AND points=?", binary.id, 1, 1).fetch_one(pool),
+        sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE binary_id=? AND tournament_id=? AND points=?", binary.id, 1, 0).fetch_one(pool),
+        sqlx::query!(r#"SELECT AVG(time_taken_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.binary_id=? AND games.tournament_id=?"#, binary.id, 1).fetch_one(pool)
+    ).expect("a binary stats fetch failed");
+
+    return BinaryStats {
+        wins: wins_record.result,
+        losses: losses_record.result,
+        draws: draws_record.result,
+        win_loss: wins_record.result as f64 / losses_record.result as f64,
+        average_turn_run_time_ms: average_turn_run_time_ms_record.result,
+        average_turn_run_time_ms_percentage_change: None, // TODO: Get change from previous binary.
+        win_loss_ratio_percentage_change: None
+    };
+}
+
 #[get("/user/<username>")]
 pub async fn user_profile(
+    pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
-    conn: MainDbConn,
 ) -> Result<Json<UserProfileResponse>, NotFound<()>> {
-    let username = username.to_owned();
-
-    let user = conn
-        .run(|c| {
-            users::table
-                .filter(users::columns::username.eq(username))
-                .first::<User>(c)
-                .optional()
-                .expect("user find failed")
-        })
-        .await;
+    let user = sqlx::query_as!(
+        models::User,
+        "SELECT * FROM users WHERE username=?",
+        username
+    )
+    .fetch_optional(pool.inner())
+    .await
+    .expect("optional user fetch failed");
 
     if user.is_none() {
         return Err(NotFound(()));
@@ -116,68 +156,25 @@ pub async fn user_profile(
 
     let user = user.unwrap();
 
-    let user_id = user.id;
-    let tournament_stats = conn.run(move |c| {}).await;
-
-    let user_id = user.id;
-    let binary = conn
-        .run(move |c| {
-            binaries::table
-                .filter(binaries::columns::user_id.eq(user_id))
-                .filter(binaries::columns::tournament_id.eq(1)) // TODO: Make this read from somewhere for current tournment id.
-                .order(binaries::columns::created_at.desc())
-                .first::<Binary>(c)
-                .optional()
-                .expect("binary find failed")
-        })
-        .await;
+    let binary = sqlx::query_as!(
+        models::Binary,
+        "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC LIMIT 1",
+        user.id,
+        1
+    )
+    .fetch_optional(pool.inner())
+    .await
+    .expect("optional binary fetch failed");
 
     return Ok(Json(UserProfileResponse {
-        user,
-        current_tournament_stats_summary: None,
+        current_tournament_stats_summary: get_tournament_stats_summary(&user, pool.inner()).await,
         current_binary: match binary {
-            Some(binary) => {
-                let binary_id = binary.id;
-                Some(BinaryResponse {
-                    binary,
-                    stats_summary: conn
-                        .run(move |c| {
-                            let wins = games::table
-                                .filter(games::columns::binary_id.eq(binary_id))
-                                .filter(games::columns::points.eq(2))
-                                .count()
-                                .execute(c)
-                                .expect("wins count failed");
-                            let losses = games::table
-                                .filter(games::columns::binary_id.eq(binary_id))
-                                .filter(games::columns::points.eq(0))
-                                .count()
-                                .execute(c)
-                                .expect("losses count failed");
-                            BinaryStats {
-                                wins,
-                                losses,
-                                win_loss: wins as f32 / losses as f32,
-                                draws: games::table
-                                    .filter(games::columns::binary_id.eq(binary_id))
-                                    .filter(games::columns::points.eq(1))
-                                    .count()
-                                    .execute(c)
-                                    .expect("losses count failed"),
-                                average_turn_run_time_ms: turns::table
-                                    .select(avg(turns::columns::time_taken_ms))
-                                    .filter(turns::columns::binary_id.eq(binary_id))
-                                    .execute(c)
-                                    .expect("time taken average failed"),
-                                // TODO: Write queries to retrieve these.
-                                average_turn_run_time_ms_percentage_change: None,
-                                win_loss_ratio_percentage_change: None,
-                            }
-                        })
-                        .await,
-                })
-            }
+            Some(b) => Some(BinaryResponse {
+                stats_summary: get_binary_stats_summary(&b, pool.inner()).await,
+                binary: b
+            }),
             None => None,
         },
+        user
     }));
 }
