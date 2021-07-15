@@ -24,6 +24,7 @@ async fn rocket() -> _ {
             login,
             logout,
             user_info,
-            user_profile
+            user_profile,
+            update_user_profile
         ])
 }
