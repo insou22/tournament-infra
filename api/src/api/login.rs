@@ -1,5 +1,4 @@
-use crate::api::user::UserInfoResponse;
-use crate::models;
+use crate::models::user::{User, UserInfo};
 use rocket::{
     http::{Cookie, CookieJar, SameSite},
     serde::json::Json,
@@ -16,7 +15,7 @@ pub struct LoginRequest {
 #[derive(Serialize)]
 #[serde(tag = "status")]
 pub enum LoginResponse {
-    Success(UserInfoResponse),
+    Success(UserInfo),
     Failure(LoginFailure),
 }
 
@@ -63,11 +62,7 @@ pub async fn login(
 
         let zid = &request.zid;
 
-        let user = match sqlx::query_as!(models::User, "SELECT * FROM users WHERE username=?", zid)
-            .fetch_optional(pool.inner())
-            .await
-            .expect("optional user fetch failed")
-        {
+        let user = match User::get_by_username(zid, pool.inner()).await {
             Some(u) => u,
             None => {
                 sqlx::query!(
@@ -79,30 +74,13 @@ pub async fn login(
                 .await
                 .expect("user insert failed");
 
-                sqlx::query_as!(models::User, "SELECT * FROM users WHERE username=?", zid)
-                    .fetch_one(pool.inner())
-                    .await
-                    .expect("user fetch failed")
+                User::get_by_username(zid, pool.inner()).await.unwrap()
             }
         };
 
-        let ranking = sqlx::query_as!(
-            models::Ranking,
-            "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?",
-            user.id,
-            1
-        )
-        .fetch_optional(pool.inner())
-        .await
-        .expect("optional ranking fetch failed");
-
-        let current_elo = ranking.and_then(|r| Some(r.elo));
-
-        Json(LoginResponse::Success(UserInfoResponse {
-            username: user.username,
-            display_name: user.display_name,
-            current_elo,
-        }))
+        Json(LoginResponse::Success(
+            user.get_userinfo(pool.inner()).await,
+        ))
     } else {
         Json(LoginResponse::Failure(LoginFailure {
             message: "incorrect zID or password".to_string(),

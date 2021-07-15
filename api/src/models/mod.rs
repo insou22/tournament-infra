@@ -1,13 +1,8 @@
 #![allow(unused)]
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Clone)]
-pub struct User {
-    #[serde(skip)]
-    pub id: i64,
-    pub username: String,
-    pub display_name: String,
-}
+pub mod user;
+pub mod binary;
 
 pub struct Ranking {
     pub id: i64,
@@ -23,20 +18,6 @@ pub struct Game {
     created_at: Option<i64>,
     points: Option<i64>,
     elo_change: Option<i64>,
-}
-
-#[derive(Serialize)]
-pub struct Binary {
-    #[serde(skip)]
-    pub id: i64,
-    #[serde(skip)]
-    pub user_id: i64,
-    #[serde(skip)]
-    pub tournament_id: i64,
-    pub created_at: i64,
-    pub hash: String,
-    pub time_taken_ms: Option<i64>,
-    pub timed_out: Option<bool>,
 }
 
 pub struct Turn {
