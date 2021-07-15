@@ -8,7 +8,7 @@ pub struct Ranking {
     pub id: i64,
     pub user_id: i64,
     pub tournament_id: i64,
-    pub elo: i64,
+    pub rating: i64,
 }
 
 pub struct Game {
@@ -17,7 +17,8 @@ pub struct Game {
     tournament_id: i64,
     created_at: Option<i64>,
     points: Option<i64>,
-    elo_change: Option<i64>,
+    rating_before_game: Option<i64>,
+    rating_change: Option<i64>,
 }
 
 pub struct Turn {

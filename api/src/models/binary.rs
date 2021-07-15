@@ -19,6 +19,7 @@ pub struct BinaryWithStats {
     pub stats_summary: BinaryStats,
 }
 
+// TODO: Setup compile_result. Probably by adding an impl for sqlx::FromRow.
 #[derive(Serialize)]
 pub struct Binary {
     #[serde(skip)]
@@ -34,11 +35,11 @@ pub struct Binary {
 }
 
 impl Binary {
-    pub async fn get_by_id(id: i64, pool: &sqlx::SqlitePool) -> Option<Self> {
-        sqlx::query_as!(Self, "SELECT * FROM binaries WHERE id=?", id)
+    pub async fn get_by_username_and_hash(username: &str, hash: &str, pool: &sqlx::SqlitePool) -> Option<Self> {
+        sqlx::query_as!(Self, "SELECT binaries.* FROM binaries INNER JOIN users ON users.id=binaries.user_id WHERE users.username=? AND hash=?", username, hash)
             .fetch_optional(pool)
             .await
-            .expect("optional binary fetch by id failed")
+            .expect("optional binary fetch by username and hash failed")
     }
 
     pub async fn get_stats_summary(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> BinaryStats {

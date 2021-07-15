@@ -2,6 +2,7 @@ use crate::models::{
     binary::{Binary, BinaryWithStats},
     Ranking,
 };
+use rocket::response::status::Unauthorized;
 use rocket::tokio::try_join;
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,7 @@ pub struct TournamentStats {
     pub losses: i32,
     pub draws: i32,
     pub win_loss: f64,
-    pub elo: i64,
+    pub rating: i64,
     pub average_turn_run_time_ms: f64,
 }
 
@@ -28,7 +29,7 @@ pub struct UserProfile {
 pub struct UserInfo {
     pub username: String,
     pub display_name: String,
-    pub current_elo: Option<i64>,
+    pub current_rating: Option<i64>,
 }
 
 #[derive(Serialize, Clone)]
@@ -61,7 +62,7 @@ impl User {
         UserInfo {
             username: self.username.to_owned(),
             display_name: self.display_name.to_owned(),
-            current_elo: ranking.and_then(|r| Some(r.elo)),
+            current_rating: ranking.and_then(|r| Some(r.rating)),
         }
     }
 
@@ -109,22 +110,49 @@ impl User {
             None => None,
             Some(ranking) => {
                 let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
-                    sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE elo > ? AND tournament_id=?", ranking.elo, tournament_id).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?", ranking.rating, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 2).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 1).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 0).fetch_one(pool),
                     sqlx::query!(r#"SELECT AVG(time_taken_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
                 ).expect("a tournament stats fetch failed");
-                
                 Some(TournamentStats {
                     ranking: position_record.result,
-                    elo: ranking.elo,
+                    rating: ranking.rating,
                     win_loss: wins_record.result as f64 / losses_record.result as f64,
                     wins: wins_record.result,
                     losses: losses_record.result,
                     draws: draws_record.result,
                     average_turn_run_time_ms: average_turn_run_time_ms_record.result,
                 })
+            }
+        }
+    }
+}
+
+#[rocket::async_trait]
+impl<'r> rocket::request::FromRequest<'r> for User {
+    type Error = Unauthorized<()>;
+
+    async fn from_request(
+        request: &'r rocket::Request<'_>,
+    ) -> rocket::request::Outcome<Self, Self::Error> {
+        match request.cookies().get_private("zid") {
+            None => rocket::request::Outcome::Failure((
+                rocket::http::Status::Unauthorized,
+                Unauthorized(None),
+            )),
+            Some(zid_cookie) => {
+                let zid = zid_cookie.value();
+                let pool = request.guard::<&rocket::State<sqlx::SqlitePool>>().await.unwrap();
+                let user = User::get_by_username(zid, pool.inner()).await;
+                match user {
+                    None => rocket::request::Outcome::Failure((
+                        rocket::http::Status::Unauthorized,
+                        Unauthorized(None),
+                    )),
+                    Some(u) => rocket::request::Outcome::Success(u)
+                }
             }
         }
     }

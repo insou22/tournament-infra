@@ -8,7 +8,7 @@ CREATE TABLE rankings (
     id INTEGER PRIMARY KEY NOT NULL,
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
-    elo INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
@@ -20,8 +20,8 @@ CREATE TABLE games (
     created_at INTEGER NOT NULL,
     completed_at INTEGER,
     points INTEGER,
-    elo_before_game INTEGER,
-    elo_change INTEGER,
+    rating_before_game INTEGER,
+    rating_change INTEGER,
     FOREIGN KEY (user_id) REFERENCES users (id),
     PRIMARY KEY (id, user_id)
 );
