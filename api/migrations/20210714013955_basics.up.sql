@@ -13,17 +13,24 @@ CREATE TABLE rankings (
 );
 
 CREATE TABLE games (
-    id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
+    id INTEGER PRIMARY KEY NOT NULL,
     tournament_id INTEGER NOT NULL,
-    binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
-    completed_at INTEGER,
+    completed_at INTEGER
+);
+
+CREATE TABLE players (
+    id INTEGER PRIMARY KEY NOT NULL,
+    game_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    binary_id INTEGER NOT NULL,
+    rating_before_game INTEGER NOT NULL,
     points INTEGER,
-    rating_before_game INTEGER,
     rating_change INTEGER,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    PRIMARY KEY (id, user_id)
+    FOREIGN KEY (game_id) REFERENCES games (id),
+    FOREIGN KEY (binary_id) REFERENCES binaries (id),
+    -- TODO: Remove redundant foreign keys. Makes for a whole lot more joins though.
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 CREATE TABLE binaries (
@@ -41,6 +48,7 @@ CREATE TABLE turns (
     id INTEGER PRIMARY KEY NOT NULL,
     game_id INTEGER NOT NULL,
     turn_number INTEGER NOT NULL,
+    player_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
@@ -51,7 +59,9 @@ CREATE TABLE turns (
     stderr TEXT,
     stdin TEXT,
     FOREIGN KEY (game_id) REFERENCES games (id),
-    FOREIGN KEY (user_id) REFERENCES games (user_id),
+    FOREIGN KEY (player_id) REFERENCES players (id),
+    -- TODO: Remove redundant foreign keys. Makes for a whole lot more joins though.
+    FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (binary_id) REFERENCES binaries (id),
     UNIQUE (game_id, turn_number)
 );

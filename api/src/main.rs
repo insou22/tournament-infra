@@ -27,13 +27,11 @@ async fn rocket() -> _ {
             login,
             logout,
             get_userinfo,
-            get_current_user_profile,
             get_user_profile,
             update_user_profile,
             get_rankings,
-            get_current_user_binaries,
             get_user_binaries,
-            get_current_user_binary,
-            get_user_binary
+            get_user_binary,
+            get_games
         ])
 }

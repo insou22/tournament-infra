@@ -1,5 +1,5 @@
 use crate::models::{
-    binary::{Binary, BinaryWithStats},
+    binary::{Binary, BinaryResponse},
     Ranking,
 };
 use rocket::response::status::Unauthorized;
@@ -22,7 +22,7 @@ pub struct UserProfile {
     #[serde(flatten)]
     pub user: User,
     pub current_tournament_stats_summary: Option<TournamentStats>,
-    pub current_binary: Option<BinaryWithStats>,
+    pub current_binary: Option<BinaryResponse>,
 }
 
 #[derive(Serialize)]
@@ -67,6 +67,7 @@ impl User {
     }
 
     pub async fn get_profile(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserProfile {
+        // TODO: Make this ignore binaries that failed compilation.
         let binary = sqlx::query_as!(
             Binary,
             "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC LIMIT 1",
@@ -79,8 +80,8 @@ impl User {
 
         UserProfile {
             current_binary: match binary {
-                Some(binary) => Some(BinaryWithStats {
-                    stats_summary: binary.get_stats_summary(tournament_id, pool).await,
+                Some(binary) => Some(BinaryResponse {
+                    stats_summary: binary.get_stats_summary(pool).await,
                     binary,
                 }),
                 None => None,
@@ -111,9 +112,9 @@ impl User {
             Some(ranking) => {
                 let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
                     sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?", ranking.rating, tournament_id).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 2).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 1).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 0).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 2).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 1).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 0).fetch_one(pool),
                     sqlx::query!(r#"SELECT AVG(time_taken_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
                 ).expect("a tournament stats fetch failed");
                 Some(TournamentStats {

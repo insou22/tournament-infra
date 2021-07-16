@@ -3,22 +3,13 @@ use serde::{Serialize, Deserialize};
 
 pub mod user;
 pub mod binary;
+pub mod game;
 
 pub struct Ranking {
     pub id: i64,
     pub user_id: i64,
     pub tournament_id: i64,
     pub rating: i64,
-}
-
-pub struct Game {
-    id: i64,
-    user_id: i64,
-    tournament_id: i64,
-    created_at: Option<i64>,
-    points: Option<i64>,
-    rating_before_game: Option<i64>,
-    rating_change: Option<i64>,
 }
 
 pub struct Turn {
