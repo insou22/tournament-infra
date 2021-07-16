@@ -26,7 +26,6 @@ pub async fn get_user_binaries(
 
             for binary in binaries {
                 binaries_with_stats.push(BinaryResponse {
-                    // Sue Me: https://sqlite.org/np1queryprob.html
                     stats_summary: binary.get_stats_summary(pool.inner()).await,
                     binary,
                 })
