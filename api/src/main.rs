@@ -1,31 +1,40 @@
 #[macro_use] extern crate rocket;
-#[macro_use] extern crate diesel;
 
 pub mod api;
-pub mod schema;
 pub mod models;
 pub mod cors;
 
 use api::{
     login::*,
     logout::*,
-    user::*
+    user::*,
+    ranking::*,
+    binary::*,
+    game::*
 };
 
-use rocket_sync_db_pools::database;
-
-#[database("main")]
-pub struct MainDbConn(diesel::SqliteConnection);
-
 #[launch]
-fn rocket() -> _ {
+async fn rocket() -> _ {
+    let database_url = "sqlite://../test.db";
+    let pool = sqlx::SqlitePool::connect(database_url)
+        .await
+        .expect("Failed to connect to database");
+
     rocket::build()
-        .attach(MainDbConn::fairing())
         .attach(cors::fairing())
+        .manage(pool)
         .mount("/", routes![
             login,
             logout,
-            user_info,
-            //user_profile
+            get_userinfo,
+            get_user_profile,
+            update_user_profile,
+            get_rankings,
+            get_user_binaries,
+            get_user_binary,
+            get_games,
+            get_user_games,
+            get_binary_games,
+            get_game
         ])
 }

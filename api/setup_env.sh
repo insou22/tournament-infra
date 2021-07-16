@@ -15,8 +15,8 @@ if ! ldconfig -p | grep -q 'libsqlite3'; then
 	exit 1;
 fi
 
-if ! [ -x "$(command -v diesel)" ]; then
-	echo 'Error: diesel is not installed' >&2;
+if ! [ -x "$(command -v sqlx)" ]; then
+	echo 'Error: sqlx is not installed' >&2;
 	exit 1;
 fi
 
@@ -24,4 +24,4 @@ if ! [ -f '.env' ]; then
 	echo 'DATABASE_URL=../test.db' > .env;
 fi
 
-diesel setup
+sqlx database reset

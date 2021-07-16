@@ -1,8 +1,4 @@
-use crate::models::{Ranking, User};
-use crate::schema::{rankings, users};
-use crate::api::user::UserInfoResponse;
-use crate::MainDbConn;
-use diesel::prelude::*;
+use crate::models::user::{User, UserInfo};
 use rocket::{
     http::{Cookie, CookieJar, SameSite},
     serde::json::Json,
@@ -19,7 +15,7 @@ pub struct LoginRequest {
 #[derive(Serialize)]
 #[serde(tag = "status")]
 pub enum LoginResponse {
-    Success(UserInfoResponse),
+    Success(UserInfo),
     Failure(LoginFailure),
 }
 
@@ -30,7 +26,7 @@ pub struct LoginFailure {
 
 #[post("/login", data = "<request>")]
 pub async fn login(
-    conn: MainDbConn,
+    pool: &rocket::State<sqlx::SqlitePool>,
     request: Json<LoginRequest>,
     cookies: &CookieJar<'_>,
 ) -> Json<LoginResponse> {
@@ -64,53 +60,27 @@ pub async fn login(
 
         cookies.add_private(cookie);
 
-        let user = conn
-            .run(move |c| {
-                let user = users::table
-                    .filter(users::columns::username.eq(&request.zid))
-                    .first::<User>(c)
-                    .optional()
-                    .expect("user find failed");
-                if user.is_none() {
-                    diesel::insert_into(users::table)
-                        .values((
-                            users::columns::username.eq(&request.zid),
-                            users::columns::display_name.eq(&request.zid),
-                        ))
-                        .execute(c)
-                        .expect("insert into users table failed");
-                    users::table
-                        .filter(users::columns::username.eq(&request.zid))
-                        .first::<User>(c)
-                        .expect("user find failed")
-                } else {
-                    user.unwrap()
-                }
-            })
-            .await;
+        let zid = &request.zid;
 
-        let user_id = user.id;
+        let user = match User::get_by_username(zid, pool.inner()).await {
+            Some(u) => u,
+            None => {
+                sqlx::query!(
+                    "INSERT INTO users (username, display_name) VALUES (?, ?)",
+                    zid,
+                    zid
+                )
+                .execute(pool.inner())
+                .await
+                .expect("user insert failed");
 
-        let current_ranking = conn
-            .run(move |c| {
-                rankings::table
-                    .filter(rankings::columns::user_id.eq(user_id))
-                    .filter(
-                        rankings::columns::tournament_id.eq(1i32), // TODO: Get this from the config file.
-                    )
-                    .first::<Ranking>(c)
-                    .optional()
-                    .expect("ranking find failed")
-            })
-            .await;
+                User::get_by_username(zid, pool.inner()).await.unwrap()
+            }
+        };
 
-        let current_elo = current_ranking.and_then(|r| Some(r.elo));
-
-        Json(LoginResponse::Success(UserInfoResponse {
-            username: user.username,
-            display_name: user.display_name,
-            current_elo
-        }))
+        Json(LoginResponse::Success(
+            user.get_userinfo(pool.inner()).await,
+        ))
     } else {
         Json(LoginResponse::Failure(LoginFailure {
             message: "incorrect zID or password".to_string(),

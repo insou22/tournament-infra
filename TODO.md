@@ -1,7 +1,7 @@
 @insou22 here's my list of endpoints I need. I'll try and do some myself. let me know if there are any issues or questions. none of this schema is designed for multiple tournaments (my current user profile code assumes a tournament id of 1 for example), but writing code with that future change in mind would be good (current plan is to just add `/tournament/:id` in front of each endpoint when looking for data from past tournaments). implement pagination however you want.
 
 # User Profiles
-## GET /user, GET /user/:username
+## GET /user/:username
 Returns the specified user's profile (`GET /user` returns the profile of the current user, 401 if not logged in).
 
 No request body.
@@ -35,7 +35,7 @@ Response:
 }
 ```
 
-## PATCH /user/:username
+## PATCH /user
 Allows for partial update of user profile (for now, the only thing to be updated is their display name, so for now no need for the partial part of it yet).
 
 Should return 403 if called with a username that is not they're own.
@@ -50,14 +50,14 @@ Request body:
 Response: Same as `GET /user/:username`.
 
 # Binaries
-## GET /binaries, GET /user/:username/binaries
+## GET /user/:username/binaries
 Returns a list of binaries created by this user/current user (both compiled and failed).
 
 No request body.
 
 Response: List of binary objects. See `current_binary` field of `GET /user` response.
 
-## GET /binary/:hash, GET /user/:username/binary/:hash
+## GET /user/:username/binary/:hash
 Returns binary with specified hash. Technically all binaries can be retrieved with the first endpoint, but frontend would be easier if you would make it return 404 if the wrong username is given (i.e. there is a binary with hash 123abc, and the user requests it from `insou`, except `marcchee` is the one who owns the binary, so returns 404).
 
 No Request body.
@@ -101,7 +101,7 @@ Response:
 ]
 ```
 
-## GET /game
+## GET /game/:id
 Returns a single game object, with detailed information on the game's turn history. Stdin, Stdout and Stderr information if the turn was played by that user.
 
 No request body.
