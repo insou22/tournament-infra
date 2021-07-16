@@ -29,6 +29,7 @@ CREATE TABLE players (
     points INTEGER,
     rating_change INTEGER,
     FOREIGN KEY (game_id) REFERENCES games (id),
+    FOREIGN KEY (user_id) REFERENCES users (id), -- Technically redundant. Could join via binaries table.
     FOREIGN KEY (binary_id) REFERENCES binaries (id),
     UNIQUE (game_id, user_id)
 );
@@ -39,8 +40,8 @@ CREATE TABLE binaries (
     tournament_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     hash VARCHAR(256) NOT NULL,
+    compile_result TEXT NOT NULL CHECK (compile_result IN ('not_compiled', 'failed', 'timed_out', 'success')),
     compile_time_ms INTEGER,
-    timed_out BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
@@ -53,9 +54,8 @@ CREATE TABLE turns (
     binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     run_time_ms INTEGER NOT NULL,
-    timed_out BOOLEAN NOT NULL,
     action TEXT NOT NULL,
-    legal BOOLEAN NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('legal', 'illegal', 'invalid', 'timed_out')),
     stdout TEXT NOT NULL,
     stderr TEXT NOT NULL,
     stdin TEXT NOT NULL,

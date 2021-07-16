@@ -64,6 +64,7 @@ pub async fn get_user_games(
 #[get("/user/<username>/binary/<hash>/games")]
 pub async fn get_binary_games(
     pool: &rocket::State<sqlx::SqlitePool>,
+    current_user: Option<User>,
     username: &str,
     hash: &str,
 ) -> Option<Json<Vec<GameResponse>>> {
@@ -74,6 +75,10 @@ pub async fn get_binary_games(
     }
 
     let binary = binary.unwrap();
+
+    if binary.compile_result != "success" && current_user.filter(|cu| cu.username == username).is_none() {
+        return None;
+    }
 
     let games: Vec<Game> = sqlx::query_as!(
         Game,
@@ -117,7 +122,7 @@ pub async fn get_game(
             let mut turns = game.get_turns(pool.inner()).await;
 
             for mut turn in &mut turns {
-                if user.is_none() || user.as_ref().unwrap().id != turn.user_id {
+                if user.is_none() || user.as_ref().filter(|u| u.id == turn.user_id).is_none() {
                     turn.streams = None;
                 }
             }

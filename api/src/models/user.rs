@@ -67,10 +67,10 @@ impl User {
     }
 
     pub async fn get_profile(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserProfile {
-        // TODO: Make this ignore binaries that failed compilation.
+        // Must be successfully compiled to be the user's current binary (even if the user is viewing their own profile, as this binary is used in games).
         let binary = sqlx::query_as!(
             Binary,
-            "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC LIMIT 1",
+            "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? AND compile_result='success' ORDER BY created_at DESC",
             self.id,
             tournament_id
         )

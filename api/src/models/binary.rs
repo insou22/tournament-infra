@@ -1,5 +1,5 @@
-use serde::Serialize;
 use rocket::tokio::try_join;
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct BinaryStats {
@@ -19,7 +19,6 @@ pub struct BinaryResponse {
     pub stats_summary: BinaryStats,
 }
 
-// TODO: Setup compile_result. Probably by adding an impl for sqlx::FromRow.
 #[derive(Serialize)]
 pub struct Binary {
     #[serde(skip)]
@@ -30,12 +29,17 @@ pub struct Binary {
     pub tournament_id: i64,
     pub created_at: i64,
     pub hash: String,
+    pub compile_result: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub compile_time_ms: Option<i64>,
-    pub timed_out: Option<bool>,
 }
 
 impl Binary {
-    pub async fn get_by_username_and_hash(username: &str, hash: &str, pool: &sqlx::SqlitePool) -> Option<Self> {
+    pub async fn get_by_username_and_hash(
+        username: &str,
+        hash: &str,
+        pool: &sqlx::SqlitePool,
+    ) -> Option<Self> {
         sqlx::query_as!(Self, "SELECT binaries.* FROM binaries INNER JOIN users ON users.id=binaries.user_id WHERE users.username=? AND hash=?", username, hash)
             .fetch_optional(pool)
             .await
