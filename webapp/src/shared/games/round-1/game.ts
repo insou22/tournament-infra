@@ -1,16 +1,15 @@
+import type {Suit} from "@shared/common/cards";
 import type {Ctx, Game} from "boardgame.io"
 
-type Suit = "hearts" | "diamonds" | "clubs" | "spades"
-type CardNumber = 1 | 2 | 3 | 4 | 5
-type Card = {suit: Suit, number: CardNumber}
+type Card = {suit: Suit, rank: number}
 type PlayerState = {score: number, hand: Card[], played: Card | null}
 type Player = "0" | "1"
 type State = {trickStarter: Player, players: Record<Player, PlayerState>};
 type SetupData = "";
 
-const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"]
-const CARD_NUMBERS: CardNumber[] = [1, 2, 3, 4, 5]
-const STARTING_DECK: Card[] = SUITS.flatMap(suit => CARD_NUMBERS.map(number => ({suit, number})))
+const SUITS: Suit[] = ["H", "D", "C", "S"]
+const CARD_NUMBERS = [1, 2, 3, 4, 5]
+const STARTING_DECK: Card[] = SUITS.flatMap(suit => CARD_NUMBERS.map(rank => ({suit, rank})))
 
 export const Round1Game: Game<State, Ctx, SetupData> = {
     setup: (ctx): State => {
@@ -55,7 +54,7 @@ export const Round1Game: Game<State, Ctx, SetupData> = {
             endIf: G => !!(G.players["0"].played && G.players["1"].played),
             onEnd: (G, ctx) => {
                 if (G.players["0"].played!.suit === G.players["1"].played!.suit) {
-                    if (G.players["0"].played!.number > G.players["1"].played!.number) {
+                    if (G.players["0"].played!.rank > G.players["1"].played!.rank) {
                         G.trickStarter = "0"
                     } else {
                         G.trickStarter = "1"
