@@ -5,10 +5,7 @@ import {api} from "@client/api"
 import {dontRetryOn401} from "@client/utils/api"
 import {CheckUserInfoContext, UserInfo} from "@client/utils/auth"
 
-const getUserInfo = async () => {
-    console.log("fetching")
-    return (await api.get<UserInfo>("/userinfo")).data
-}
+const getUserInfo = async () => (await api.get<UserInfo>("/userinfo")).data
 
 export const useUserInfo = () => {
     const [check, setCheck] = React.useContext(CheckUserInfoContext)
