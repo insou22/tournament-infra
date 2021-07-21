@@ -1,141 +1,219 @@
-import {Heading, Text} from "@chakra-ui/layout"
-import React from "react"
+import {Button, Heading, Table, Tbody, Td, Th, Thead, Tr, Text} from "@chakra-ui/react"
+import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
-import {LobbyClient} from "boardgame.io/client";
-import {BoardProps, Client} from "boardgame.io/react"
-import type {LobbyAPI, PlayerID} from "boardgame.io";
-import {Loading} from "@client/components/Loading";
-import {Button, FormControl, FormLabel, Input, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react";
-import {GAMES} from "@shared/games";
-import {useMutation, useQuery} from "react-query";
-import type {ClientOpts} from "boardgame.io/dist/types/src/client/client";
-import {SocketIO} from "boardgame.io/multiplayer"
+import {useUserInfo} from "@client/hooks/useUserInfo"
+import {GAMES} from "@shared/games"
+import type {LobbyAPI} from "boardgame.io"
+import {Lobby} from "boardgame.io/react"
+import React from "react"
+import {useMutation} from "react-query"
 
-const lobbyClient = new LobbyClient({server: 'http://localhost:8081'});
+export const Play = () => <VStackPageWrapper>
+    <Lobby
+        gameComponents={Object.values(GAMES)}
+        renderer={lobbyRendererWrapper}
+        gameServer="http://localhost:8081"
+        lobbyServer="http://localhost:8081"
+    />
+</VStackPageWrapper>
 
-interface GameDetails {
-    matchID: string,
-    playerID?: string,
-    credentials?: string,
-    game: string
-}
+type LobbyRendererProps = Parameters<Required<Lobby["props"]>["renderer"]>[0]
 
-export const Play = () => {
-    const [gameDetails, setGameDetails] = React.useState<GameDetails | null>(null)
-    const [runningMatch, setRunningMatch] = React.useState<{isRunning: true, GameClient: ReturnType<typeof Client>} | {isRunning: false, GameClient: null}>({isRunning: false, GameClient: null})
+const lobbyRendererWrapper: Required<Lobby["props"]>["renderer"] = (props) => <LobbyRenderer {...props} />
+
+const LobbyRenderer = ({phase, matches, runningMatch, ...props}: LobbyRendererProps) => {
+    const userInfo = useUserInfo()
+    const [matchInfo, setMatchInfo] = React.useState<{matchID: string, playerID: string} | null>(null)
+    const match = matches.find(m => m.matchID === matchInfo?.matchID) || null
+    const freeSeats = match === null ? null : match?.players.filter(p => !p.name).length
+
+    console.log(matches)
 
     React.useEffect(() => {
-        if (runningMatch.isRunning) {
-            setRunningMatch({isRunning: false, GameClient: null})
-        }
-        if (gameDetails) {
-            const {game, board} = GAMES[gameDetails.game]
-            setRunningMatch({
-                isRunning: true,
-                GameClient: Client({
-                    ...gameDetails,
-                    game,
-                    board,
-                    multiplayer: SocketIO({server: "http://localhost:8081"}),
-                })
-            })
-        }
-    }, [gameDetails])
-
-    if (gameDetails) {
-        if (runningMatch.isRunning) {
-            return <VStackPageWrapper>
-                <runningMatch.GameClient matchID={gameDetails.matchID} playerID={gameDetails.playerID} credentials={gameDetails.credentials} />
-            </VStackPageWrapper>
+        console.log("mounted page")
+        if (userInfo.user) {
+            localStorage.setItem("bg-io/lobby/name", userInfo.user.display_name)
+            props.handleEnterLobby(userInfo.user.display_name)
         } else {
-            return <Loading />
+            let name = localStorage.getItem("bg-io/lobby/name")
+            if (!name || !name.startsWith("Anonymous")) {
+                name = `Anonymous${Math.floor(Math.random() * 100000)}`
+                localStorage.setItem("bg-io/lobby/name", name)
+            }
+            props.handleEnterLobby(name)
         }
-    } else {
-        return <Lobby setGameDetails={setGameDetails} />
+
+        const onUnmountOrUnload = () => {
+            console.log("unload called")
+            props.handleExitMatch()
+            props.handleExitLobby()
+        }
+
+        window.addEventListener("beforeunload", onUnmountOrUnload)
+
+        return () => {
+            window.removeEventListener("beforeunload", onUnmountOrUnload)
+            onUnmountOrUnload()
+        }
+    }, [])
+
+    React.useEffect(() => {
+        console.log("freeSeats change")
+        if (match && matchInfo) {
+            if (freeSeats === 0) {
+                console.log("starting")
+                props.handleStartMatch("round-1", {
+                    matchID: match.matchID,
+                    numPlayers: match.players.length,
+                    playerID: matchInfo.playerID
+                })
+            }
+        }
+    }, [freeSeats])
+
+    const joinMatchMutation = useMutation<string, unknown, LobbyAPI.Match, unknown>(async (match) => {
+        const playerID = match.players.find(p => !p.name || p.name === props.playerName)!.id.toString()
+        await props.handleJoinMatch(
+            match.gameName,
+            match.matchID,
+            playerID
+        );
+        return playerID
+    }, {
+        onSuccess: (playerID, {matchID}) => setMatchInfo({matchID, playerID})
+    })
+
+    const createMatchMutation = useMutation<void, unknown, void, unknown>(async () => {
+        return props.handleCreateMatch(
+            "round-1",
+            2
+        )
+    })
+
+    const leaveMatchMutation = useMutation<void, unknown, string, unknown>(async (matchID) => {
+        console.log(`Leaving: ${matchID}`)
+        await props.handleLeaveMatch("round-1", matchID)
+        console.log(`Finished Leaving: ${matchID}`)
+        console.log(`Exiting: ${matchID}`)
+        await props.handleExitMatch()
+        console.log(`Finished Existing: ${matchID}`)
+    }, {
+        onSuccess: () => {
+            setMatchInfo(null)
+        }
+    })
+
+    if (phase === "enter") {
+        return <Loading centered text="Reload the page." />
+    } else if (phase === "list") {
+        if (match) {
+            return <>
+                <Button onClick={() => leaveMatchMutation.mutate(match.matchID)}>Leave</Button>
+                <Loading centered text={`Waiting for ${freeSeats} more player${freeSeats !== null && freeSeats > 1 ? "s" : ""}...`} />
+            </>
+        }
+        return <>
+            <Text>{props.errorMsg}</Text>
+            <Heading>Play/Simulate</Heading>
+            <Heading size="lg">Create Game</Heading>
+            <Button onClick={() => createMatchMutation.mutate()}>Create Game</Button>
+            <Heading size="lg">Join Game</Heading>
+            <Table>
+                <Thead>
+                    <Tr>
+                        <Th>Host</Th>
+                        <Th>Players</Th>
+                        <Th></Th>
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {matches.map((m, i) => <Tr key={i}>
+                        <Td>{m.matchID || "Unknown"}</Td>
+                        <Td>{m.players.filter(p => p.name).length}/{m.players.length}</Td>
+                        <Td>
+                            <Button size="xs" onClick={() => joinMatchMutation.mutate(m)}>
+                                Join
+                            </Button>
+                        </Td>
+                    </Tr>)}
+                </Tbody>
+            </Table>
+        </>
+    } else if (phase === "play") {
+        if (runningMatch) {
+            return <>
+                <Text>Found: {matches.find(m => m.matchID === runningMatch.matchID)?.gameName}</Text>
+                <Button onClick={async () => {
+                    await props.handleExitMatch()
+                    await leaveMatchMutation.mutate(runningMatch.matchID)
+                }}>Leave</Button>
+                {match?.players.map(p => <Text>{p.name}</Text>)}
+                <runningMatch.app
+                    matchID={runningMatch.matchID}
+                    playerID={runningMatch.playerID}
+                    credentials={runningMatch.credentials}
+                />
+            </>
+        } else {
+            return <Loading centered text={`Connecting...`} />
+        }
     }
+
+    return <Loading centered text={`Connecting...? You really shouldn't be seeing this message...`} />
 }
 
-const Lobby = ({setGameDetails}: {setGameDetails: React.Dispatch<React.SetStateAction<GameDetails | null>>}) => {
-    const createGameMutation = useMutation<GameDetails, unknown, {game: string, playerName: string}, unknown>(async ({game, playerName}) => {
-        const {matchID} = await lobbyClient.createMatch(game, {numPlayers: 2, setupData: {host: "0"}})
-        return {
-            credentials: (await lobbyClient.joinMatch(game, matchID, {
-                playerID: "0",
-                playerName
-            })).playerCredentials,
-            playerID: "0",
-            game,
-            matchID
-        }
-    }, {
-        onSuccess: r => setGameDetails(r)
-    })
+/*
+<div id="lobby-view" style={{ padding: 50 }}>
+    <div className={this._getPhaseVisibility(LobbyPhases.ENTER)}>
+        <LobbyLoginForm
+        key={playerName}
+        playerName={playerName}
+        onEnter={this._enterLobby}
+        />
+    </div>
 
-    return <VStackPageWrapper>
-        <Heading>Play/Simulate</Heading>
-        <Heading size="lg">Create Game</Heading>
-        <FormControl>
-            <FormLabel>Player Name</FormLabel>
-            <Input placeholder="Player Name" />
-        </FormControl>
-        <Button isLoading={createGameMutation.isLoading} onClick={() => createGameMutation.mutate({game: "round-1", playerName: "test"})}>Create Game</Button>
-        <Heading size="lg">Join Game</Heading>
-        <MatchList setGameDetails={setGameDetails} />
-    </VStackPageWrapper>
-}
+    <div className={this._getPhaseVisibility(LobbyPhases.LIST)}>
+        <p>Welcome, {playerName}</p>
 
-const MatchList = ({setGameDetails}: {setGameDetails: React.Dispatch<React.SetStateAction<GameDetails | null>>}) => {
-    const matchesQuery = useQuery<unknown, unknown, LobbyAPI.MatchList["matches"], ["bgio-games", {game: string}]>(["bgio-games", {game: "round-1"}], async ({queryKey: [, {game}]}) => {
-        return (await lobbyClient.listMatches(game, {isGameover: false})).matches
-    }, {
-        staleTime: 2000
-    })
+        <div className="phase-title" id="match-creation">
+        <span>Create a match:</span>
+        <LobbyCreateMatchForm
+            games={gameComponents}
+            createMatch={this._createMatch}
+        />
+        </div>
+        <p className="phase-title">Join a match:</p>
+        <div id="instances">
+        <table>
+            <tbody>
+            {this.renderMatches(this.connection.matches, playerName)}
+            </tbody>
+        </table>
+        <span className="error-msg">
+            {errorMsg}
+            <br />
+        </span>
+        </div>
+        <p className="phase-title">
+        Matches that become empty are automatically deleted.
+        </p>
+    </div>
 
-    const joinGameMutation = useMutation<GameDetails, Error, {match: LobbyAPI.Match, playerName: string}, unknown>(async ({match, playerName}) => {
-        const playerID = match.players.find(p => !p.name)?.id
-        if (playerID === undefined) {
-            throw Error("No seat available in this game.")
-        }
-        return {
-            credentials: (await lobbyClient.joinMatch(match.gameName, match.matchID, {
-                playerID: playerID.toString(),
-                playerName
-            })).playerCredentials,
-            playerID: playerID.toString(),
-            game: match.gameName,
-            matchID: match.matchID
-        }
-    }, {
-        onSuccess: r => setGameDetails(r)
-    })
+    <div className={this._getPhaseVisibility(LobbyPhases.PLAY)}>
+        {runningMatch && (
+        <runningMatch.app
+            matchID={runningMatch.matchID}
+            playerID={runningMatch.playerID}
+            credentials={runningMatch.credentials}
+        />
+        )}
+        <div className="buttons" id="match-exit">
+        <button onClick={this._exitMatch}>Exit match</button>
+        </div>
+    </div>
 
-    if (matchesQuery.isLoading || !matchesQuery.data) {
-        return <Loading />
-    } else if (!matchesQuery.data.length) {
-        return <Text>No games are running.</Text>
-    }
-
-    return <Table>
-        <Thead>
-            <Tr>
-                <Th>Host</Th>
-                <Th>Players</Th>
-                <Th></Th>
-            </Tr>
-        </Thead>
-        <Tbody>
-            {matchesQuery.data.map(m => <Tr key={m.matchID}>
-                <Td>{m.players.find(p => `${p.id}` === m.setupData?.host)?.name || "Unknown"}</Td>
-                <Td>{m.players.filter(p => p.name).length}/{m.players.length}</Td>
-                <Td>
-                    <Button size="xs" onClick={() => joinGameMutation.mutate({match: m, playerName: "test"})} isLoading={joinGameMutation.isLoading}>
-                        Join
-                    </Button>
-                    <Button size="xs" onClick={() => setGameDetails({game: m.gameName, matchID: m.matchID})} isLoading={joinGameMutation.isLoading}>
-                        Spectate
-                    </Button>
-                </Td>
-            </Tr>)}
-        </Tbody>
-    </Table>
-}
+    <div className="buttons" id="lobby-exit">
+        <button onClick={this._exitLobby}>Exit lobby</button>
+    </div>
+</div>
+*/
