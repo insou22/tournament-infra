@@ -11,7 +11,7 @@ import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
 
 export const AllGames = () => {
-    const gamesQuery = useQuery<unknown, AxiosError, Game[], ["games"]>(["games"], getFilteredGamesList, {
+    const gamesQuery = useQuery(["games"], getFilteredGamesList, {
         retry: dontRetryOn404
     })
 
@@ -21,6 +21,6 @@ export const AllGames = () => {
 
     return <VStackPageWrapper>
         <Heading>Recent Games</Heading>
-        <GameList games={allGames} />
+        <GameList games={gamesQuery.data} />
     </VStackPageWrapper>
 }
