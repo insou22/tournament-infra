@@ -1,2 +1,7 @@
-export {Round1Game} from './game';
-export {Round1Board} from './Board';
+import {game} from './game';
+import {Board as board} from './Board';
+
+export default {
+    game,
+    board
+}

@@ -2,9 +2,9 @@ import type {Suit} from "@shared/games/common/cards";
 import type {Ctx, Game, PlayerID} from "boardgame.io"
 import type {BaseSetupData} from "../types";
 
-type Card = {suit: Suit, rank: number}
+export type Card = {suit: Suit, rank: number}
 type PlayerState = {score: number, hand: Card[], played: Card | null}
-type State = {trickStarter: PlayerID, players: Record<PlayerID, PlayerState>};
+export type State = {trickStarter: PlayerID, players: Record<PlayerID, PlayerState>};
 
 const SUITS: Suit[] = ["H", "D", "C", "S"]
 const CARD_NUMBERS = [1, 2, 3, 4, 5]
@@ -14,7 +14,7 @@ interface SetupData extends BaseSetupData {
     startingPlayer?: PlayerID
 }
 
-export const Round1Game: Game<State, Ctx, SetupData> = {
+export const game: Game<State, Ctx, SetupData> = {
     name: "round-1",
     maxPlayers: 2,
     minPlayers: 2,
