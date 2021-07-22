@@ -52,7 +52,7 @@ pub async fn login(
     if status == "true" {
         let cookie = Cookie::build("zid", request.zid.to_string())
             .path("/")
-            // .secure(true)
+            .secure(false)
             .http_only(true)
             .expires(OffsetDateTime::now_utc() + Duration::weeks(6))
             .same_site(SameSite::None) // TODO: Find a solution for this being needed.
