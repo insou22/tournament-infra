@@ -6,7 +6,7 @@ import type {NormalComponents, SpecialComponents} from "react-markdown/src/ast-t
 import remarkGfm from "remark-gfm"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
 //@ts-expect-error TS doesn't know we have markdown import capabilities.
-import spec from "./spec.md"
+import spec from "./spec-markdown.md"
 
 const components: Partial<NormalComponents & SpecialComponents> = {
     h1: props => <Heading size="xl">{props.children}</Heading>,
