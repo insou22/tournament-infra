@@ -1,4 +1,5 @@
 #[macro_use] extern crate rocket;
+use dotenv;
 
 pub mod api;
 pub mod models;
@@ -15,8 +16,10 @@ use api::{
 
 #[launch]
 async fn rocket() -> _ {
-    let database_url = "sqlite://../test.db";
-    let pool = sqlx::SqlitePool::connect(database_url)
+    dotenv::dotenv().ok();
+
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL environment variable should be set (via .env or otherwise).");
+    let pool = sqlx::SqlitePool::connect(&database_url)
         .await
         .expect("Failed to connect to database");
 
