@@ -21,21 +21,31 @@ export const Play = () => {
     return lobbyClient && playerName ? <PlayWrapped lobbyClient={lobbyClient} playerName={playerName} /> : <Loading centered />
 }
 
+const generateName = () => `Anonymous${Math.floor(Math.random() * 100000)}`
+
 const usePlayerName = () => {
     const userInfo = useUserInfo()
     const [playerName, setPlayerName] = React.useState<string | null>(null)
 
     React.useEffect(() => {
         if (userInfo.user) {
-            sessionStorage.setItem("bg-io/lobby/name", userInfo.user.display_name)
+            sessionStorage.setItem("bgio-name", JSON.stringify({name: userInfo.user.display_name, isAnon: false}))
             setPlayerName(userInfo.user.display_name)
         } else {
-            let name = sessionStorage.getItem("bg-io/lobby/name")
-            if (!name || !name.startsWith("Anonymous")) {
-                name = `Anonymous${Math.floor(Math.random() * 100000)}`
-                sessionStorage.setItem("bg-io/lobby/name", name)
+            const json = sessionStorage.getItem("bgio-name")
+            if (json) {
+                try {
+                    let {name, isAnon}: {name: string, isAnon: boolean} = JSON.parse(json)
+                    if (!isAnon) {
+                        throw Error()
+                    }
+                    setPlayerName(name)
+                } catch {
+                    const name = generateName()
+                    sessionStorage.setItem("bgio-name", JSON.stringify({name, isAnon: true}))
+                    setPlayerName(name)
+                }
             }
-            setPlayerName(name)
         }
     }, [userInfo])
 
