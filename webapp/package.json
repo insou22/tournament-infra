@@ -5,7 +5,7 @@
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
-    "server": "node -r ts-node/register -r tsconfig-paths/register src/server/server.ts"
+    "server": "node -r ts-node/register -r tsconfig-paths/register -r dotenv/config src/server/server.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.0.13",
@@ -15,6 +15,7 @@
     "axios": "^0.21.1",
     "boardgame.io": "^0.45.1",
     "date-fns": "^2.22.1",
+    "dotenv": "^10.0.0",
     "framer-motion": "^4.1.17",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

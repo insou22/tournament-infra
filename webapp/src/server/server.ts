@@ -3,7 +3,7 @@ import {game as round1Game} from "@shared/games/round-1/game";
 
 const server = Server({
   games: [round1Game],
-  origins: [Origins.LOCALHOST],
+  origins: [process.env.ORIGIN || Origins.LOCALHOST_IN_DEVELOPMENT],
 });
 
 server.run(8081);
