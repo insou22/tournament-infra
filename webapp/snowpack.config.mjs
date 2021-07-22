@@ -23,7 +23,7 @@ export default {
   ],
   optimize: {
     /* Example: Bundle your final build: */
-    "bundle": true,
+    bundle: false,
   },
   packageOptions: {
     /* ... */
