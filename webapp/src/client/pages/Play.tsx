@@ -10,8 +10,8 @@ import {SocketIO} from "boardgame.io/multiplayer"
 import React from "react"
 import {useMutation, useQuery} from "react-query"
 
-const GAME_SERVER_URL = process.env.SNOWPACK_GAME_SERVER_URL
-const LOBBY_SERVER_URL = process.env.SNOWPACK_LOBBY_SERVER_URL
+const GAME_SERVER_URL = __SNOWPACK_ENV__.SNOWPACK_GAME_SERVER_URL
+const LOBBY_SERVER_URL = __SNOWPACK_ENV__.SNOWPACK_LOBBY_SERVER_URL
 
 export const Play = () => {
     const [lobbyClient, setLobbyClient] = React.useState<LobbyClient | null>(null)

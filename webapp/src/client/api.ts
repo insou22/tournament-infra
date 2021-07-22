@@ -1,7 +1,7 @@
 import axios from "axios"
 
 export const api = axios.create({
-    baseURL: process.env.SNOWPACK_API_URL,
+    baseURL: __SNOWPACK_ENV__.SNOWPACK_API_URL,
     withCredentials: true
 })
 
