@@ -30,8 +30,8 @@ export const Settings = () => {
         onSuccess: () => setCheckUserInfo.off()
     })
 
-    const userProfileMutation = useMutation<UserProfile, AxiosError, {profilePatch: Partial<UserProfilePatch>, username: string}>(async ({profilePatch, username}) => {
-        const res = await api.patch(`/user/${username}`, profilePatch)
+    const userProfileMutation = useMutation<UserProfile, AxiosError, {profilePatch: Partial<UserProfilePatch>, username: string}>(async ({profilePatch}) => {
+        const res = await api.patch(`/user`, profilePatch)
         return res.data
     }, {
         onSuccess: (_data, vars) => {
