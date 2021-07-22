@@ -1,8 +1,7 @@
 import axios from "axios"
 
 export const api = axios.create({
-    //@ts-expect-error Snowpack Env is provided by snowpack to access build-time environment variables.
-    baseURL: __SNOWPACK_ENV__.SNOWPACK_PUBLIC_API_URL,
+    baseURL: import.meta.env.SNOWPACK_PUBLIC_API_URL,
     withCredentials: true
 })
 

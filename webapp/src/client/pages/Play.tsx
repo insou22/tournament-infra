@@ -10,10 +10,8 @@ import {SocketIO} from "boardgame.io/multiplayer"
 import React from "react"
 import {useMutation, useQuery} from "react-query"
 
-//@ts-expect-error Snowpack Env is provided by snowpack to access build-time environment variables.
-const GAME_SERVER_URL = __SNOWPACK_ENV__.SNOWPACK_PUBLIC_GAME_SERVER_URL
-//@ts-expect-error Snowpack Env is provided by snowpack to access build-time environment variables.
-const LOBBY_SERVER_URL = __SNOWPACK_ENV__.SNOWPACK_PUBLIC_LOBBY_SERVER_URL
+const GAME_SERVER_URL = import.meta.env.SNOWPACK_PUBLIC_GAME_SERVER_URL
+const LOBBY_SERVER_URL = import.meta.env.SNOWPACK_PUBLIC_LOBBY_SERVER_URL
 
 export const Play = () => {
     const [lobbyClient, setLobbyClient] = React.useState<LobbyClient | null>(null)
