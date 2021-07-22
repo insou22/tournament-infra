@@ -73,11 +73,9 @@ const useRefState = <T extends any>(initialValue: T): [T, React.Dispatch<React.S
 const PlayWrapped = ({lobbyClient, playerName}: {lobbyClient: LobbyClient, playerName: string}) => {
     const matchesQuery = useQuery("bgio-matches", async () => {
         const games = await lobbyClient.listGames()
-        console.log(games)
         let matches: LobbyAPI.Match[] = []
         for (const game of games) {
             matches = matches.concat((await lobbyClient.listMatches(game)).matches)
-            console.log(matches)
         }
         return matches
     }, {
