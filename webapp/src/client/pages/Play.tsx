@@ -10,12 +10,15 @@ import {SocketIO} from "boardgame.io/multiplayer"
 import React from "react"
 import {useMutation, useQuery} from "react-query"
 
+const GAME_SERVER_URL = process.env.SNOWPACK_GAME_SERVER_URL
+const LOBBY_SERVER_URL = process.env.SNOWPACK_LOBBY_SERVER_URL
+
 export const Play = () => {
     const [lobbyClient, setLobbyClient] = React.useState<LobbyClient | null>(null)
     const playerName = usePlayerName()
 
     React.useEffect(() => {
-        setLobbyClient(new LobbyClient({server: "http://localhost:8081"}))
+        setLobbyClient(new LobbyClient({server: LOBBY_SERVER_URL}))
     }, [])
 
     return lobbyClient && playerName ? <PlayWrapped lobbyClient={lobbyClient} playerName={playerName} /> : <Loading centered />
@@ -131,7 +134,7 @@ const PlayWrapped = ({lobbyClient, playerName}: {lobbyClient: LobbyClient, playe
             gameName: match.gameName,
             client: Client({
                 ...GAMES[match.gameName],
-                multiplayer: SocketIO({server: "http://localhost:8081"})
+                multiplayer: SocketIO({server: GAME_SERVER_URL})
             })
         })
     })
