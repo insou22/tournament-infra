@@ -2,7 +2,7 @@ import {ChevronDownIcon} from "@chakra-ui/icons"
 import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBoolean} from "@chakra-ui/react"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
-import type {Game, Player, Stream, Turn} from "@client/api"
+import {api, Game, Player, Stream, Turn} from "@client/api"
 import {BinaryListItem} from "@client/components/BinaryListItem"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
@@ -13,46 +13,14 @@ import {dontRetryOn404} from "@client/utils/api"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
 
-const getGame: QueryFunction<Game, ["game", string]> = async () => {
-    return marcVsHamish
+const getGame: QueryFunction<Game, ["game", string]> = async ({queryKey: [, id]}) => {
+    //return marcVsHamish
+    return (await api.get(`/game/${id}`)).data
 }
 
 export const GamePage = ({id}: {id: string}) => {
     const [tabIndex, setTabIndex] = React.useState(0)
     const [expanded, setExpanded] = React.useState<number | null>(null)
-
-    const turns: Turn[] = [
-        {
-            username: "HamishWHC",
-            move: "A♣",
-            run_time: 234,
-            streams: {
-                stdin: "input\ninput\ninput",
-                stdout: "output\noutput\noutput",
-                stderr: "error\nerror\nerror"
-            }
-        },
-        {
-            username: "Marc Chee",
-            move: "2♣",
-            run_time: 234,
-            streams: {
-                stdin: "input\ninput\ninput",
-                stdout: "output\noutput\noutput",
-                stderr: "error\nerror\nerror"
-            }
-        },
-        {
-            username: "Marc Chee",
-            move: "5♣",
-            run_time: 234,
-            streams: {
-                stdin: "input\ninput\ninput",
-                stdout: "output\noutput\noutput",
-                stderr: "error\nerror\nerror"
-            }
-        }
-    ]
 
     const gameQuery = useQuery(["game", id], getGame, {
         retry: dontRetryOn404
@@ -84,19 +52,21 @@ export const GamePage = ({id}: {id: string}) => {
                 </Tr>
             </Thead>
             <Tbody>
-                {turns.map((t, i) => <React.Fragment key={i}>
+                {gameQuery.data.turns.map((t, i) => <React.Fragment key={i}>
                     <Tr>
                         <Td border="none">{i + 1}</Td>
                         <Td border="none">{t.username}</Td>
                         <Td border="none">{t.move}</Td>
                         <Td border="none">{t.run_time}ms</Td>
-                        <Td border="none" display="flex" justifyContent="flex-end"><IconButton size="xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} /></Td>
+                        <Td border="none" display="flex" justifyContent="flex-end">
+                            {t.streams && <IconButton size="xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} />}
+                        </Td>
                     </Tr>
                     <Tr height={0}>
                         <Td colSpan={5} p={0}>
-                            <Collapse in={expanded === i} animateOpacity>
+                            {t.streams && <Collapse in={expanded === i} animateOpacity>
                                 <StreamTabs tabIndex={tabIndex} onChange={i => setTabIndex(i)} streams={t.streams} />
-                            </Collapse>
+                            </Collapse>}
                         </Td>
                     </Tr>
                 </React.Fragment>)}

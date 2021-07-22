@@ -5,7 +5,7 @@ import type {Game} from "@client/api"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
 
-export const GameList = ({games, username}: {games: Game[], username?: string}) => {
+export const GameList = ({games, username}: {games: Omit<Game, "turns">[], username?: string}) => {
     if (games.length === 0) {
         return <Text>No games.</Text>
     }
@@ -37,7 +37,7 @@ export const GameList = ({games, username}: {games: Game[], username?: string}) 
     </Grid>
 }
 
-const GameListItem = ({game, username, row}: {game: Game, username?: string, row: number}) => {
+const GameListItem = ({game, username, row}: {game: Omit<Game, "turns">, username?: string, row: number}) => {
     const history = useHistory()
     const firstPlayer = username ? game.players.find(p => p.username === username)! : game.players[0]
     const secondPlayer = username ? game.players.find(p => p.username !== username)! : game.players[1]

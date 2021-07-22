@@ -21,7 +21,8 @@ export const marcVsHamish: Game = {
             elo_change: -13,
             result: "lost"
         }
-    ]
+    ],
+    turns: []
 }
 
 export const marcVsHamish2: Game = {
@@ -43,7 +44,8 @@ export const marcVsHamish2: Game = {
             elo_change: 0,
             result: "drew"
         }
-    ]
+    ],
+    turns: []
 }
 
 export const allGames: Game[] = [

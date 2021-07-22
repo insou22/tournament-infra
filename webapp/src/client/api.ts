@@ -18,6 +18,7 @@ export interface BinaryStats {
     wins: number
     losses: number
     draws: number
+    win_loss: number | null
     win_loss_ratio_percentage_change?: number
     average_turn_run_time_ms: number
     average_turn_run_time_ms_percentage_change?: number
@@ -37,13 +38,8 @@ export interface UserProfile {
 export interface Binary {
     hash: string
     created_at: number
-    compile_result: {
-        status: "success"
-        time_taken_ms: number
-    } | {
-        status: "failure"
-        reason: "timed_out" | "error"
-    } | null
+    compile_result: "not_compiled" | "failed" | "timed_out" | "success",
+    compile_time_ms?: number
     stats_summary: BinaryStats
 }
 
@@ -52,7 +48,7 @@ export type Stream = "stdin" | "stdout" | "stderr"
 export interface Turn {
     username: string,
     move: string,
-    streams: Record<Stream, string>,
+    streams?: Record<Stream, string>,
     run_time: number
 }
 
@@ -72,6 +68,7 @@ export interface Game {
     created_at: number
     completed_at: number | null
     players: Player[]
+    turns: Turn[]
 }
 
 export interface Ranking {

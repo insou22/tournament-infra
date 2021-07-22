@@ -3,7 +3,7 @@ import {Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
 import type {AxiosError} from "axios"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
-import type {Ranking} from "@client/api"
+import {api, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
@@ -11,32 +11,33 @@ import {getOrdinalSuffix} from "@client/utils/stats"
 
 
 const getRankings: QueryFunction<Ranking[], ["rankings"]> = async () => {
-    return [
-        {
-            username: "chicken",
-            display_name: "Chicken",
-            rating: 9001,
-            win_loss: Infinity
-        },
-        {
-            username: "marcchee",
-            display_name: "Marc Chee",
-            rating: 4200,
-            win_loss: 1
-        },
-        {
-            username: "hamishwhc",
-            display_name: "HamishWHC",
-            rating: 1337,
-            win_loss: 6 / 9
-        },
-        {
-            username: "evil-izzy",
-            display_name: "Evil Izzy",
-            rating: 666,
-            win_loss: 0.5
-        }
-    ]
+    return (await api.get("/rankings")).data
+    // return [
+    //     {
+    //         username: "chicken",
+    //         display_name: "Chicken",
+    //         rating: 9001,
+    //         win_loss: Infinity
+    //     },
+    //     {
+    //         username: "marcchee",
+    //         display_name: "Marc Chee",
+    //         rating: 4200,
+    //         win_loss: 1
+    //     },
+    //     {
+    //         username: "hamishwhc",
+    //         display_name: "HamishWHC",
+    //         rating: 1337,
+    //         win_loss: 6 / 9
+    //     },
+    //     {
+    //         username: "evil-izzy",
+    //         display_name: "Evil Izzy",
+    //         rating: 666,
+    //         win_loss: 0.5
+    //     }
+    // ]
 }
 
 export const Rankings = () => {

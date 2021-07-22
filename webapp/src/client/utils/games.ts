@@ -1,8 +1,8 @@
 import type {QueryFunction} from "react-query";
-import type {Game} from "@client/api";
+import {api, Game} from "@client/api";
 import {allGames} from "@client/mocks/games";
 
-export const getFilteredGamesList: QueryFunction<Game[], ["games", {username: string, hash?: string}] | ["games"]> = ({queryKey: [, filter]}) => {
+export const getFilteredGamesList: QueryFunction<Omit<Game, "turns">[], ["games", {username: string, hash?: string}] | ["games"]> = async ({queryKey: [, filter]}) => {
     let url = ""
     if (filter) {
         url += `/user/${filter.username}`
@@ -12,7 +12,5 @@ export const getFilteredGamesList: QueryFunction<Game[], ["games", {username: st
     }
     url += "/games"
 
-    //const res = api.get(url)
-
-    return allGames // res.data
+    return (await api.get(url)).data
 }
