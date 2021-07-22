@@ -1,28 +1,47 @@
 {
-  "include": ["src", "types"],
-  "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
-    "baseUrl": "./",
-    /* paths - import rewriting/resolving */
-    "paths": {
-      // If you configured any Snowpack aliases, add them here.
-      // Add this line to get types for streaming imports (packageOptions.source="remote"):
-      //     "*": [".snowpack/types/*"]
-      // More info: https://www.snowpack.dev/guides/streaming-imports
-      "src": ["./src"]
+    "include": [
+        "src",
+        "types"
+    ],
+    "compilerOptions": {
+        "module": "esnext",
+        "target": "esnext",
+        "moduleResolution": "node",
+        "jsx": "preserve",
+        "baseUrl": "./",
+        /* paths - import rewriting/resolving */
+        "paths": {
+            // If you configured any Snowpack aliases, add them here.
+            // Add this line to get types for streaming imports (packageOptions.source="remote"):
+            //     "*": [".snowpack/types/*"]
+            // More info: https://www.snowpack.dev/guides/streaming-imports
+            "@client/*": [
+                "./src/client/*"
+            ],
+            "@server/*": [
+                "./src/server/*"
+            ],
+            "@shared/*": [
+                "./src/shared/*"
+            ],
+        },
+        /* noEmit - Snowpack builds (emits) files, not tsc. */
+        "noEmit": true,
+        /* Additional Options */
+        "strict": true,
+        "skipLibCheck": true,
+        "types": [
+            "mocha",
+            "snowpack-env"
+        ],
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "importsNotUsedAsValues": "error"
     },
-    /* noEmit - Snowpack builds (emits) files, not tsc. */
-    "noEmit": true,
-    /* Additional Options */
-    "strict": true,
-    "skipLibCheck": true,
-    "types": ["mocha", "snowpack-env"],
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error"
-  }
+    "ts-node": {
+        "compilerOptions": {
+            "module": "CommonJS"
+        }
+    }
 }

@@ -2,7 +2,8 @@
 export default {
   mount: {
     public: { url: '/', static: true },
-    src: { url: '/dist' },
+    "src/client": { url: '/dist/client' },
+    "src/shared": { url: '/dist/shared' },
   },
   plugins: [
     '@snowpack/plugin-react-refresh',
@@ -12,7 +13,7 @@ export default {
       '@snowpack/plugin-typescript',
       {
         /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
-        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {})
       },
     ],
   ],
@@ -34,6 +35,8 @@ export default {
     /* ... */
   },
   alias: {
-    src: './src'
+    "@client": './src/client',
+    "@server": './src/server',
+    "@shared": './src/shared',
   }
 };
