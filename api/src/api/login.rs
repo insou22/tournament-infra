@@ -29,6 +29,7 @@ pub async fn login(
     pool: &rocket::State<sqlx::SqlitePool>,
     request: Json<LoginRequest>,
     cookies: &CookieJar<'_>,
+    config: &rocket::State<crate::config::Config>,
 ) -> Json<LoginResponse> {
     let client = reqwest::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
@@ -50,13 +51,23 @@ pub async fn login(
     let status = status_body.trim();
 
     if status == "true" {
-        let cookie = Cookie::build("zid", request.zid.to_string())
+        let mut cookie_builder = Cookie::build("zid", request.zid.to_string())
             .path("/")
-            .secure(false)
-            .http_only(true)
             .expires(OffsetDateTime::now_utc() + Duration::weeks(6))
-            //.same_site(SameSite::None) // TODO: Find a solution for this being needed.
-            .finish();
+            .http_only(true);
+
+        cookie_builder = match config.inner().cookies.same_site.as_str() {
+            "none" => cookie_builder.same_site(SameSite::None),
+            "lax" => cookie_builder.same_site(SameSite::Lax),
+            "strict" => cookie_builder.same_site(SameSite::Strict),
+            _ => cookie_builder
+        };
+
+        if !config.inner().cookies.secure {
+            cookie_builder = cookie_builder.secure(false);
+        }
+
+        let cookie = cookie_builder.finish();
 
         cookies.add_private(cookie);
 

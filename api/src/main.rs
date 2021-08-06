@@ -1,9 +1,9 @@
 #[macro_use] extern crate rocket;
-use dotenv;
 
 pub mod api;
 pub mod models;
 pub mod cors;
+mod config;
 
 use api::{
     login::*,
@@ -25,6 +25,7 @@ async fn rocket() -> _ {
 
     rocket::build()
         .attach(cors::fairing())
+        .attach(rocket::fairing::AdHoc::config::<config::Config>())
         .manage(pool)
         .mount("/", routes![
             login,
