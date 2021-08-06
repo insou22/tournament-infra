@@ -9,5 +9,6 @@ pub struct Config {
     pub current_tournament_id: i64,
     pub cookies: CookieConfig,
     pub code_upload_directory: String,
-    pub code_hash_length: usize
+    pub code_hash_length: usize,
+    pub webapp_url: String
 }

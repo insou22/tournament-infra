@@ -5,6 +5,8 @@ current_tournament_id = 1
 code_upload_directory = "./uploads"
 code_hash_length = 7
 
+[debug]
+webapp_url = "http://localhost:8080"
 [debug.cookies]
 secure = true
 same_site = "none"
