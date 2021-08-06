@@ -1,7 +1,61 @@
 {
   "db": "SQLite",
-  "0c97feb31201b7054759bdab46a4fca0a5971b0e434f7060abdcab86ee4b2a4d": {
-    "query": "SELECT COUNT(*) AS result FROM games WHERE user_id=? AND tournament_id=? AND points=?",
+  "01ead3d7cb7a7af7712367bcc9e0e4f1546cb695afeb7a581d397d6b4013b31f": {
+    "query": "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? AND compile_result='success' ORDER BY created_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_result",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_time_ms",
+          "ordinal": 6,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "04e0ac7713856005d80154e651f2098a5f61ffa25165b91ddee2c70a7c754c39": {
+    "query": "SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=2",
     "describe": {
       "columns": [
         {
@@ -11,27 +65,45 @@
         }
       ],
       "parameters": {
-        "Right": 3
+        "Right": 1
       },
       "nullable": [
         false
       ]
     }
   },
-  "12d1d87c6763e8aa7f00095f243305c5bddd4937a2eba6c0ba0db7c7e1e3f331": {
-    "query": "SELECT AVG(time_taken_ms) AS \"result!: f64\" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?",
+  "15487cba9138819b85a36d792fbb01f69cbb28143953e2b12e9c4d80bb5de635": {
+    "query": "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.binary_id=? ORDER BY games.completed_at DESC",
     "describe": {
       "columns": [
         {
-          "name": "result!: f64",
+          "name": "id",
           "ordinal": 0,
-          "type_info": "Null"
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
         }
       ],
       "parameters": {
-        "Right": 2
+        "Right": 1
       },
       "nullable": [
+        false,
+        false,
+        false,
         true
       ]
     }
@@ -66,36 +138,80 @@
       ]
     }
   },
-  "4631c019af836577eecfb6657b47619e3c07314222cbd4bd8cc62f6be4eb6340": {
-    "query": "INSERT INTO users (username, display_name) VALUES (?, ?)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Right": 2
-      },
-      "nullable": []
-    }
-  },
-  "5df6d74d52ee14177982c30962c292d83cecf248d3beeeb3d9f3ff155b12f148": {
-    "query": "SELECT AVG(time_taken_ms) AS \"result!: f64\" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.binary_id=? AND games.tournament_id=?",
+  "2748fafa401a4407e7b2d41066977d88d9f206474b1569cedc60222d42170309": {
+    "query": "SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=0",
     "describe": {
       "columns": [
         {
-          "name": "result!: f64",
+          "name": "result",
           "ordinal": 0,
-          "type_info": "Null"
+          "type_info": "Int"
         }
       ],
       "parameters": {
-        "Right": 2
+        "Right": 1
       },
       "nullable": [
+        false
+      ]
+    }
+  },
+  "2ddc9a2959aa4c32dd5e90a712a8ed8601d2356c4f89f1d877e7493042e34618": {
+    "query": "SELECT * FROM games ORDER BY games.completed_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 0
+      },
+      "nullable": [
+        false,
+        false,
+        false,
         true
       ]
     }
   },
-  "bac3da15bc979581035c8c7c1e85d38a5730a4c8a2a049ebdfbf2def1ce05031": {
-    "query": "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC LIMIT 1",
+  "368fe65fb87497cadd679ee14d493fe9e536801f969b2e8abf3cbe8f1eed288f": {
+    "query": "SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=1",
+    "describe": {
+      "columns": [
+        {
+          "name": "result",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "391db404f7510d05b9a75545f9942f32339eadfb43de269cc1ac94f14a989d33": {
+    "query": "SELECT binaries.* FROM binaries INNER JOIN users ON users.id=binaries.user_id WHERE users.username=? AND hash=?",
     "describe": {
       "columns": [
         {
@@ -124,14 +240,14 @@
           "type_info": "Text"
         },
         {
-          "name": "time_taken_ms",
+          "name": "compile_result",
           "ordinal": 5,
-          "type_info": "Int64"
+          "type_info": "Text"
         },
         {
-          "name": "timed_out",
+          "name": "compile_time_ms",
           "ordinal": 6,
-          "type_info": "Bool"
+          "type_info": "Int64"
         }
       ],
       "parameters": {
@@ -143,13 +259,13 @@
         false,
         false,
         false,
-        true,
+        false,
         true
       ]
     }
   },
-  "c95ec90715a3d63c0598bd4bb5fe824f8e669d1ed235882df4372590c32067e9": {
-    "query": "SELECT COUNT(*) AS result FROM games WHERE binary_id=? AND tournament_id=? AND points=?",
+  "3a3a9bdca77d156bbab036bce958c8ad69260d42c7ddd08e5afd06e5aab1ef79": {
+    "query": "SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?",
     "describe": {
       "columns": [
         {
@@ -163,6 +279,220 @@
       },
       "nullable": [
         false
+      ]
+    }
+  },
+  "4631c019af836577eecfb6657b47619e3c07314222cbd4bd8cc62f6be4eb6340": {
+    "query": "INSERT INTO users (username, display_name) VALUES (?, ?)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": []
+    }
+  },
+  "46f5f62f0b50b25ffc762511ee1afdcf388c76227821bdca7c113f017e867c44": {
+    "query": "SELECT\n                users.id AS user_id,\n                username,\n                action,\n                run_time_ms,\n                stdin,\n                stdout,\n                stderr\n            FROM turns\n            JOIN players ON turns.player_id=players.id\n            JOIN users ON players.user_id=users.id\n            WHERE turns.game_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "action",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "run_time_ms",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "stdin",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "stdout",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "stderr",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "6f8afee96312d6ae8ed477ea2469b6df7c0039f9dd1cb68339f317b22c9f2e2a": {
+    "query": "SELECT username, display_name, rating FROM rankings INNER JOIN users ON rankings.user_id=users.id WHERE tournament_id=? ORDER BY rating DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "rating",
+          "ordinal": 2,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "7f7cf767fd030b7661b693095d3d412ec9894fc6a9c8ccac5d23dd9ea18adfe8": {
+    "query": "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? ORDER BY games.completed_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "86e8c16932f28e3c0576dadf332633886558aac23b1918f32b82af3bd3489c82": {
+    "query": "SELECT\n                binaries.hash AS binary_hash,\n                users.username AS username,\n                users.display_name AS display_name,\n                players.rating_before_game AS rating_before_game,\n                players.rating_change AS rating_change,\n                CASE players.points\n                    WHEN 2 THEN 'won'\n                    WHEN 1 THEN 'drew'\n                    WHEN 0 THEN 'lost'\n                END AS \"result?: String\"\n            FROM players\n            JOIN users ON players.user_id=users.id\n            JOIN binaries ON players.binary_id=binaries.id\n            WHERE players.game_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "binary_hash",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "rating_before_game",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "rating_change",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "result?: String",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    }
+  },
+  "96fcec3f7550972f6f6716a558b01d8cbdd5f1c214a47bd523bdae04a4f0e178": {
+    "query": "SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "result",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "ab1ae5fc2f72aba37b554f121aa3fd02ef33e97a304a6f6688e25f7352fce9f3": {
+    "query": "SELECT AVG(run_time_ms) AS \"result!: f64\" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "result!: f64",
+          "ordinal": 0,
+          "type_info": "Null"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        true
       ]
     }
   },
@@ -186,7 +516,7 @@
           "type_info": "Int64"
         },
         {
-          "name": "elo",
+          "name": "rating",
           "ordinal": 3,
           "type_info": "Int64"
         }
@@ -202,21 +532,121 @@
       ]
     }
   },
-  "f2a9115870176de9a5168cddfcb028cda51dd1146f84db76c5cfde2fe64aa202": {
-    "query": "SELECT COUNT(*) + 1 AS result FROM rankings WHERE elo > ? AND tournament_id=?",
+  "d3c08be078ed98bc0fd4e80dd10a736a849a0d3b87e341ea714937df42c00dc0": {
+    "query": "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC",
     "describe": {
       "columns": [
         {
-          "name": "result",
+          "name": "id",
           "ordinal": 0,
-          "type_info": "Int"
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_result",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_time_ms",
+          "ordinal": 6,
+          "type_info": "Int64"
         }
       ],
       "parameters": {
         "Right": 2
       },
       "nullable": [
-        false
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "d9b2b0f3e7a42fe031d70daf3e25ddc8fad7507b6b4182940d2ea5762b9bc6f0": {
+    "query": "UPDATE users SET display_name=? WHERE id=?",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": []
+    }
+  },
+  "ef0566b4ed839a03a04acd1a7e37c5303362d195073e0552fc4486fe6eb3157b": {
+    "query": "SELECT AVG(run_time_ms) AS \"result!: f64\" FROM turns JOIN players ON turns.player_id=players.id WHERE players.binary_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "result!: f64",
+          "ordinal": 0,
+          "type_info": "Null"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        true
+      ]
+    }
+  },
+  "f654c9e7db9fdcaa52884b3d22b122630ffe85ffb29e21d799b27b1d58885b42": {
+    "query": "SELECT * FROM games WHERE id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        true
       ]
     }
   }
