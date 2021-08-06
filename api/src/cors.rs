@@ -1,7 +1,8 @@
 use rocket::{
     fairing::{Fairing, Info, Kind},
-    http::{Header},
-    Request, Response
+    http::{Header, Method, Status},
+    Request, Response,
+    Data
 };
 
 pub fn fairing() -> Cors {
@@ -19,7 +20,11 @@ impl Fairing for Cors {
         }
     }
 
-    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+    async fn on_request(&self, _req: &mut Request<'_>, _data: &mut Data<'_>) {
+
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
         // TODO: Revisit CORS down when we have a domain
         response.set_header(Header::new(
             "Access-Control-Allow-Origin",
@@ -27,9 +32,13 @@ impl Fairing for Cors {
         ));
         response.set_header(Header::new(
             "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
+            "GET, POST, PUT, PATCH, OPTIONS",
         ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+
+        if request.method() == Method::Options && request.route().is_none() {
+            response.set_status(Status::NoContent);
+        }
     }
 }

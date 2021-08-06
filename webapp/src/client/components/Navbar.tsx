@@ -7,6 +7,7 @@ import {useHistory, useRouteMatch} from "react-router-dom"
 import {useUserInfo} from "@client/hooks/useUserInfo"
 import {ButtonLink} from "./ButtonLink"
 import {FileUpload} from "./FileUpload"
+import {CodeUploadModal} from "./CodeUploadModal"
 
 export const Navbar = () => {
     const {user, isLoading} = useUserInfo()
@@ -19,7 +20,7 @@ export const Navbar = () => {
     } else if (user) {
         userControls = <HStack spacing={2}>
             <VStack alignItems="flex-end" spacing={1}>
-                <ButtonLink size="md" href="/profile">{user.display_name}</ButtonLink>
+                <ButtonLink size="md" href={`/user/${user.username}`}>{user.display_name}</ButtonLink>
                 <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
             </VStack>
             <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />
@@ -41,7 +42,7 @@ export const Navbar = () => {
                 <NavbarLink text="Rankings" path="/rankings" exact={false} />
                 <NavbarLink text="Games" path="/games" exact={false} />
                 <NavbarLink text="Play" path="/play" exact={false} />
-                <Button leftIcon={<PlusSquareIcon />} variant="ghost" onClick={disclosure.onOpen}>Upload Code</Button>
+                {user && <Button leftIcon={<PlusSquareIcon />} variant="ghost" onClick={disclosure.onOpen}>Upload Code</Button>}
             </HStack>
             {userControls}
         </HStack>
@@ -61,28 +62,4 @@ const NavbarIconLink = ({path, exact, icon, "aria-label": label, ...rest}: {"ari
     const match = useRouteMatch({path, exact})
 
     return <IconButton rounded="md" aria-label={label} onClick={() => history.push(path)} variant={match ? "solid" : "ghost"} icon={icon} {...rest} />
-}
-
-const CodeUploadModal = ({isOpen, onClose}: {isOpen: boolean, onClose: () => void}) => {
-    const [file, setFile] = React.useState<File | null>(null)
-
-    return <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-            <ModalHeader>Code Upload</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-                <HStack spacing={4}>
-                    <FileUpload acceptedFileTypes=".c" onChange={setFile} />
-                    <Text>{file ? file.name : "No File Selected"}</Text>
-                </HStack>
-            </ModalBody>
-
-            <ModalFooter>
-                <Button colorScheme="green" mr={3} onClick={onClose} disabled={!file}>
-                    Upload
-                </Button>
-            </ModalFooter>
-        </ModalContent>
-    </Modal>
 }

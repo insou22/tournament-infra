@@ -31,7 +31,7 @@ export const Login = () => {
             <Heading>Login</Heading>
             {mutation.isError && mutation.error && <Alert status="error">
                 <AlertIcon />
-                <AlertTitle mr={2}>Login Failed: </AlertTitle>
+                <AlertTitle mr={2}>Login Failed:</AlertTitle>
                 <AlertDescription>{mutation.error.message}</AlertDescription>
             </Alert>}
             <Input placeholder="zID" type="text" value={username} onChange={(e) => setUsername(e.target.value)} disabled={mutation.isLoading} />

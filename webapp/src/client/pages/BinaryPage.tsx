@@ -13,6 +13,7 @@ import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
 import {formatTimestamp} from "@client/utils/time"
+import {BinaryStatusAlert} from "@client/components/BinaryStatusAlert"
 
 export const BinaryPage = ({username, hash}: {username: string, hash: string}) => {
     const profileQuery = useUserProfile(username)
@@ -26,12 +27,9 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
 
     let compileAlert = null;
 
-    if (binaryQuery.data.compile_result === "not_compiled") {
-        compileAlert = <Alert status="info">
-            <AlertIcon />
-            <AlertTitle mr={2}>Binary is still being compiled.</AlertTitle>
-        </Alert>
-    } else if (binaryQuery.data.compile_result === "success") {
+    if (binaryQuery.data.compile_result !== "success") {
+        compileAlert = <BinaryStatusAlert result={binaryQuery.data.compile_result}/>
+    } else {
         compileAlert = <>
             {binaryQuery.data.compile_time_ms && <HStack>
                 <Text fontWeight="bold">Compile Time:</Text>
@@ -41,12 +39,6 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
             <Heading size="lg">Latest Games</Heading>
             <BinaryGameList username={username} hash={hash} />
         </>
-    } else {
-        compileAlert = <Alert status="error">
-            <AlertIcon />
-            <AlertTitle mr={2}>Binary failed to compile!</AlertTitle>
-            <AlertDescription>This binary did not compile successfully ({binaryQuery.data.compile_result === "failed" ? "an error occurred" : "timed out"}), so will not be used in games.</AlertDescription>
-        </Alert>
     }
 
     return <VStackPageWrapper>

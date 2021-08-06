@@ -14,7 +14,7 @@ export const BinaryStatsSummary = ({stats}: {stats: BinaryStats}) => {
         },
         {
             label: "W/L",
-            value: (stats.wins / stats.losses).toFixed(2),
+            value: (stats.win_loss || Infinity).toFixed(2),
             change: stats.win_loss_ratio_percentage_change
         },
         {

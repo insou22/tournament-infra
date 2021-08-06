@@ -35,10 +35,11 @@ export interface UserProfile {
     current_binary: Binary | null
 }
 
+export type CompileResult = "not_compiled" | "failed" | "timed_out" | "success"
 export interface Binary {
     hash: string
     created_at: number
-    compile_result: "not_compiled" | "failed" | "timed_out" | "success",
+    compile_result: CompileResult,
     compile_time_ms?: number
     stats_summary: BinaryStats
 }

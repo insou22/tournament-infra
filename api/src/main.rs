@@ -39,6 +39,7 @@ async fn rocket() -> _ {
             get_games,
             get_user_games,
             get_binary_games,
-            get_game
+            get_game,
+            put_user_binary
         ])
 }

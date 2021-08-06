@@ -14,7 +14,7 @@ export const StatsSummary = ({stats}: {
             {stats.map((stat, i) => <Stat key={i}>
                 <StatLabel>{stat.label}</StatLabel>
                 <StatNumber>{stat.value}</StatNumber>
-                {stat.change !== undefined && <StatHelpText>
+                {stat.change !== undefined && stat.change !== null && <StatHelpText>
                     <StatArrow type={stat.change < 0 ? "decrease" : "increase"} />
                     {stat.change.toFixed(2)}%
                 </StatHelpText>}

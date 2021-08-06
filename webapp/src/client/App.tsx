@@ -39,7 +39,7 @@ function App({}: AppProps) {
                     <Play />
                 </Route>
                 <Route path="/profile" exact>
-                    {isLoading ? <Loading /> : (user ? <Profile username={user.username} /> : <Redirect to="/login" />)}
+                    {isLoading ? <Loading /> : (user ? <Redirect to={`/user/${user.username}`} /> : <Redirect to="/login" />)}
                 </Route>
                 <Route path="/user/:username" exact render={({match: {params: {username}}}) => <Profile username={username} />} />
                 <Route path="/user/:username/games" exact render={({match: {params: {username}}}) => <PlayerGames username={username} />} />

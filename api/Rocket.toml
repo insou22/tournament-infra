@@ -2,6 +2,8 @@
 address = "0.0.0.0"
 port = 8000
 current_tournament_id = 1
+code_upload_directory = "./uploads"
+code_hash_length = 7
 
 [debug.cookies]
 secure = true
