@@ -29,18 +29,18 @@ pub async fn update_user_profile(
     user: User,
     profile_patch: Json<ProfileUpdate>,
 ) -> Json<UserProfile> {
-    sqlx::query!(
-        "UPDATE users SET display_name=? WHERE id=?",
+    let user = sqlx::query_as!(
+        User,
+        "UPDATE users SET display_name=? WHERE id=?; SELECT * FROM users WHERE id=?",
         profile_patch.display_name,
+        user.id,
         user.id
     )
-    .execute(pool.inner())
+    .fetch_one(pool.inner())
     .await
     .expect("profile update failed");
 
-    // TODO: Investigate why the update is not immediately reflected in the user profile select.
-    let mut profile = user.get_profile(1, pool.inner()).await;
-    profile.user.display_name = profile_patch.display_name.clone();
+    let profile = user.get_profile(1, pool.inner()).await;
 
     Json(profile)
 }
