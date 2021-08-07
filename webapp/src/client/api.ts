@@ -10,7 +10,8 @@ export interface TournamentStats {
     wins: number
     losses: number
     draws: number
-    elo: number
+    rating: number
+    win_loss: number | null
     average_turn_run_time_ms: number
 }
 
@@ -46,11 +47,13 @@ export interface Binary {
 
 export type Stream = "stdin" | "stdout" | "stderr"
 
+export type TurnState = "legal" | "illegal" | "invalid" | "timed_out"
 export interface Turn {
     username: string,
-    move: string,
+    action: string,
     streams?: Record<Stream, string>,
-    run_time: number
+    state?: TurnState,
+    run_time_ms: number
 }
 
 export type PlayerResult = "won" | "lost" | "drew"
@@ -59,8 +62,8 @@ export interface Player {
     binary_hash: string
     username: string,
     display_name: string
-    elo_before_game: number,
-    elo_change: number
+    rating_before_game: number,
+    rating_change: number
     result: PlayerResult
 }
 

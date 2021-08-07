@@ -112,9 +112,9 @@ impl User {
             Some(ranking) => {
                 let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
                     sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?", ranking.rating, tournament_id).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 2).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 1).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?", self.id, tournament_id, 0).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2", self.id, tournament_id).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0", self.id, tournament_id).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1", self.id, tournament_id).fetch_one(pool),
                     sqlx::query!(r#"SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
                 ).expect("a tournament stats fetch failed");
 

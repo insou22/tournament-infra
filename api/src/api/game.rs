@@ -59,8 +59,9 @@ pub async fn get_user_games(
     let mut games_with_players: Vec<GameResponse> = vec![];
 
     for game in games {
+        let players = game.get_players(pool.inner()).await;
         games_with_players.push(GameResponse {
-            players: game.get_players(pool.inner()).await,
+            players,
             game,
             turns: None,
         })
@@ -133,6 +134,7 @@ pub async fn get_game(
             for mut turn in &mut turns {
                 if user.is_none() || user.as_ref().filter(|u| u.id == turn.user_id).is_none() {
                     turn.streams = None;
+                    turn.state = None;
                 }
             }
 

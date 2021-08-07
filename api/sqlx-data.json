@@ -210,6 +210,66 @@
       ]
     }
   },
+  "2c1027b8353b9811a21d48cab890364065c881c6eacaa11f78983dcabfe962fa": {
+    "query": "SELECT\n                users.id AS user_id,\n                username,\n                action,\n                state,\n                run_time_ms,\n                stdin,\n                stdout,\n                stderr\n            FROM turns\n            JOIN players ON turns.player_id=players.id\n            JOIN users ON players.user_id=users.id\n            WHERE turns.game_id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "action",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "state",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "run_time_ms",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "stdin",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "stdout",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "stderr",
+          "ordinal": 7,
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "368fe65fb87497cadd679ee14d493fe9e536801f969b2e8abf3cbe8f1eed288f": {
     "query": "SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=1",
     "describe": {
@@ -282,24 +342,6 @@
       ]
     }
   },
-  "3a3a9bdca77d156bbab036bce958c8ad69260d42c7ddd08e5afd06e5aab1ef79": {
-    "query": "SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=?",
-    "describe": {
-      "columns": [
-        {
-          "name": "result",
-          "ordinal": 0,
-          "type_info": "Int"
-        }
-      ],
-      "parameters": {
-        "Right": 3
-      },
-      "nullable": [
-        false
-      ]
-    }
-  },
   "4631c019af836577eecfb6657b47619e3c07314222cbd4bd8cc62f6be4eb6340": {
     "query": "INSERT INTO users (username, display_name) VALUES (?, ?)",
     "describe": {
@@ -308,60 +350,6 @@
         "Right": 2
       },
       "nullable": []
-    }
-  },
-  "46f5f62f0b50b25ffc762511ee1afdcf388c76227821bdca7c113f017e867c44": {
-    "query": "SELECT\n                users.id AS user_id,\n                username,\n                action,\n                run_time_ms,\n                stdin,\n                stdout,\n                stderr\n            FROM turns\n            JOIN players ON turns.player_id=players.id\n            JOIN users ON players.user_id=users.id\n            WHERE turns.game_id=?",
-    "describe": {
-      "columns": [
-        {
-          "name": "user_id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "username",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "action",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "run_time_ms",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "stdin",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "stdout",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "stderr",
-          "ordinal": 6,
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Right": 1
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   },
   "5b0acd1e7faf65f274391d9ba593594e37256f1d5b62e7b25d9d9fd5db40ca7e": {
@@ -391,6 +379,60 @@
         false,
         false,
         false
+      ]
+    }
+  },
+  "622df077ef4f26beea4fbbf5e5fa01c9c864b4d8854e1fbbd7ba8c8647403e7f": {
+    "query": "SELECT * FROM binaries WHERE created_at<? AND user_id=? AND tournament_id=? AND compile_result='success'",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_result",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_time_ms",
+          "ordinal": 6,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 3
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
       ]
     }
   },
@@ -544,6 +586,42 @@
       ]
     }
   },
+  "bbfe7d9feda28839f749ba3e1b7ad5ae6c6e60736bd0578f855f8f5990f7d46c": {
+    "query": "SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2",
+    "describe": {
+      "columns": [
+        {
+          "name": "result",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "c470b0dd69906f130f661b9721371914c9055390b9a98ae84a7f037190484cc8": {
+    "query": "SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0",
+    "describe": {
+      "columns": [
+        {
+          "name": "result",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
   "cec73dd45b31b982059f002a3216430ea61c31d869bb1acb21fb935ada827afb": {
     "query": "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? AND games.tournament_id=? ORDER BY games.completed_at DESC",
     "describe": {
@@ -577,6 +655,24 @@
         false,
         false,
         true
+      ]
+    }
+  },
+  "cf9b52bf202d1fcf2bd4c6baf57386d117b89e3e75a96410534084e19d60fe56": {
+    "query": "SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1",
+    "describe": {
+      "columns": [
+        {
+          "name": "result",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false
       ]
     }
   },

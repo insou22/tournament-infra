@@ -10,15 +10,15 @@ export const marcVsHamish: Game = {
         {
             ...marcchee.userProfile,
             binary_hash: marcchee.binaries[2].hash,
-            elo_before_game: 2376,
-            elo_change: 23,
+            rating_before_game: 2376,
+            rating_change: 23,
             result: "won"
         },
         {
             ...hamishwhc.userProfile,
             binary_hash: hamishwhc.binaries[2].hash,
-            elo_before_game: 1168,
-            elo_change: -13,
+            rating_before_game: 1168,
+            rating_change: -13,
             result: "lost"
         }
     ],
@@ -33,15 +33,15 @@ export const marcVsHamish2: Game = {
         {
             ...hamishwhc.userProfile,
             binary_hash: hamishwhc.binaries[1].hash,
-            elo_before_game: 2324,
-            elo_change: 0,
+            rating_before_game: 2324,
+            rating_change: 0,
             result: "drew"
         },
         {
             ...marcchee.userProfile,
             binary_hash: marcchee.binaries[0].hash,
-            elo_before_game: 1237,
-            elo_change: 0,
+            rating_before_game: 1237,
+            rating_change: 0,
             result: "drew"
         }
     ],

@@ -14,6 +14,8 @@ pub struct Turn {
     pub username: String,
     pub action: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub state: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub streams: Option<TurnStreams>,
     pub run_time_ms: i64,
 }
@@ -87,6 +89,7 @@ impl Game {
                 users.id AS user_id,
                 username,
                 action,
+                state,
                 run_time_ms,
                 stdin,
                 stdout,
@@ -106,6 +109,7 @@ impl Game {
                 username: turn_record.username,
                 action: turn_record.action,
                 run_time_ms: turn_record.run_time_ms,
+                state: Some(turn_record.state),
                 streams: Some(TurnStreams {
                     stdin: turn_record.stdin,
                     stdout: turn_record.stdout,

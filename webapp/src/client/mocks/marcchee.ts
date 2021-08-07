@@ -52,8 +52,9 @@ export const userProfile: UserProfile = {
         ranking: 4,
         wins: 247,
         losses: 194,
+        win_loss: 247 / 194,
         draws: 34,
-        elo: 1534,
+        rating: 1534,
         average_turn_run_time_ms: 623
     },
     current_binary: binaries[0]

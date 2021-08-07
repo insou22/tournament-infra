@@ -56,8 +56,8 @@ export const GamePage = ({id}: {id: string}) => {
                     <Tr>
                         <Td border="none">{i + 1}</Td>
                         <Td border="none">{t.username}</Td>
-                        <Td border="none">{t.move}</Td>
-                        <Td border="none">{t.run_time}ms</Td>
+                        <Td border="none">{t.action}</Td>
+                        <Td border="none">{t.run_time_ms}ms</Td>
                         <Td border="none" display="flex" justifyContent="flex-end">
                             {t.streams && <IconButton size="xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} />}
                         </Td>
@@ -83,14 +83,14 @@ const PlayerListItem = ({player}: {player: Player}) => {
     return <>
         <HStack>
             <ButtonLink href={`/user/${player.username}`}>
-                {player.display_name} ({player.elo_before_game})
+                {player.display_name} ({player.rating_before_game})
             </ButtonLink>
             <Badge variant="solid" colorScheme={resultProps[player.result].color}>
                 {resultProps[player.result].label}
             </Badge>
             <Badge colorScheme={resultProps[player.result].color}>
-                {player.elo_change > 0 && "+"}
-                {player.elo_change}
+                {player.rating_change > 0 && "+"}
+                {player.rating_change}
             </Badge>
             <Button size="xs" onClick={setShow.toggle}>
                 {show ? "Hide" : "Show"} Binary Details

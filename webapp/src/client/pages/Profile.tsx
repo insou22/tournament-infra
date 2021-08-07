@@ -75,7 +75,7 @@ const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
         },
         {
             label: "Rating",
-            value: stats.elo
+            value: stats.rating
         },
         {
             label: "Wins",
@@ -87,7 +87,7 @@ const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
         },
         {
             label: "W/L",
-            value: (stats.wins / stats.losses).toFixed(2)
+            value: (stats.win_loss ?? Infinity).toFixed(2)
         },
         {
             label: "Draws",
