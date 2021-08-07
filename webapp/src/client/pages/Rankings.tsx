@@ -55,7 +55,7 @@ export const Rankings = () => {
                     <Th>Ranking</Th>
                     <Th>Player</Th>
                     <Th>Rating</Th>
-                    <Th>W/L</Th>
+                    {/* <Th>W/L</Th> */}
                 </Tr>
             </Thead>
             <Tbody>
@@ -63,7 +63,7 @@ export const Rankings = () => {
                     <Td>{i+1}{getOrdinalSuffix(i+1)}</Td>
                     <Td><ButtonLink href={`/user/${r.username}`} size="inherit">{r.display_name}</ButtonLink></Td>
                     <Td>{r.rating}</Td>
-                    <Td>{r.win_loss.toFixed(2)}</Td>
+                    {/* <Td>{r.win_loss.toFixed(2)}</Td> */}
                 </Tr>)}
             </Tbody>
         </Table>
