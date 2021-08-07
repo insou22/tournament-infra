@@ -108,6 +108,60 @@
       ]
     }
   },
+  "2297cc9589aa36ad6c8022023b84f61ddb27bb5abba675b95b7b8c5ddb7b72ac": {
+    "query": "INSERT INTO binaries (\n            user_id, tournament_id, created_at, hash, compile_result\n        ) VALUES (\n            ?, ?, ?, ?, ?\n        );\n        SELECT * FROM binaries WHERE user_id=? AND hash=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_result",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_time_ms",
+          "ordinal": 6,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 7
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
   "2353af4c7379407f93ee7657c3ac031dc500a60d9847f4a08daece4bf7474d61": {
     "query": "SELECT * FROM users WHERE username=?",
     "describe": {
@@ -340,6 +394,36 @@
         false,
         false,
         false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "5b0acd1e7faf65f274391d9ba593594e37256f1d5b62e7b25d9d9fd5db40ca7e": {
+    "query": "UPDATE users SET display_name=? WHERE id=?; SELECT * FROM users WHERE id=?",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Right": 3
+      },
+      "nullable": [
         false,
         false,
         false
@@ -584,16 +668,6 @@
         false,
         true
       ]
-    }
-  },
-  "d9b2b0f3e7a42fe031d70daf3e25ddc8fad7507b6b4182940d2ea5762b9bc6f0": {
-    "query": "UPDATE users SET display_name=? WHERE id=?",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Right": 2
-      },
-      "nullable": []
     }
   },
   "ef0566b4ed839a03a04acd1a7e37c5303362d195073e0552fc4486fe6eb3157b": {
