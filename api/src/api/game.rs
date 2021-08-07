@@ -6,12 +6,18 @@ use crate::models::{
 use rocket::serde::json::Json;
 
 #[get("/games")]
-pub async fn get_games(pool: &rocket::State<sqlx::SqlitePool>) -> Json<Vec<GameResponse>> {
-    let games: Vec<Game> =
-        sqlx::query_as!(Game, "SELECT * FROM games ORDER BY games.completed_at DESC")
-            .fetch_all(pool.inner())
-            .await
-            .expect("game fetch all failed");
+pub async fn get_games(
+    pool: &rocket::State<sqlx::SqlitePool>,
+    config: &rocket::State<crate::config::Config>,
+) -> Json<Vec<GameResponse>> {
+    let games: Vec<Game> = sqlx::query_as!(
+        Game,
+        "SELECT * FROM games WHERE tournament_id=? ORDER BY games.completed_at DESC",
+        config.inner().current_tournament_id
+    )
+    .fetch_all(pool.inner())
+    .await
+    .expect("game fetch all failed");
 
     let mut games_with_players: Vec<GameResponse> = vec![];
 
@@ -30,6 +36,7 @@ pub async fn get_games(pool: &rocket::State<sqlx::SqlitePool>) -> Json<Vec<GameR
 pub async fn get_user_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
+    config: &rocket::State<crate::config::Config>,
 ) -> Option<Json<Vec<GameResponse>>> {
     let user = User::get_by_username(username, pool.inner()).await;
 
@@ -41,8 +48,9 @@ pub async fn get_user_games(
 
     let games: Vec<Game> = sqlx::query_as!(
         Game,
-        "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? ORDER BY games.completed_at DESC",
-        user.id
+        "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? AND games.tournament_id=? ORDER BY games.completed_at DESC",
+        user.id,
+        config.inner().current_tournament_id
     )
     .fetch_all(pool.inner())
     .await
@@ -66,7 +74,7 @@ pub async fn get_binary_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
-    hash: &str,
+    hash: &str, 
 ) -> Option<Json<Vec<GameResponse>>> {
     let binary = Binary::get_by_username_and_hash(username, hash, pool.inner()).await;
 
@@ -76,7 +84,9 @@ pub async fn get_binary_games(
 
     let binary = binary.unwrap();
 
-    if binary.compile_result != "success" && current_user.filter(|cu| cu.username == username).is_none() {
+    if binary.compile_result != "success"
+        && current_user.filter(|cu| cu.username == username).is_none()
+    {
         return None;
     }
 
@@ -113,7 +123,6 @@ pub async fn get_game(
     if game.is_none() {
         return None;
     }
-    
     let game = game.unwrap();
 
     Some(Json(GameResponse {
@@ -129,6 +138,6 @@ pub async fn get_game(
 
             Some(turns)
         },
-        game
+        game,
     }))
 }

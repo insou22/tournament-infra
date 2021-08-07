@@ -3,17 +3,28 @@ use rocket::serde::json::Json;
 use serde::Deserialize;
 
 #[get("/userinfo")]
-pub async fn get_userinfo(pool: &rocket::State<sqlx::SqlitePool>, user: User) -> Json<UserInfo> {
-    Json(user.get_userinfo(pool.inner()).await)
+pub async fn get_userinfo(
+    pool: &rocket::State<sqlx::SqlitePool>,
+    user: User,
+    config: &rocket::State<crate::config::Config>,
+) -> Json<UserInfo> {
+    Json(
+        user.get_userinfo(config.inner().current_tournament_id, pool.inner())
+            .await,
+    )
 }
 
 #[get("/user/<username>")]
 pub async fn get_user_profile(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
+    config: &rocket::State<crate::config::Config>,
 ) -> Option<Json<UserProfile>> {
     match User::get_by_username(username, pool.inner()).await {
-        Some(user) => Some(Json(user.get_profile(1, pool.inner()).await)),
+        Some(user) => Some(Json(
+            user.get_profile(config.inner().current_tournament_id, pool.inner())
+                .await,
+        )),
         None => None,
     }
 }
@@ -28,6 +39,7 @@ pub async fn update_user_profile(
     pool: &rocket::State<sqlx::SqlitePool>,
     user: User,
     profile_patch: Json<ProfileUpdate>,
+    config: &rocket::State<crate::config::Config>,
 ) -> Json<UserProfile> {
     let user = sqlx::query_as!(
         User,
@@ -40,7 +52,7 @@ pub async fn update_user_profile(
     .await
     .expect("profile update failed");
 
-    let profile = user.get_profile(1, pool.inner()).await;
+    let profile = user.get_profile(config.inner().current_tournament_id, pool.inner()).await;
 
     Json(profile)
 }

@@ -11,6 +11,7 @@ pub async fn get_user_binaries(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
+    config: &rocket::State<crate::config::Config>,
 ) -> Option<Json<Vec<BinaryResponse>>> {
     match User::get_by_username(username, pool.inner()).await {
         Some(user) => Some(Json({
@@ -18,7 +19,7 @@ pub async fn get_user_binaries(
                 Binary,
                 "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC",
                 user.id,
-                1
+                config.inner().current_tournament_id
             )
             .fetch_all(pool.inner())
             .await
@@ -90,7 +91,11 @@ fn hash_code(upload_time: i64, file_path: &std::path::Path) -> String {
     data_encoding::HEXLOWER.encode(context.finish().as_ref())
 }
 
-#[put("/binaries", format = "application/x-www-form-urlencoded", data = "<file>")]
+#[put(
+    "/binaries",
+    format = "application/x-www-form-urlencoded",
+    data = "<file>"
+)]
 pub async fn put_user_binary(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: User,

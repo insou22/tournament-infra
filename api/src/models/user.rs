@@ -48,12 +48,12 @@ impl User {
             .expect("optional user fetch failed")
     }
 
-    pub async fn get_userinfo(&self, pool: &sqlx::SqlitePool) -> UserInfo {
+    pub async fn get_userinfo(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserInfo {
         let ranking = sqlx::query_as!(
             Ranking,
             "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?",
             self.id,
-            1
+            tournament_id
         )
         .fetch_optional(pool)
         .await
@@ -146,14 +146,17 @@ impl<'r> rocket::request::FromRequest<'r> for User {
             )),
             Some(zid_cookie) => {
                 let zid = zid_cookie.value();
-                let pool = request.guard::<&rocket::State<sqlx::SqlitePool>>().await.unwrap();
+                let pool = request
+                    .guard::<&rocket::State<sqlx::SqlitePool>>()
+                    .await
+                    .unwrap();
                 let user = User::get_by_username(zid, pool.inner()).await;
                 match user {
                     None => rocket::request::Outcome::Failure((
                         rocket::http::Status::Unauthorized,
                         Unauthorized(None),
                     )),
-                    Some(u) => rocket::request::Outcome::Success(u)
+                    Some(u) => rocket::request::Outcome::Success(u),
                 }
             }
         }

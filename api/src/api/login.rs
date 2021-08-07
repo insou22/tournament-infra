@@ -90,7 +90,7 @@ pub async fn login(
         };
 
         Json(LoginResponse::Success(
-            user.get_userinfo(pool.inner()).await,
+            user.get_userinfo(config.inner().current_tournament_id, pool.inner()).await,
         ))
     } else {
         Json(LoginResponse::Failure(LoginFailure {

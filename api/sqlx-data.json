@@ -210,42 +210,6 @@
       ]
     }
   },
-  "2ddc9a2959aa4c32dd5e90a712a8ed8601d2356c4f89f1d877e7493042e34618": {
-    "query": "SELECT * FROM games ORDER BY games.completed_at DESC",
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "tournament_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "completed_at",
-          "ordinal": 3,
-          "type_info": "Int64"
-        }
-      ],
-      "parameters": {
-        "Right": 0
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        true
-      ]
-    }
-  },
   "368fe65fb87497cadd679ee14d493fe9e536801f969b2e8abf3cbe8f1eed288f": {
     "query": "SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=1",
     "describe": {
@@ -460,42 +424,6 @@
       ]
     }
   },
-  "7f7cf767fd030b7661b693095d3d412ec9894fc6a9c8ccac5d23dd9ea18adfe8": {
-    "query": "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? ORDER BY games.completed_at DESC",
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "tournament_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "completed_at",
-          "ordinal": 3,
-          "type_info": "Int64"
-        }
-      ],
-      "parameters": {
-        "Right": 1
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        true
-      ]
-    }
-  },
   "86e8c16932f28e3c0576dadf332633886558aac23b1918f32b82af3bd3489c82": {
     "query": "SELECT\n                binaries.hash AS binary_hash,\n                users.username AS username,\n                users.display_name AS display_name,\n                players.rating_before_game AS rating_before_game,\n                players.rating_change AS rating_change,\n                CASE players.points\n                    WHEN 2 THEN 'won'\n                    WHEN 1 THEN 'drew'\n                    WHEN 0 THEN 'lost'\n                END AS \"result?: String\"\n            FROM players\n            JOIN users ON players.user_id=users.id\n            JOIN binaries ON players.binary_id=binaries.id\n            WHERE players.game_id=?",
     "describe": {
@@ -544,6 +472,42 @@
       ]
     }
   },
+  "944db17dbcfc320cad3faab9bb0b6d674ace167a924dbabb2f81eca473d269a8": {
+    "query": "SELECT * FROM games WHERE tournament_id=? ORDER BY games.completed_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
   "96fcec3f7550972f6f6716a558b01d8cbdd5f1c214a47bd523bdae04a4f0e178": {
     "query": "SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?",
     "describe": {
@@ -576,6 +540,42 @@
         "Right": 2
       },
       "nullable": [
+        true
+      ]
+    }
+  },
+  "cec73dd45b31b982059f002a3216430ea61c31d869bb1acb21fb935ada827afb": {
+    "query": "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? AND games.tournament_id=? ORDER BY games.completed_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "completed_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 2
+      },
+      "nullable": [
+        false,
+        false,
+        false,
         true
       ]
     }
