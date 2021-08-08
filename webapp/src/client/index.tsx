@@ -5,7 +5,7 @@ import {QueryClient, QueryClientProvider} from "react-query";
 import {
     BrowserRouter as Router
 } from "react-router-dom";
-import App from './App';
+import {App} from './App';
 import './index.css';
 import theme from './theme';
 import {CheckUserInfoContextProvider} from "./utils/auth";
