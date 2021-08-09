@@ -1,6 +1,5 @@
-import type {QueryFunction} from "react-query";
-import {api, Game} from "@client/api";
-import {allGames} from "@client/mocks/games";
+import type {QueryFunction} from "react-query"
+import {api, Game} from "@client/api"
 
 export const getFilteredGamesList: QueryFunction<Omit<Game, "turns">[], ["games", {username: string, hash?: string, perPage?: number, page?: number}] | ["games"]> = async ({queryKey: [, filter]}) => {
     let url = ""
@@ -13,21 +12,17 @@ export const getFilteredGamesList: QueryFunction<Omit<Game, "turns">[], ["games"
 
     url += "/games"
 
-    if (filter?.perPage || filter?.page) {
-        url += "?"
+    let q: {per_page?: string, page?: string} = {}
 
-        if (filter.perPage) {
-            url += `per_page=${filter.perPage}`
-        }
-
-        if (filter.perPage && filter.page) {
-            url += "&"
-        }
-
-        if (filter.page) {
-            url += `page=${filter.page}`
-        }
+    if (filter?.perPage) {
+        q.per_page = filter.perPage.toString()
     }
+
+    if (filter?.page) {
+        q.page = filter.page.toString()
+    }
+
+    url += "?" + new URLSearchParams(q).toString()
 
     return (await api.get(url)).data
 }
