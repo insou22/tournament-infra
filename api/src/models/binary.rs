@@ -49,7 +49,7 @@ impl Binary {
     async fn get_predecessor(&self, pool: &sqlx::SqlitePool) -> Option<Self> {
         sqlx::query_as!(
             Self,
-            "SELECT * FROM binaries WHERE created_at<? AND user_id=? AND tournament_id=? AND compile_result='success'",
+            "SELECT * FROM binaries WHERE created_at<? AND user_id=? AND tournament_id=? AND compile_result='success' ORDER BY created_at DESC",
             self.created_at,
             self.user_id,
             self.tournament_id

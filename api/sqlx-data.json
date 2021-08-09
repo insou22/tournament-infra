@@ -382,60 +382,6 @@
       ]
     }
   },
-  "622df077ef4f26beea4fbbf5e5fa01c9c864b4d8854e1fbbd7ba8c8647403e7f": {
-    "query": "SELECT * FROM binaries WHERE created_at<? AND user_id=? AND tournament_id=? AND compile_result='success'",
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int64"
-        },
-        {
-          "name": "user_id",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "tournament_id",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "hash",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "compile_result",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "compile_time_ms",
-          "ordinal": 6,
-          "type_info": "Int64"
-        }
-      ],
-      "parameters": {
-        "Right": 3
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true
-      ]
-    }
-  },
   "6f8afee96312d6ae8ed477ea2469b6df7c0039f9dd1cb68339f317b22c9f2e2a": {
     "query": "SELECT username, display_name, rating FROM rankings INNER JOIN users ON rankings.user_id=users.id WHERE tournament_id=? ORDER BY rating DESC",
     "describe": {
@@ -754,6 +700,60 @@
       ],
       "parameters": {
         "Right": 2
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "d83f24764533323c0968ed374b5b2c006a4fe3b298827572481290d990a03997": {
+    "query": "SELECT * FROM binaries WHERE created_at<? AND user_id=? AND tournament_id=? AND compile_result='success' ORDER BY created_at DESC",
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "tournament_id",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "hash",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_result",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "compile_time_ms",
+          "ordinal": 6,
+          "type_info": "Int64"
+        }
+      ],
+      "parameters": {
+        "Right": 3
       },
       "nullable": [
         false,
