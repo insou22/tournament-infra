@@ -79,5 +79,4 @@ export interface Ranking {
     username: string
     display_name: string
     rating: number
-    win_loss: number
 }

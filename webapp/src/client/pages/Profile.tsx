@@ -12,7 +12,7 @@ import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
 import type {TournamentStats} from "../api"
-import {getOrdinalSuffix} from "../utils/stats"
+import {getRankingStyles} from "../utils/stats"
 
 export const Profile = ({username}: {username: string}) => {
     // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
@@ -71,7 +71,7 @@ const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
     return <StatsSummary stats={[
         {
             label: "Ranking",
-            value: `${stats.ranking}${getOrdinalSuffix(stats.ranking)}`
+            value: `${stats.ranking}${getRankingStyles(stats.ranking).suffix}`
         },
         {
             label: "Rating",

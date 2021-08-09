@@ -1,5 +1,5 @@
 import {Heading} from "@chakra-ui/layout"
-import {Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
+import {Box, HStack, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
 import type {AxiosError} from "axios"
 import React from "react"
 import {QueryFunction, useQuery} from "react-query"
@@ -7,7 +7,7 @@ import {api, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
-import {getOrdinalSuffix} from "@client/utils/stats"
+import {getRankingStyles} from "@client/utils/stats"
 
 
 const getRankings: QueryFunction<Ranking[], ["rankings"]> = async () => {
@@ -59,13 +59,22 @@ export const Rankings = () => {
                 </Tr>
             </Thead>
             <Tbody>
-                {rankingsQuery.data.map((r, i) => <Tr fontSize={i == 0 ? "2xl" : i == 1 ? "xl" : i == 2 ? "lg" : "md"}>
-                    <Td>{i+1}{getOrdinalSuffix(i+1)}</Td>
-                    <Td><ButtonLink href={`/user/${r.username}`} size="inherit">{r.display_name}</ButtonLink></Td>
-                    <Td>{r.rating}</Td>
-                    {/* <Td>{r.win_loss.toFixed(2)}</Td> */}
-                </Tr>)}
+                {rankingsQuery.data.map((r, i) => <RankingItem ranking={r} n={i + 1} key={i + 1} />)}
             </Tbody>
         </Table>
     </VStackPageWrapper>
+}
+
+const RankingItem = ({ranking, n}: {ranking: Ranking, n: number}) => {
+    const styles = getRankingStyles(n)
+    return <Tr fontSize={n == 1 ? "2xl" : n == 2 ? "xl" : n == 3 ? "lg" : "md"} color={styles.color}>
+        <Td>
+            <HStack>
+                <Box>{n}{styles.suffix}</Box>
+                <Box>{styles.decoration}</Box>
+            </HStack>
+        </Td>
+        <Td><ButtonLink href={`/user/${ranking.username}`} size="inherit" color={styles.color}>{ranking.display_name}</ButtonLink></Td>
+        <Td>{ranking.rating}</Td>
+    </Tr>
 }
