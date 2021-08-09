@@ -15,16 +15,16 @@ const theme = extendTheme({
                 //     color: "#FFFFFF"
                 // },
                 lg: {
-                    color: "#E5FDFF"
+                    color: "#E5FDFF" // blue
                 },
                 md: {
-                    color: "#FCEEFF"
+                    color: "#FCEEFF" // pink
                 },
                 sm: {
-                    color: "#FBFDFC"
+                    color: "#FEFDDF" // yellow
                 },
                 xs: {
-                    color: "#FEFDDF"
+                    color: "#FBFDFC" // off white
                 }
             }
         }
