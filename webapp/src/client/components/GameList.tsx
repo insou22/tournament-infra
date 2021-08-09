@@ -1,9 +1,9 @@
 import {Badge, Grid, GridItem, Text, Tooltip} from "@chakra-ui/react"
-import React from "react"
-import {useHistory} from "react-router-dom"
 import type {Game} from "@client/api"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
+import React from "react"
+import {useHistory} from "react-router-dom"
 
 export const GameList = ({games, username}: {games: Omit<Game, "turns">[], username?: string}) => {
     if (games.length === 0) {

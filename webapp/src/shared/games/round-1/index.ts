@@ -1,5 +1,5 @@
-import {game} from './game';
-import {Board as board} from './Board';
+import {Board as board} from './Board'
+import {game} from './game'
 
 export default {
     game,

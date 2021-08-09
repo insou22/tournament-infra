@@ -1,12 +1,12 @@
 import {Heading} from "@chakra-ui/layout"
 import {Button, FormControl, FormLabel, HStack, Input} from "@chakra-ui/react"
-import type {AxiosError} from "axios"
-import React from "react"
-import {useMutation, useQueryClient} from "react-query"
 import {api, UserProfile} from "@client/api"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
 import {useUserInfo} from "@client/hooks/useUserInfo"
 import {CheckUserInfoContext, logout} from "@client/utils/auth"
+import type {AxiosError} from "axios"
+import React from "react"
+import {useMutation, useQueryClient} from "react-query"
 
 export type UserProfilePatch = Pick<UserProfile, "display_name">
 

@@ -1,5 +1,5 @@
-import React from "react"
 import type {BinaryStats} from "@client/api"
+import React from "react"
 import {StatsSummary} from "./StatSummary"
 
 export const BinaryStatsSummary = ({stats}: {stats: BinaryStats}) => {

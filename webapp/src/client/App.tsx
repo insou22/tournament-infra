@@ -1,8 +1,8 @@
 import {Box, Container, Heading} from '@chakra-ui/layout'
 import type {BoxProps} from '@chakra-ui/react'
-import {AnimatePresence, motion, Transition} from 'framer-motion'
+import {AnimatePresence, motion} from 'framer-motion'
 import React from 'react'
-import {Redirect, Route, RouteProps, Switch, useLocation} from "react-router-dom"
+import {Redirect, Route, Switch, useLocation} from "react-router-dom"
 import {Loading} from './components/Loading'
 import {Navbar} from './components/Navbar'
 import {useUserInfo} from './hooks/useUserInfo'
@@ -44,11 +44,6 @@ export const App = () => {
                             <About />
                         </PageTransitionWrapper>
                     </Route>
-                    <Route path="/faqs" exact>
-                        <PageTransitionWrapper>
-                            <Faqs />
-                        </PageTransitionWrapper>
-                    </Route>
 
                     <Route path="/spec" exact>
                         <PageTransitionWrapper>
@@ -64,17 +59,12 @@ export const App = () => {
 
                     <Route path="/login" exact>
                         <PageTransitionWrapper>
-                            {isLoading ? <Loading /> : (user ? <Redirect to="/profile" /> : <Login />)}
+                            {isLoading ? <Loading /> : (user ? <Redirect to={`/user/${user.username}`} /> : <Login />)}
                         </PageTransitionWrapper>
                     </Route>
                     <Route path="/settings" exact>
                         <PageTransitionWrapper>
                             {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
-                        </PageTransitionWrapper>
-                    </Route>
-                    <Route path="/profile" exact>
-                        <PageTransitionWrapper>
-                            {isLoading ? <Loading /> : (user ? <Redirect to={`/user/${user.username}`} /> : <Redirect to="/login" />)}
                         </PageTransitionWrapper>
                     </Route>
 

@@ -1,20 +1,19 @@
 import {Button, IconButton} from "@chakra-ui/button"
 import {PlusSquareIcon, SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
-import {Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Spinner, useDisclosure} from "@chakra-ui/react"
+import {Spinner, useDisclosure} from "@chakra-ui/react"
+import {useUserInfo} from "@client/hooks/useUserInfo"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
-import {useUserInfo} from "@client/hooks/useUserInfo"
 import {ButtonLink} from "./ButtonLink"
-import {FileUpload} from "./FileUpload"
 import {CodeUploadModal} from "./CodeUploadModal"
 
 export const Navbar = () => {
     const {user, isLoading} = useUserInfo()
     const disclosure = useDisclosure()
-    const history = useHistory();
+    const history = useHistory()
 
-    let userControls;
+    let userControls
     if (isLoading) {
         userControls = <Spinner size="sm" />
     } else if (user) {

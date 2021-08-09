@@ -1,17 +1,16 @@
 import {ChevronDownIcon} from "@chakra-ui/icons"
 import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBoolean} from "@chakra-ui/react"
-import React from "react"
-import {QueryFunction, useQuery} from "react-query"
-import {api, Game, Player, Stream, Turn} from "@client/api"
+import {api, Game, Player, Stream} from "@client/api"
 import {BinaryListItem} from "@client/components/BinaryListItem"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
 import {useBinary} from "@client/hooks/useBinary"
-import {marcVsHamish} from "@client/mocks/games"
 import {dontRetryOn404} from "@client/utils/api"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
+import React from "react"
+import {QueryFunction, useQuery} from "react-query"
 
 const getGame: QueryFunction<Game, ["game", string]> = async ({queryKey: [, id]}) => {
     //return marcVsHamish

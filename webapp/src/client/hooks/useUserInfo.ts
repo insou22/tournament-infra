@@ -1,9 +1,9 @@
-import type {AxiosError} from "axios"
-import React from "react"
-import {useQuery} from "react-query"
 import {api} from "@client/api"
 import {dontRetryOn401} from "@client/utils/api"
 import {CheckUserInfoContext, UserInfo} from "@client/utils/auth"
+import type {AxiosError} from "axios"
+import React from "react"
+import {useQuery} from "react-query"
 
 const getUserInfo = async () => (await api.get<UserInfo>("/userinfo")).data
 

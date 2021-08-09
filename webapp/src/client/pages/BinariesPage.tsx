@@ -1,16 +1,15 @@
-import {Breadcrumb, BreadcrumbItem, Heading, HStack, VStack, Text} from "@chakra-ui/react"
-import type {AxiosError} from "axios"
-import React from "react"
-import {QueryFunction, useQuery} from "react-query"
+import {Breadcrumb, BreadcrumbItem, Heading, HStack, Text, VStack} from "@chakra-ui/react"
 import {api, Binary} from "@client/api"
 import {BinaryListItem} from "@client/components/BinaryListItem"
 import {BreadcrumbLink} from "@client/components/BreadcrumbLink"
 import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
-import {useUserProfile} from "@client/hooks/useUserProfile"
-import * as marcchee from "@client/mocks/marcchee"
-import {dontRetryOn404} from "@client/utils/api"
 import {useUserInfo} from "@client/hooks/useUserInfo"
+import {useUserProfile} from "@client/hooks/useUserProfile"
+import {dontRetryOn404} from "@client/utils/api"
+import type {AxiosError} from "axios"
+import React from "react"
+import {QueryFunction, useQuery} from "react-query"
 
 const getBinaries: QueryFunction<Binary[], ["binaries", string]> = async ({queryKey: [, username]}) => {
     // return marcchee.binaries

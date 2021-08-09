@@ -1,5 +1,5 @@
-import type {QueryFunction} from "react-query"
 import {api, Game} from "@client/api"
+import type {QueryFunction} from "react-query"
 
 export const getFilteredGamesList: QueryFunction<Omit<Game, "turns">[], ["games", {username: string, hash?: string, perPage?: number, page?: number}] | ["games"]> = async ({queryKey: [, filter]}) => {
     let url = ""

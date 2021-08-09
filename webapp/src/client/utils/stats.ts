@@ -33,7 +33,7 @@ export const getRankingStyles = (n: number) => {
         return {...defaultRankingStyles, suffix: "nd"}
     } else if (digit === 3) {
         return {...defaultRankingStyles, suffix: "rd"}
-    } 
+    }
 
     return defaultRankingStyles
 }

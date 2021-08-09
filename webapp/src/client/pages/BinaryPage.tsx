@@ -1,9 +1,7 @@
-import {Alert, AlertDescription, AlertIcon, AlertTitle, Breadcrumb, BreadcrumbItem, Heading, HStack, Text, Tooltip} from "@chakra-ui/react"
-import type {AxiosError} from "axios"
-import React from "react"
-import {useQuery} from "react-query"
+import {Breadcrumb, BreadcrumbItem, Heading, HStack, Text, Tooltip} from "@chakra-ui/react"
 import type {Game} from "@client/api"
 import {BinaryStatsSummary} from "@client/components/BinaryStatSummary"
+import {BinaryStatusAlert} from "@client/components/BinaryStatusAlert"
 import {BreadcrumbLink} from "@client/components/BreadcrumbLink"
 import {GameList} from "@client/components/GameList"
 import {Loading} from "@client/components/Loading"
@@ -13,7 +11,9 @@ import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
 import {formatTimestamp} from "@client/utils/time"
-import {BinaryStatusAlert} from "@client/components/BinaryStatusAlert"
+import type {AxiosError} from "axios"
+import React from "react"
+import {useQuery} from "react-query"
 
 export const BinaryPage = ({username, hash}: {username: string, hash: string}) => {
     const profileQuery = useUserProfile(username)
@@ -25,10 +25,10 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
 
     const times = formatTimestamp(binaryQuery.data.created_at)
 
-    let compileAlert = null;
+    let compileAlert = null
 
     if (binaryQuery.data.compile_result !== "success") {
-        compileAlert = <BinaryStatusAlert result={binaryQuery.data.compile_result}/>
+        compileAlert = <BinaryStatusAlert result={binaryQuery.data.compile_result} />
     } else {
         compileAlert = <>
             {binaryQuery.data.compile_time_ms && <HStack>

@@ -1,4 +1,4 @@
-import type {PlayerResult} from "@client/api";
+import type {PlayerResult} from "@client/api"
 
 export const resultProps: Record<PlayerResult, {label: string, color: string}> = {
     won: {

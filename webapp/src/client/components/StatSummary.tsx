@@ -1,5 +1,5 @@
 import {Box} from "@chakra-ui/layout"
-import {StatGroup, Stat, StatLabel, StatNumber, StatHelpText, StatArrow} from "@chakra-ui/stat"
+import {Stat, StatArrow, StatGroup, StatHelpText, StatLabel, StatNumber} from "@chakra-ui/stat"
 import React from "react"
 
 export const StatsSummary = ({stats}: {

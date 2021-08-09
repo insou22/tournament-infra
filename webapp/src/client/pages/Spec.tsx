@@ -1,11 +1,10 @@
 import {Heading, Text} from "@chakra-ui/layout"
 import {ListItem, UnorderedList} from "@chakra-ui/react"
+import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
 import React from "react"
 import ReactMarkdown from 'react-markdown'
 import type {NormalComponents, SpecialComponents} from "react-markdown/src/ast-to-react"
 import remarkGfm from "remark-gfm"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
-//@ts-expect-error TS doesn't know we have markdown import capabilities.
 import spec from "./spec-markdown.md"
 
 const components: Partial<NormalComponents & SpecialComponents> = {

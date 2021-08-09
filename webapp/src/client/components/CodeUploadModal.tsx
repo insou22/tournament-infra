@@ -1,11 +1,11 @@
-import {HStack} from "@chakra-ui/layout";
-import {Modal, ModalOverlay, Text, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button} from "@chakra-ui/react";
-import {api, Binary} from "@client/api";
-import {useUserInfo} from "@client/hooks/useUserInfo";
-import React from "react";
-import {useMutation} from "react-query";
-import {useHistory} from "react-router-dom";
-import {FileUpload} from "./FileUpload";
+import {HStack} from "@chakra-ui/layout"
+import {Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text} from "@chakra-ui/react"
+import {api, Binary} from "@client/api"
+import {useUserInfo} from "@client/hooks/useUserInfo"
+import React from "react"
+import {useMutation} from "react-query"
+import {useHistory} from "react-router-dom"
+import {FileUpload} from "./FileUpload"
 
 export const CodeUploadModal = ({isOpen, onClose}: {isOpen: boolean, onClose: () => void}) => {
     const [file, setFile] = React.useState<File | null>(null)

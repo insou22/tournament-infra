@@ -1,7 +1,9 @@
+# VSCode workspace settings, developer specific.
 .vscode
-*/target/
+# Environment variable files (can contain secret keys).
 **.env
-/api/uploads
+
+# Database.
 test.db
 # These files are created when the SQLite DB is in use.
 test.db-shm

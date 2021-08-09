@@ -1,9 +1,9 @@
-import {VStack, Text} from "@chakra-ui/layout";
-import {Box, Grid, GridItem, Heading, Image, Wrap} from "@chakra-ui/react";
-import {CardName, CARDS} from "@shared/games/common/cards";
-import type {BoardProps} from "boardgame.io/dist/types/packages/react";
-import React from "react";
-import type {Card, State} from "./game";
+import {Text, VStack} from "@chakra-ui/layout"
+import {Box, Grid, GridItem, Heading, Image, Wrap} from "@chakra-ui/react"
+import {CardName, CARDS} from "@shared/games/common/cards"
+import type {BoardProps} from "boardgame.io/dist/types/packages/react"
+import React from "react"
+import type {Card, State} from "./game"
 
 const cardToCardName = (card: Card | null): CardName | null => {
     if (!card) return null
@@ -28,7 +28,7 @@ interface SideProps {
     playedCard: CardName | null,
     hand: Card[],
     active: boolean
-    onCardClick: (i :number) => void
+    onCardClick: (i: number) => void
 }
 
 const Side = ({playerName, score, column, playedCard, hand, active, onCardClick}: SideProps) => {
@@ -41,7 +41,7 @@ const Side = ({playerName, score, column, playedCard, hand, active, onCardClick}
             <Image src={CARDS[playedCard || "uu"]} width={40} opacity={!playedCard || playedCard === "uu" ? 0.5 : 1} />
         </GridItem>
         <GridItem gridColumn={column} gridRow={3}>
-            <Wrap justify="center" cursor={active ? "inherit": "not-allowed"}>
+            <Wrap justify="center" cursor={active ? "inherit" : "not-allowed"}>
                 {hand.map((c, i) => <Image src={CARDS[cardToCardName(c) || "uu"]} key={i} cursor={active ? "pointer" : "inherit"} onClick={active ? () => onCardClick(i) : undefined} />)}
             </Wrap>
         </GridItem>

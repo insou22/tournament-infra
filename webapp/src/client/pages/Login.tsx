@@ -1,20 +1,17 @@
+import {Alert, AlertDescription, AlertIcon, AlertTitle} from "@chakra-ui/alert"
 import {Button} from "@chakra-ui/button"
-import {useBoolean} from "@chakra-ui/hooks"
 import {Input} from "@chakra-ui/input"
 import {Container, Heading, VStack} from "@chakra-ui/layout"
 import React from "react"
-import {CheckUserInfoContext, login} from "../utils/auth"
 import {useMutation, useQueryClient} from "react-query"
 import type {UserInfo} from "../utils/auth"
-import {Alert, AlertIcon, AlertTitle, AlertDescription} from "@chakra-ui/alert"
-import {InputGroup, InputRightElement} from "@chakra-ui/react"
+import {CheckUserInfoContext, login} from "../utils/auth"
 
 type LoginDetails = {username: string, password: string}
 
 export const Login = () => {
     const [username, setUsername] = React.useState("")
     const [password, setPassword] = React.useState("")
-    const [showPassword, setShowPassword] = useBoolean(false)
     const queryClient = useQueryClient()
     const [, setCheckUserInfo] = React.useContext(CheckUserInfoContext)
 
@@ -39,7 +36,7 @@ export const Login = () => {
                 <AlertDescription>{mutation.error.message}</AlertDescription>
             </Alert>}
             <Input placeholder="zID" type="text" value={username} onChange={(e) => setUsername(e.target.value)} disabled={mutation.isLoading} />
-            <Input placeholder="Password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} disabled={mutation.isLoading} />
+            <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={mutation.isLoading} />
             <Button type="submit" w="100%" isLoading={mutation.isLoading}>Login</Button>
         </VStack>
     </Container>

@@ -1,10 +1,10 @@
-import type {Suit} from "@shared/games/common/cards";
+import type {Suit} from "@shared/games/common/cards"
 import type {Ctx, Game, PlayerID} from "boardgame.io"
-import type {BaseSetupData} from "../types";
+import type {BaseSetupData} from "../types"
 
 export type Card = {suit: Suit, rank: number}
 type PlayerState = {score: number, hand: Card[], played: Card | null}
-export type State = {trickStarter: PlayerID, players: Record<PlayerID, PlayerState>};
+export type State = {trickStarter: PlayerID, players: Record<PlayerID, PlayerState>}
 
 const SUITS: Suit[] = ["H", "D", "C", "S"]
 const CARD_NUMBERS = [1, 2, 3, 4, 5]
@@ -19,9 +19,9 @@ export const game: Game<State, Ctx, SetupData> = {
     maxPlayers: 2,
     minPlayers: 2,
     disableUndo: true,
-    
+
     setup: (ctx, setupData): State => {
-        const deck = ctx.random!.Shuffle(STARTING_DECK);
+        const deck = ctx.random!.Shuffle(STARTING_DECK)
 
         return {
             trickStarter: setupData?.startingPlayer || ctx.currentPlayer,
@@ -78,4 +78,4 @@ export const game: Game<State, Ctx, SetupData> = {
     },
 
     endIf: G => G.players["0"].score + G.players["1"].score === 10
-};
+}

@@ -1,13 +1,13 @@
 import {Heading} from "@chakra-ui/layout"
 import {Box, HStack, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
-import type {AxiosError} from "axios"
-import React from "react"
-import {QueryFunction, useQuery} from "react-query"
 import {api, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
 import {getRankingStyles} from "@client/utils/stats"
+import type {AxiosError} from "axios"
+import React from "react"
+import {QueryFunction, useQuery} from "react-query"
 
 
 const getRankings: QueryFunction<Ranking[], ["rankings"]> = async () => {
