@@ -16,7 +16,7 @@ export const getRankingStyles = (n: number) => {
     } else if (n == 3) {
         return {
             suffix: "rd",
-            color: "cd7f32",
+            color: "#cd7f32",
             decoration: "🥉"
         }
     }
