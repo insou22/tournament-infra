@@ -2,24 +2,36 @@ use crate::models::{
     binary::{Binary, BinaryResponse},
     user::User,
 };
+use crate::paginate::Paginate;
 use ring::digest::{Context, SHA256};
 use rocket::serde::json::Json;
 use std::io::{BufReader, Read};
 
-#[get("/user/<username>/binaries")]
+#[get("/user/<username>/binaries?<per_page>&<page>")]
 pub async fn get_user_binaries(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
     config: &rocket::State<crate::config::Config>,
+    per_page: Option<u32>,
+    page: Option<u32>,
 ) -> Option<Json<Vec<BinaryResponse>>> {
     match User::get_by_username(username, pool.inner()).await {
         Some(user) => Some(Json({
+            let paginate = Paginate::new(per_page, page);
+
             let binaries: Vec<Binary> = sqlx::query_as!(
                 Binary,
-                "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? ORDER BY created_at DESC",
+                "SELECT *
+                FROM binaries
+                WHERE user_id=? AND tournament_id=?
+                ORDER BY created_at DESC
+                LIMIT ?
+                OFFSET ?",
                 user.id,
-                config.inner().current_tournament_id
+                config.inner().current_tournament_id,
+                paginate.limit,
+                paginate.offset
             )
             .fetch_all(pool.inner())
             .await

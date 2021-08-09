@@ -3,17 +3,29 @@ use crate::models::{
     game::{Game, GameResponse},
     user::User,
 };
+use crate::paginate::Paginate;
 use rocket::serde::json::Json;
 
-#[get("/games")]
+#[get("/games?<per_page>&<page>")]
 pub async fn get_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     config: &rocket::State<crate::config::Config>,
+    per_page: Option<u32>,
+    page: Option<u32>,
 ) -> Json<Vec<GameResponse>> {
+    let paginate = Paginate::new(per_page, page);
+
     let games: Vec<Game> = sqlx::query_as!(
         Game,
-        "SELECT * FROM games WHERE tournament_id=? ORDER BY games.completed_at DESC",
-        config.inner().current_tournament_id
+        "SELECT *
+        FROM games
+        WHERE tournament_id=?
+        ORDER BY games.completed_at DESC
+        LIMIT ?
+        OFFSET ?", // TODO: Replace offsets with better pagination once it gets laggy.
+        config.inner().current_tournament_id,
+        paginate.limit,
+        paginate.offset
     )
     .fetch_all(pool.inner())
     .await
@@ -32,11 +44,13 @@ pub async fn get_games(
     Json(games_with_players)
 }
 
-#[get("/user/<username>/games")]
+#[get("/user/<username>/games?<per_page>&<page>")]
 pub async fn get_user_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
     config: &rocket::State<crate::config::Config>,
+    per_page: Option<u32>,
+    page: Option<u32>,
 ) -> Option<Json<Vec<GameResponse>>> {
     let user = User::get_by_username(username, pool.inner()).await;
 
@@ -46,11 +60,21 @@ pub async fn get_user_games(
 
     let user = user.unwrap();
 
+    let paginate = Paginate::new(per_page, page);
+
     let games: Vec<Game> = sqlx::query_as!(
         Game,
-        "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.user_id=? AND games.tournament_id=? ORDER BY games.completed_at DESC",
+        "SELECT games.*
+        FROM players
+        JOIN games ON players.game_id=games.id
+        WHERE players.user_id=? AND games.tournament_id=?
+        ORDER BY games.completed_at DESC
+        LIMIT ?
+        OFFSET ?",
         user.id,
-        config.inner().current_tournament_id
+        config.inner().current_tournament_id,
+        paginate.limit,
+        paginate.offset
     )
     .fetch_all(pool.inner())
     .await
@@ -70,12 +94,14 @@ pub async fn get_user_games(
     Some(Json(games_with_players))
 }
 
-#[get("/user/<username>/binary/<hash>/games")]
+#[get("/user/<username>/binary/<hash>/games?<per_page>&<page>")]
 pub async fn get_binary_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
-    hash: &str, 
+    hash: &str,
+    per_page: Option<u32>,
+    page: Option<u32>,
 ) -> Option<Json<Vec<GameResponse>>> {
     let binary = Binary::get_by_username_and_hash(username, hash, pool.inner()).await;
 
@@ -91,10 +117,20 @@ pub async fn get_binary_games(
         return None;
     }
 
+    let paginate = Paginate::new(per_page, page);
+
     let games: Vec<Game> = sqlx::query_as!(
         Game,
-        "SELECT games.* FROM players JOIN games ON players.game_id=games.id WHERE players.binary_id=? ORDER BY games.completed_at DESC",
-        binary.id
+        "SELECT games.*
+        FROM players
+        JOIN games ON players.game_id=games.id
+        WHERE players.binary_id=?
+        ORDER BY games.completed_at DESC
+        LIMIT ?
+        OFFSET ?",
+        binary.id,
+        paginate.limit,
+        paginate.offset
     )
     .fetch_all(pool.inner())
     .await

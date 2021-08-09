@@ -3,6 +3,7 @@
 pub mod api;
 pub mod models;
 pub mod cors;
+pub mod paginate;
 mod config;
 
 use api::{

@@ -18,7 +18,7 @@ export const Profile = ({username}: {username: string}) => {
     // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
     const profileQuery = useUserProfile(username)
 
-    const gamesQuery = useQuery(["games", {username}], getFilteredGamesList, {
+    const gamesQuery = useQuery(["games", {username, perPage: 10, page: 1}], getFilteredGamesList, {
         retry: dontRetryOn404,
         enabled: !!(profileQuery.data)
     })
