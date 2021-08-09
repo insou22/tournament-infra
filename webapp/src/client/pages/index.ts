@@ -3,6 +3,7 @@ import {AllGames} from "./AllGames"
 import {BinariesPage} from "./BinariesPage"
 import {BinaryPage} from "./BinaryPage"
 import {GamePage} from "./GamePage"
+import {Home} from "./Home"
 import {Login} from "./Login"
 import {Play} from "./Play"
 import {PlayerGames} from "./PlayerGames"
@@ -17,6 +18,7 @@ export {
     BinariesPage,
     BinaryPage,
     GamePage,
+    Home,
     Login,
     Play,
     PlayerGames,

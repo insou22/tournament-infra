@@ -6,7 +6,7 @@ import {Redirect, Route, Switch, useLocation} from "react-router-dom"
 import {Loading} from './components/Loading'
 import {Navbar} from './components/Navbar'
 import {useUserInfo} from './hooks/useUserInfo'
-import {About, AllGames, BinariesPage, BinaryPage, GamePage, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
+import {About, AllGames, BinariesPage, BinaryPage, GamePage, Home, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
 
 const MotionBox = motion<BoxProps>(Box)
 
@@ -36,7 +36,7 @@ export const App = () => {
                 <Switch location={location} key={location.pathname}>
                     <Route path="/" exact>
                         <PageTransitionWrapper>
-                            <Heading>Home</Heading>
+                            <Home />
                         </PageTransitionWrapper>
                     </Route>
                     <Route path="/about" exact>
