@@ -2,7 +2,6 @@ import {About} from "./About"
 import {AllGames} from "./AllGames"
 import {BinariesPage} from "./BinariesPage"
 import {BinaryPage} from "./BinaryPage"
-import {Faqs} from "./Faqs"
 import {GamePage} from "./GamePage"
 import {Login} from "./Login"
 import {Play} from "./Play"
@@ -17,7 +16,6 @@ export {
     AllGames,
     BinariesPage,
     BinaryPage,
-    Faqs,
     GamePage,
     Login,
     Play,

@@ -6,7 +6,7 @@ import {Redirect, Route, Switch, useLocation} from "react-router-dom"
 import {Loading} from './components/Loading'
 import {Navbar} from './components/Navbar'
 import {useUserInfo} from './hooks/useUserInfo'
-import {About, AllGames, BinariesPage, BinaryPage, Faqs, GamePage, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
+import {About, AllGames, BinariesPage, BinaryPage, GamePage, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
 
 const MotionBox = motion<BoxProps>(Box)
 
