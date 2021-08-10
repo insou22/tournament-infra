@@ -21,19 +21,6 @@ export default {
         /* Enable an SPA Fallback in development: */
         {"match": "routes", "src": ".*", "dest": "/index.html"},
     ],
-    optimize: {
-        /* Example: Bundle your final build: */
-        bundle: false,
-    },
-    packageOptions: {
-        /* ... */
-    },
-    devOptions: {
-        /* ... */
-    },
-    buildOptions: {
-        /* ... */
-    },
     alias: {
         "@client": './src/client',
         "@server": './src/server',

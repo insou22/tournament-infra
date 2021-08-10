@@ -604,8 +604,8 @@
       ]
     }
   },
-  "ab1ae5fc2f72aba37b554f121aa3fd02ef33e97a304a6f6688e25f7352fce9f3": {
-    "query": "SELECT AVG(run_time_ms) AS \"result!: f64\" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?",
+  "b7c4bf46cbf1139309c7310f6cca423caa68188700c6c70af09bcec18e299c1f": {
+    "query": "SELECT AVG(run_time_ms) AS \"result!: f64\" FROM turns JOIN games ON turns.game_id=games.id JOIN players ON turns.player_id=players.id WHERE players.user_id=? AND games.tournament_id=?",
     "describe": {
       "columns": [
         {
