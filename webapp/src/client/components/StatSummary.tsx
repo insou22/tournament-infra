@@ -16,7 +16,7 @@ export const StatsSummary = ({stats}: {
                 <StatLabel>{stat.label}</StatLabel>
                 <StatNumber>{stat.value}</StatNumber>
                 {stat.change !== undefined && stat.change !== null && <StatHelpText>
-                    <StatArrow type={stat.change < 0 ? "decrease" : "increase"} transform={stat.invert ? "rotate(180deg)" : ""}/>
+                    <StatArrow type={stat.change < 0 !== stat.invert ? "decrease" : "increase"} transform={stat.invert ? "rotate(180deg)" : ""}/>
                     {stat.change.toFixed(2)}%
                 </StatHelpText>}
             </Stat>)}
