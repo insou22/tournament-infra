@@ -5,6 +5,7 @@ import React from 'react'
 import {Redirect, Route, Switch, useLocation} from "react-router-dom"
 import {Loading} from './components/Loading'
 import {Navbar} from './components/Navbar'
+import {VStackPageWrapper} from "./components/VStackPageWrapper"
 import {useUserInfo} from './hooks/useUserInfo'
 import {About, AllGames, BinariesPage, BinaryPage, GamePage, Home, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
 
@@ -105,6 +106,15 @@ export const App = () => {
                             <GamePage id={id} />
                         </PageTransitionWrapper>
                     } />
+
+                    <Route>
+                        <PageTransitionWrapper>
+                            <VStackPageWrapper>
+                                <Heading>404</Heading>
+                                <Heading size="md">This page doesn't exist.</Heading>
+                            </VStackPageWrapper>
+                        </PageTransitionWrapper>
+                    </Route>
                 </Switch>
             </AnimatePresence>
         </Box>
