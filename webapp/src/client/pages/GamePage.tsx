@@ -1,6 +1,6 @@
 import {ChevronDownIcon} from "@chakra-ui/icons"
-import {Badge, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBoolean} from "@chakra-ui/react"
-import {api, Game, Player, Stream} from "@client/api"
+import {Badge, Box, Button, Code, Collapse, Heading, HStack, IconButton, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBoolean} from "@chakra-ui/react"
+import {api, Game, Player, Stream, TurnState} from "@client/api"
 import {BinaryListItem} from "@client/components/BinaryListItem"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
@@ -15,6 +15,29 @@ import {QueryFunction, useQuery} from "react-query"
 const getGame: QueryFunction<Game, ["game", string]> = async ({queryKey: [, id]}) => {
     //return marcVsHamish
     return (await api.get(`/game/${id}`)).data
+}
+
+const turnStateStyles: Record<TurnState, {label: string, color: string, toolTipText: string}> = {
+    timed_out: {
+        label: "Timed Out",
+        color: "red",
+        toolTipText: "Your code took too long trying to make a move."
+    },
+    illegal: {
+        label: "Illegal",
+        color: "red",
+        toolTipText: "Your code tried to make a move that wasn't allowed by the game's rules."
+    },
+    invalid: {
+        label: "Invalid",
+        color: "red",
+        toolTipText: "Your code's output was not in the correct format."
+    },
+    legal: {
+        label: "Legal",
+        color: "green",
+        toolTipText: "Your code made a valid move."
+    }
 }
 
 export const GamePage = ({id}: {id: string}) => {
@@ -47,18 +70,25 @@ export const GamePage = ({id}: {id: string}) => {
                     <Th>Player</Th>
                     <Th>Move</Th>
                     <Th>Run Time</Th>
-                    <Th></Th>
+                    <Th w="0px"></Th>
                 </Tr>
             </Thead>
             <Tbody>
                 {gameQuery.data.turns.map((t, i) => <React.Fragment key={i}>
                     <Tr>
                         <Td border="none">{i + 1}</Td>
-                        <Td border="none">{t.username}</Td>
+                        <Td border="none">{gameQuery.data.players.find(p => p.username === t.username)?.display_name}</Td>
                         <Td border="none">{t.action}</Td>
                         <Td border="none">{t.run_time_ms}ms</Td>
-                        <Td border="none" display="flex" justifyContent="flex-end">
-                            {t.streams && <IconButton size="xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} />}
+                        <Td border="none">
+                            <HStack justify="flex-end" align="center">
+                                {t.state && t.state !== "legal" && <Box d="flex" alignItems="center">
+                                    <Tooltip label={turnStateStyles[t.state].toolTipText} hasArrow>
+                                    <Badge colorScheme={turnStateStyles[t.state].color} variant="solid">{turnStateStyles[t.state].label}</Badge>
+                                    </Tooltip>
+                                </Box>}
+                                {t.streams && <IconButton size="2xs" variant="ghost" aria-label="expand row" icon={<ChevronDownIcon />} onClick={() => setExpanded(p => p === i ? null : i)} />}
+                            </HStack>
                         </Td>
                     </Tr>
                     <Tr height={0}>
