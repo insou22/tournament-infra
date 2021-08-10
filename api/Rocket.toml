@@ -1,16 +1,26 @@
 [default]
+# Respond to all requests provided to it. Assuming you are using a proxy such as Nginx, this can stay as is.
 address = "0.0.0.0"
+# Port to respond to. Assuming you are using a proxy such as Nginx, this can stay as is.
 port = 8000
+# Current tournament ID sets which tournament is filtered for by default.
 current_tournament_id = 1
+# Directory to upload code to. Relative to `/api`.
 code_upload_directory = "./uploads"
+# Length to truncate player binary hashes to.
 code_hash_length = 7
 
 [debug]
 webapp_url = "http://localhost:8080"
 [debug.cookies]
+# See release section for more detail, but these are the simplest (and most secure) cookie settings for development.
+# Secure can be set to `true` only if behind HTTPS or on localhost. Required for `same_site` to be `"none"`.
 secure = true
+# This is set to `"none"` to allow for cross origin cookies (necessary as during development, as the API and webapp are hosted on separate ports).
 same_site = "none"
 
 [release.cookies]
+# Set `secure` to `true` only if your server is behind HTTPS.
 secure = false
+# Either `"none"`, `"lax"` or `"strict"`. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#restrict_access_to_cookies.
 same_site = "lax"
