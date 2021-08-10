@@ -50,8 +50,6 @@ CREATE TABLE turns (
     game_id INTEGER NOT NULL,
     turn_number INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    binary_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
     run_time_ms INTEGER NOT NULL,
     action TEXT NOT NULL,

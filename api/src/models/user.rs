@@ -115,7 +115,7 @@ impl User {
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2", self.id, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0", self.id, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1", self.id, tournament_id).fetch_one(pool),
-                    sqlx::query!(r#"SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id WHERE turns.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
+                    sqlx::query!(r#"SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id JOIN players ON turns.player_id=players.id WHERE players.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
                 ).expect("a tournament stats fetch failed");
 
                 Some(TournamentStats {

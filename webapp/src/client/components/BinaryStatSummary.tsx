@@ -23,7 +23,7 @@ export const BinaryStatsSummary = ({stats}: {stats: BinaryStats}) => {
         },
         {
             label: "Average Turn Run Time",
-            value: `${stats.average_turn_run_time_ms}ms`,
+            value: `${stats.average_turn_run_time_ms.toFixed(2)}ms`,
             change: stats.average_turn_run_time_ms_percentage_change,
             invert: true
         }

@@ -2,6 +2,7 @@
 
 import sqlite3
 import random
+import itertools
 from pprint import pprint, pformat
 
 
@@ -24,6 +25,24 @@ def get_latest_valid_binary_hash(user):
             return binary["hash"]
 
     return None
+
+
+def get_trick_winner(turn_a, turn_b):
+    if turn_a["action"][0] != turn_b["action"][0]:
+        return turn_a["player_index"]
+    elif int(turn_a["action"][2]) > int(turn_b["action"][2]):
+        return turn_a["player_index"]
+    else:
+        return turn_b["player_index"]
+
+
+def generate_random_hands():
+    suits = ["1", "2", "3", "4"]
+    ranks = ["1", "2", "3", "4", "5"]
+    cards = [f"{suit} {rank}" for suit,
+             rank in itertools.product(suits, ranks)]
+    random.shuffle(cards)
+    return cards
 
 
 USERS = {
@@ -59,6 +78,8 @@ def get_timestamp(event: str):
         current_timestamp += random.randint(5, 10) * 1000
     elif event == "game_complete":
         current_timestamp += random.randint(5, 10) * 1000
+    elif event == "turn_create":
+        current_timestamp += random.randint(340, 3400)
     return current_timestamp
 
 
@@ -97,9 +118,8 @@ for i in range(0, 10):
 
                 es = expected_score(
                     user["rating"], opponent["rating"])
-                result = random.random()
-                result = 2 if result < es - \
-                    0.025 else 0 if result > es + 0.025 else 1
+
+                hands = generate_random_hands()
 
                 game = {
                     "created_at": get_timestamp("game_create"),
@@ -108,19 +128,70 @@ for i in range(0, 10):
                         {
                             "username": username,
                             "rating_before_game": user["rating"],
-                            "points": result,
-                            "rating_change": int(rating_change(result / 2, es)),
-                            "binary_hash": binary["hash"]
+                            "binary_hash": binary["hash"],
+                            "score": 0,
+                            "hand": hands[0:10]
                         },
                         {
                             "username": opponent_username,
                             "rating_before_game": opponent["rating"],
-                            "points": 2 - result,
-                            "rating_change": int(rating_change((2 - result) / 2, 1 - es)),
-                            "binary_hash": opponent_binary_hash
+                            "binary_hash": opponent_binary_hash,
+                            "score": 0,
+                            "hand": hands[10:20]
                         }
-                    ]
+                    ],
+                    "turns": []
                 }
+
+                # index (0 or 1) of a player in `game["players"]`
+                turn = random.randint(0, 1)
+                for i in range(0, 20):
+                    state = random.random()
+                    if state < 0.05:
+                        state = "timed_out"
+                    elif state < 0.1:
+                        state = "invalid"
+                    elif state < 0.15:
+                        state = "illegal"
+                    else:
+                        state = "legal"
+
+                    action = random.randint(
+                        0, len(game["players"][turn]["hand"]) - 1)
+                    action = game["players"][turn]["hand"].pop(action)
+
+                    game["turns"].append({
+                        "player_index": turn,
+                        "action": action,
+                        "state": state,
+                        "run_time_ms": random.randint(14, 1300),
+                        "created_at": get_timestamp("turn_create"),
+                        "stdout": "",
+                        "stdin": "",
+                        "stderr": ""
+                    })
+
+                    if i % 2 == 1:
+                        turn = get_trick_winner(
+                            game["turns"][-2], game["turns"][-1])
+                        game["players"][turn]["score"] += 1
+                    else:
+                        turn = int(not bool(turn))
+
+                if game["players"][0]["score"] == game["players"][1]["score"]:
+                    game["players"][0]["points"] = 1
+                    game["players"][1]["points"] = 1
+                elif game["players"][0]["score"] > game["players"][1]["score"]:
+                    game["players"][0]["points"] = 2
+                    game["players"][1]["points"] = 0
+                else:
+                    game["players"][0]["points"] = 0
+                    game["players"][1]["points"] = 2
+
+                game["players"][0]["rating_change"] = int(
+                    rating_change(game["players"][0]["points"] / 2, es))
+                game["players"][1]["rating_change"] = int(
+                    rating_change(game["players"][1]["points"] / 2, 1 - es))
 
                 user["rating"] += game["players"][0]["rating_change"]
                 opponent["rating"] += game["players"][1]["rating_change"]
@@ -233,6 +304,50 @@ conn.executemany(
         :rating_change
     )""",
     player_inserts
+)
+
+turn_inserts = [{
+    "game_created_at": game["created_at"],
+    "turn_number": turn_number,
+    "username": game["players"][turn["player_index"]]["username"],
+    "created_at": turn["created_at"],
+    "run_time_ms": turn["run_time_ms"],
+    "action": turn["action"],
+    "state": turn["state"],
+    "stdout": turn["stdout"],
+    "stdin": turn["stdin"],
+    "stderr": turn["stderr"]
+} for username, user in USERS.items() for binary in user["binaries"] for game in binary["games"] for turn_number, turn in enumerate(game["turns"], start=1)]
+
+conn.executemany(
+    """INSERT INTO turns (
+        game_id,
+        turn_number,
+        player_id,
+        created_at,
+        run_time_ms,
+        action,
+        state,
+        stdout,
+        stdin,
+        stderr
+    ) VALUES (
+        (SELECT id FROM games WHERE created_at=:game_created_at),
+        :turn_number,
+        (SELECT id FROM players WHERE user_id=(
+            SELECT id FROM users WHERE username=:username
+        ) AND game_id=(
+            SELECT id FROM games WHERE created_at=:game_created_at
+        )),
+        :created_at,
+        :run_time_ms,
+        :action,
+        :state,
+        :stdout,
+        :stdin,
+        :stderr
+    )""",
+    turn_inserts
 )
 
 conn.commit()

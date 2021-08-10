@@ -95,7 +95,7 @@ const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
         },
         {
             label: "Average Turn Run Time",
-            value: `${stats.average_turn_run_time_ms}ms`
+            value: `${stats.average_turn_run_time_ms.toFixed(2)}ms`
         }
     ]} />
 }
