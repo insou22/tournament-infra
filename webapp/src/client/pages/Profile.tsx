@@ -5,7 +5,7 @@ import {ButtonLink} from "@client/components/ButtonLink"
 import {GameList} from "@client/components/GameList"
 import {Loading} from "@client/components/Loading"
 import {StatsSummary} from "@client/components/StatSummary"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
@@ -39,7 +39,7 @@ export const Profile = ({username}: {username: string}) => {
         return <Loading />
     }
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <Heading>{profileQuery.data.display_name}</Heading>
         {profileQuery.data.current_tournament_stats_summary ? <>
             <Heading size="lg">July Tournament</Heading>
@@ -64,7 +64,7 @@ export const Profile = ({username}: {username: string}) => {
         {/* <Heading size="md">June Tournament</Heading>
         <Heading size="md">May Tournament</Heading>
         <Heading size="md">April Tournament</Heading> */}
-    </VStackPageWrapper>
+    </PageWrapper>
 }
 
 const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {

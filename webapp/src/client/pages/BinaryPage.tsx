@@ -5,7 +5,7 @@ import {BinaryStatusAlert} from "@client/components/BinaryStatusAlert"
 import {BreadcrumbLink} from "@client/components/BreadcrumbLink"
 import {GameList} from "@client/components/GameList"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useBinary} from "@client/hooks/useBinary"
 import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
@@ -41,7 +41,7 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
         </>
     }
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <Breadcrumb>
             <BreadcrumbItem>
                 <BreadcrumbLink href={`/user/${username}`}>
@@ -66,7 +66,7 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
         </HStack>
 
         {compileAlert}
-    </VStackPageWrapper>
+    </PageWrapper>
 }
 
 const BinaryGameList = ({username, hash}: {username: string, hash: string}) => {

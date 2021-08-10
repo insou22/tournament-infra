@@ -4,7 +4,7 @@ import {api, Game, Player, Stream} from "@client/api"
 import {BinaryListItem} from "@client/components/BinaryListItem"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useBinary} from "@client/hooks/useBinary"
 import {dontRetryOn404} from "@client/utils/api"
 import {resultProps} from "@client/utils/results"
@@ -31,7 +31,7 @@ export const GamePage = ({id}: {id: string}) => {
 
     const times = formatTimestamp(gameQuery.data.created_at)
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         {/* TODO: Add breadcrumbs. A single game is the only circumstance where we need the user/binary you navigated from for breadcrumbs, so location state should be used here to determine that. */}
         <HStack w="100%" justifyContent="space-between">
             <Heading>Game {id}</Heading>
@@ -71,7 +71,7 @@ export const GamePage = ({id}: {id: string}) => {
                 </React.Fragment>)}
             </Tbody>
         </Table>
-    </VStackPageWrapper>
+    </PageWrapper>
 }
 
 const PlayerListItem = ({player}: {player: Player}) => {

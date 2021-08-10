@@ -1,7 +1,7 @@
 import {Heading} from "@chakra-ui/react"
 import {GameList} from "@client/components/GameList"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
 import React from "react"
@@ -16,8 +16,8 @@ export const AllGames = () => {
         return <Loading />
     }
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <Heading>Recent Games</Heading>
         <GameList games={gamesQuery.data} />
-    </VStackPageWrapper>
+    </PageWrapper>
 }

@@ -2,7 +2,7 @@ import {Breadcrumb, BreadcrumbItem, Heading} from "@chakra-ui/react"
 import {BreadcrumbLink} from "@client/components/BreadcrumbLink"
 import {GameList} from "@client/components/GameList"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useUserProfile} from "@client/hooks/useUserProfile"
 import {dontRetryOn404} from "@client/utils/api"
 import {getFilteredGamesList} from "@client/utils/games"
@@ -20,7 +20,7 @@ export const PlayerGames = ({username}: {username: string}) => {
         return <Loading />
     }
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <Breadcrumb>
             <BreadcrumbItem>
                 <BreadcrumbLink href={`/user/${username}`}>
@@ -36,5 +36,5 @@ export const PlayerGames = ({username}: {username: string}) => {
 
         <Heading>{profileQuery.data.display_name}'s Games</Heading>
         <GameList games={gamesQuery.data} username={username} />
-    </VStackPageWrapper>
+    </PageWrapper>
 }

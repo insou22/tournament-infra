@@ -3,7 +3,7 @@ import {Box, HStack, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
 import {api, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {getRankingStyles} from "@client/utils/stats"
 import type {AxiosError} from "axios"
 import React from "react"
@@ -47,7 +47,7 @@ export const Rankings = () => {
         return <Loading />
     }
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <Heading>Current Tournament Rankings</Heading>
         <Table>
             <Thead>
@@ -62,7 +62,7 @@ export const Rankings = () => {
                 {rankingsQuery.data.map((r, i) => <RankingItem ranking={r} n={i + 1} key={i + 1} />)}
             </Tbody>
         </Table>
-    </VStackPageWrapper>
+    </PageWrapper>
 }
 
 const RankingItem = ({ranking, n}: {ranking: Ranking, n: number}) => {

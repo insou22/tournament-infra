@@ -1,6 +1,6 @@
 import {Button, Heading, HStack, Table, Tbody, Td, Text, Th, Thead, Tr} from "@chakra-ui/react"
 import {Loading} from "@client/components/Loading"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useUserInfo} from "@client/hooks/useUserInfo"
 import {GAMES} from "@shared/games"
 import type {LobbyAPI} from "boardgame.io"
@@ -21,7 +21,9 @@ export const Play = () => {
         setLobbyClient(new LobbyClient({server: LOBBY_SERVER_URL}))
     }, [])
 
-    return lobbyClient && playerName ? <PlayWrapped lobbyClient={lobbyClient} playerName={playerName} /> : <Loading centered />
+    return <PageWrapper>
+        {lobbyClient && playerName ? <PlayWrapped lobbyClient={lobbyClient} playerName={playerName} /> : <Loading centered />}
+    </PageWrapper>
 }
 
 const generateName = () => `Anonymous${Math.floor(Math.random() * 100000)}`
@@ -163,7 +165,7 @@ const PlayWrapped = ({lobbyClient, playerName}: {lobbyClient: LobbyClient, playe
 
     if (matchInfo && match) {
         const freeSeats = match.players.filter(p => !p.name).length
-        return <VStackPageWrapper>
+        return <>
             <HStack>
                 <Button onClick={() => {
                     if (matchInfo.credentials && matchInfo.playerID) {
@@ -178,16 +180,16 @@ const PlayWrapped = ({lobbyClient, playerName}: {lobbyClient: LobbyClient, playe
                 playerID={matchInfo.playerID}
                 credentials={matchInfo.credentials}
             /> : <Loading centered text={`Waiting for ${freeSeats} more player${freeSeats === 1 ? "" : "s"}...`} />}
-        </VStackPageWrapper>
+        </>
     } else {
         // Display lobby to create/join/spectate game
-        return <VStackPageWrapper>
+        return <>
             <Heading>Play/Simulate</Heading>
             <Heading size="lg">Create Game</Heading>
             <Button onClick={() => createMatchMutation.mutate({gameName: "round-1", numPlayers: 2})}>Create Game</Button>
             <Heading size="lg">Join Game</Heading>
             {matchesQuery.isLoading || !matchesQuery.data ? <Loading centered /> : <MatchList matches={matchesQuery.data} onJoin={match => joinMatchMutation.mutate({match, playerName})} />}
-        </VStackPageWrapper>
+        </>
     }
 }
 

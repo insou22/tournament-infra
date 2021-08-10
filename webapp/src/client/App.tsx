@@ -1,28 +1,12 @@
 import {Box, Container, Heading} from '@chakra-ui/layout'
-import type {BoxProps} from '@chakra-ui/react'
-import {AnimatePresence, motion} from 'framer-motion'
+import {AnimatePresence} from 'framer-motion'
 import React from 'react'
 import {Redirect, Route, Switch, useLocation} from "react-router-dom"
 import {Loading} from './components/Loading'
 import {Navbar} from './components/Navbar'
-import {VStackPageWrapper} from "./components/VStackPageWrapper"
+import {PageWrapper} from "./components/PageWrapper"
 import {useUserInfo} from './hooks/useUserInfo'
 import {About, AllGames, BinariesPage, BinaryPage, GamePage, Home, Login, Play, PlayerGames, Profile, Rankings, Settings, Spec} from './pages'
-
-const MotionBox = motion<BoxProps>(Box)
-
-const pageTransitionVariants = {
-    hidden: {
-        opacity: 0
-    },
-    visible: {
-        opacity: 1
-    }
-}
-
-const PageTransitionWrapper: React.FC = (props) => <MotionBox initial="hidden" animate="visible" exit="hidden" variants={pageTransitionVariants}>
-    {props.children}
-</MotionBox>
 
 export const App = () => {
     const {user, isLoading} = useUserInfo()
@@ -36,84 +20,56 @@ export const App = () => {
             <AnimatePresence exitBeforeEnter initial={false}>
                 <Switch location={location} key={location.pathname}>
                     <Route path="/" exact>
-                        <PageTransitionWrapper>
-                            <Home />
-                        </PageTransitionWrapper>
+                        <Home />
                     </Route>
                     <Route path="/about" exact>
-                        <PageTransitionWrapper>
-                            <About />
-                        </PageTransitionWrapper>
+                        <About />
                     </Route>
 
                     <Route path="/spec" exact>
-                        <PageTransitionWrapper>
-                            <Spec />
-                        </PageTransitionWrapper>
+                        <Spec />
                     </Route>
 
                     <Route path="/play" exact>
-                        <PageTransitionWrapper>
-                            <Play />
-                        </PageTransitionWrapper>
+                        <Play />
                     </Route>
 
                     <Route path="/login" exact>
-                        <PageTransitionWrapper>
-                            {isLoading ? <Loading /> : (user ? <Redirect to={`/user/${user.username}`} /> : <Login />)}
-                        </PageTransitionWrapper>
+                        {isLoading ? <Loading /> : (user ? <Redirect to={`/user/${user.username}`} /> : <Login />)}
                     </Route>
                     <Route path="/settings" exact>
-                        <PageTransitionWrapper>
-                            {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
-                        </PageTransitionWrapper>
+                        {isLoading ? <Loading /> : (user ? <Settings /> : <Redirect to="/login" />)}
                     </Route>
 
                     <Route path="/user/:username" exact render={
-                        ({match: {params: {username}}}) => <PageTransitionWrapper>
-                            <Profile username={username} />
-                        </PageTransitionWrapper>
+                        ({match: {params: {username}}}) => <Profile username={username} />
                     } />
                     <Route path="/user/:username/games" exact render={
-                        ({match: {params: {username}}}) => <PageTransitionWrapper>
-                            <PlayerGames username={username} />
-                        </PageTransitionWrapper>
+                        ({match: {params: {username}}}) => <PlayerGames username={username} />
                     } />
                     <Route path="/user/:username/binaries" exact render={
-                        ({match: {params: {username}}}) => <PageTransitionWrapper>
-                            <BinariesPage username={username} />
-                        </PageTransitionWrapper>
+                        ({match: {params: {username}}}) => <BinariesPage username={username} />
                     } />
                     <Route path="/user/:username/binary/:hash" exact render={
-                        ({match: {params: {hash, username}}}) => <PageTransitionWrapper>
-                            <BinaryPage hash={hash} username={username} />
-                        </PageTransitionWrapper>
+                        ({match: {params: {hash, username}}}) => <BinaryPage hash={hash} username={username} />
                     } />
 
                     <Route path="/rankings" exact>
-                        <PageTransitionWrapper>
-                            <Rankings />
-                        </PageTransitionWrapper>
+                        <Rankings />
                     </Route>
                     <Route path="/games" exact>
-                        <PageTransitionWrapper>
-                            <AllGames />
-                        </PageTransitionWrapper>
+                        <AllGames />
                     </Route>
 
                     <Route path="/game/:id" exact render={
-                        ({match: {params: {id}}}) => <PageTransitionWrapper>
-                            <GamePage id={id} />
-                        </PageTransitionWrapper>
+                        ({match: {params: {id}}}) => <GamePage id={id} />
                     } />
 
                     <Route>
-                        <PageTransitionWrapper>
-                            <VStackPageWrapper>
-                                <Heading>404</Heading>
-                                <Heading size="md">This page doesn't exist.</Heading>
-                            </VStackPageWrapper>
-                        </PageTransitionWrapper>
+                        <PageWrapper>
+                            <Heading>404</Heading>
+                            <Heading size="md">This page doesn't exist.</Heading>
+                        </PageWrapper>
                     </Route>
                 </Switch>
             </AnimatePresence>

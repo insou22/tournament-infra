@@ -1,6 +1,6 @@
 import {Heading, Text} from "@chakra-ui/layout"
 import {ListItem, UnorderedList} from "@chakra-ui/react"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import React from "react"
 import ReactMarkdown from 'react-markdown'
 import type {NormalComponents, SpecialComponents} from "react-markdown/src/ast-to-react"
@@ -20,7 +20,7 @@ const components: Partial<NormalComponents & SpecialComponents> = {
 }
 
 export const Spec = () => {
-    return <VStackPageWrapper spacing={2}>
+    return <PageWrapper spacing={2}>
         <ReactMarkdown plugins={[remarkGfm]} components={components} children={spec.markdown} />
-    </VStackPageWrapper>
+    </PageWrapper>
 }

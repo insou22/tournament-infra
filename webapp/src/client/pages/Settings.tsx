@@ -1,7 +1,7 @@
 import {Heading} from "@chakra-ui/layout"
 import {Button, FormControl, FormLabel, HStack, Input} from "@chakra-ui/react"
 import {api, UserProfile} from "@client/api"
-import {VStackPageWrapper} from "@client/components/VStackPageWrapper"
+import {PageWrapper} from "@client/components/PageWrapper"
 import {useUserInfo} from "@client/hooks/useUserInfo"
 import {CheckUserInfoContext, logout} from "@client/utils/auth"
 import type {AxiosError} from "axios"
@@ -40,7 +40,7 @@ export const Settings = () => {
         }
     })
 
-    return <VStackPageWrapper>
+    return <PageWrapper>
         <HStack w="100%" justifyContent="space-between">
             <Heading>Settings</Heading>
             <Button variant="solid" colorScheme="red" onClick={() => logoutMutation.mutate()} isLoading={logoutMutation.isLoading}>Logout</Button>
@@ -60,5 +60,5 @@ export const Settings = () => {
                 <option value="dark">Dark</option>
             </Select>
         </FormControl> */}
-    </VStackPageWrapper>
+    </PageWrapper>
 }
