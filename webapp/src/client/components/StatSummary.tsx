@@ -6,7 +6,8 @@ export const StatsSummary = ({stats}: {
     stats: {
         label: string,
         value: number | string,
-        change?: number
+        change?: number,
+        invert?: boolean
     }[]
 }) => {
     return <Box borderColor="whiteAlpha.300" borderStyle="none" borderWidth="1px" borderRadius={12} w="100%" bg="whiteAlpha.100">
@@ -15,7 +16,7 @@ export const StatsSummary = ({stats}: {
                 <StatLabel>{stat.label}</StatLabel>
                 <StatNumber>{stat.value}</StatNumber>
                 {stat.change !== undefined && stat.change !== null && <StatHelpText>
-                    <StatArrow type={stat.change < 0 ? "decrease" : "increase"} />
+                    <StatArrow type={stat.change < 0 ? "decrease" : "increase"} transform={stat.invert ? "rotate(180deg)" : ""}/>
                     {stat.change.toFixed(2)}%
                 </StatHelpText>}
             </Stat>)}
