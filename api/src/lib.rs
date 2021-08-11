@@ -6,3 +6,5 @@ pub mod errors;
 pub mod config;
 pub mod models;
 pub mod paginate;
+pub mod game;
+pub mod games;

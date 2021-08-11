@@ -2101,6 +2101,7 @@ dependencies = [
  "data-encoding",
  "dotenv",
  "error-chain",
+ "rand",
  "reqwest",
  "ring",
  "rocket",
