@@ -13,7 +13,7 @@ import {QueryFunction, useInfiniteQuery} from "react-query"
 
 const getBinaries: QueryFunction<Paginated<Binary>, ["binaries", string]> = async ({queryKey: [, username], pageParam: cursor}) => {
     // return marcchee.binaries
-    return (await api.get(`/user/${username}/binaries`, {params: {cursor, per_page:3}})).data
+    return (await api.get(`/user/${username}/binaries`, {params: {cursor}})).data
 }
 
 export const BinariesPage = ({username}: {username: string}) => {
