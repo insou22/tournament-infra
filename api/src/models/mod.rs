@@ -1,6 +1,3 @@
-#![allow(unused)]
-use serde::{Serialize, Deserialize};
-
 pub mod user;
 pub mod binary;
 pub mod game;

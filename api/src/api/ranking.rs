@@ -1,4 +1,5 @@
-use crate::paginate::Paginate;
+use crate::paginate::{Cursor, Paginatable, Paginate, Paginated};
+use rocket::http::Status;
 use rocket::serde::{json::Json, Serialize};
 
 #[derive(Serialize)]
@@ -8,31 +9,59 @@ pub struct RankingResponse {
     pub rating: i64,
 }
 
-#[get("/rankings?<per_page>&<page>")]
+impl Paginatable for RankingResponse {
+    type CursorType = i64;
+    fn get_cursor(&self) -> Self::CursorType {
+        self.rating
+    }
+}
+
+#[get("/rankings?<per_page>&<cursor>")]
 pub async fn get_rankings(
     pool: &rocket::State<sqlx::SqlitePool>,
     config: &rocket::State<crate::config::Config>,
-    per_page: Option<u32>,
-    page: Option<u32>,
-) -> Json<Vec<RankingResponse>> {
-    let paginate = Paginate::new(per_page, page);
+    per_page: Option<i64>,
+    cursor: Option<String>,
+) -> Result<Json<Paginated<RankingResponse>>, Status> {
+    let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
-    Json(
-        sqlx::query_as!(
+    let rankings: Vec<RankingResponse> = match paginate.cursor {
+        Cursor::None => sqlx::query_as!(
             RankingResponse,
-            "SELECT username, display_name, rating
-            FROM rankings
-            INNER JOIN users ON rankings.user_id=users.id
+            "SELECT username, display_name, rating FROM rankings JOIN users ON rankings.user_id=users.id
             WHERE tournament_id=?
-            ORDER BY rating DESC
-            LIMIT ?
-            OFFSET ?",
+            ORDER BY rating DESC LIMIT ?",
             config.inner().current_tournament_id,
-            paginate.limit,
-            paginate.offset
+            paginate.per_page_with_cursor
         )
         .fetch_all(pool.inner())
         .await
-        .expect("rankings fetch failed"),
-    )
+        .expect("rankings fetch failed with no cursor"),
+        Cursor::Next(c) => sqlx::query_as!(
+            RankingResponse,
+            "SELECT username, display_name, rating FROM rankings JOIN users ON rankings.user_id=users.id
+            WHERE tournament_id=? AND rating<?
+            ORDER BY rating DESC LIMIT ?",
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("rankings fetch failed with next cursor"),
+        Cursor::Prev(c) => sqlx::query_as!(
+            RankingResponse,
+            "SELECT username, display_name, rating FROM rankings JOIN users ON rankings.user_id=users.id
+            WHERE tournament_id=? AND rating>?
+            ORDER BY rating DESC LIMIT ?",
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("rankings fetch failed with prev cursor"),
+    };
+
+    Ok(Json(Paginated::new(rankings, paginate)))
 }

@@ -1,10 +1,14 @@
+#![allow(unused)]
+
 #[macro_use] extern crate rocket;
+#[macro_use] extern crate error_chain;
 
 pub mod api;
 pub mod models;
 pub mod cors;
 pub mod paginate;
-mod config;
+pub mod errors;
+pub mod config;
 
 use api::{
     login::*,

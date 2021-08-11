@@ -1,47 +1,23 @@
 import {Heading} from "@chakra-ui/layout"
-import {Box, HStack, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
-import {api, Ranking} from "@client/api"
+import {Box, Button, HStack, Table, Tbody, Td, Th, Thead, Tr} from "@chakra-ui/react"
+import {api, Paginated, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {PageWrapper} from "@client/components/PageWrapper"
 import {getRankingStyles} from "@client/utils/stats"
 import type {AxiosError} from "axios"
 import React from "react"
-import {QueryFunction, useQuery} from "react-query"
+import {QueryFunction, useInfiniteQuery} from "react-query"
 
 
-const getRankings: QueryFunction<Ranking[], ["rankings"]> = async () => {
-    return (await api.get("/rankings")).data
-    // return [
-    //     {
-    //         username: "chicken",
-    //         display_name: "Chicken",
-    //         rating: 9001,
-    //         win_loss: Infinity
-    //     },
-    //     {
-    //         username: "marcchee",
-    //         display_name: "Marc Chee",
-    //         rating: 4200,
-    //         win_loss: 1
-    //     },
-    //     {
-    //         username: "hamishwhc",
-    //         display_name: "HamishWHC",
-    //         rating: 1337,
-    //         win_loss: 6 / 9
-    //     },
-    //     {
-    //         username: "evil-izzy",
-    //         display_name: "Evil Izzy",
-    //         rating: 666,
-    //         win_loss: 0.5
-    //     }
-    // ]
+const getRankings: QueryFunction<Ranking[], ["rankings"]> = async ({pageParam: cursor}) => {
+    return (await api.get("/rankings", {params: {cursor}})).data
 }
 
 export const Rankings = () => {
-    const rankingsQuery = useQuery<unknown, AxiosError, Ranking[], ["rankings"]>(["rankings"], getRankings)
+    const rankingsQuery = useInfiniteQuery<unknown, AxiosError, Paginated<Ranking>, ["rankings"]>(["rankings"], getRankings, {
+        getNextPageParam: p => p.next_cursor
+    })
 
     if (rankingsQuery.isLoading || !rankingsQuery.data) {
         return <Loading />
@@ -59,9 +35,10 @@ export const Rankings = () => {
                 </Tr>
             </Thead>
             <Tbody>
-                {rankingsQuery.data.map((r, i) => <RankingItem ranking={r} n={i + 1} key={i + 1} />)}
+                {rankingsQuery.data.pages.flatMap(p => p.items).map((r, i) => <RankingItem ranking={r} n={i + 1} key={i + 1} />)}
             </Tbody>
         </Table>
+        {rankingsQuery.hasNextPage && <Button variant="link" onClick={() => rankingsQuery.fetchNextPage()} isLoading={rankingsQuery.isFetchingNextPage}>Load More...</Button>}
     </PageWrapper>
 }
 

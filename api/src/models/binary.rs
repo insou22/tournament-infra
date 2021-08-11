@@ -1,5 +1,6 @@
 use rocket::tokio::try_join;
 use serde::Serialize;
+use crate::paginate::Paginatable;
 
 #[derive(Serialize)]
 pub struct BinaryStats {
@@ -17,6 +18,13 @@ pub struct BinaryResponse {
     #[serde(flatten)]
     pub binary: Binary,
     pub stats_summary: BinaryStats,
+}
+
+impl Paginatable for BinaryResponse {
+    type CursorType = i64;
+    fn get_cursor(&self) -> Self::CursorType {
+        self.binary.created_at
+    }
 }
 
 #[derive(Serialize)]

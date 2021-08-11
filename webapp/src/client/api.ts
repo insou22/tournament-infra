@@ -5,6 +5,12 @@ export const api = axios.create({
     withCredentials: true
 })
 
+export interface Paginated<T> {
+    items: T[],
+    next_cursor: string,
+    prev_cursor: string
+}
+
 export interface TournamentStats {
     ranking: number
     wins: number

@@ -1,4 +1,5 @@
 use serde::Serialize;
+use crate::paginate::Paginatable;
 
 #[derive(Serialize)]
 pub struct TurnStreams {
@@ -37,6 +38,13 @@ pub struct GameResponse {
     pub players: Vec<Player>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub turns: Option<Vec<Turn>>,
+}
+
+impl Paginatable for GameResponse {
+    type CursorType = i64;
+    fn get_cursor(&self) -> Self::CursorType {
+        self.game.created_at
+    }
 }
 
 #[derive(Serialize)]

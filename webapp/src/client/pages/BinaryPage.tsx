@@ -1,4 +1,4 @@
-import {Breadcrumb, BreadcrumbItem, Heading, HStack, Text, Tooltip} from "@chakra-ui/react"
+import {Breadcrumb, BreadcrumbItem, Button, Heading, HStack, Text, Tooltip} from "@chakra-ui/react"
 import type {Game} from "@client/api"
 import {BinaryStatsSummary} from "@client/components/BinaryStatSummary"
 import {BinaryStatusAlert} from "@client/components/BinaryStatusAlert"
@@ -13,7 +13,7 @@ import {getFilteredGamesList} from "@client/utils/games"
 import {formatTimestamp} from "@client/utils/time"
 import type {AxiosError} from "axios"
 import React from "react"
-import {useQuery} from "react-query"
+import {useInfiniteQuery, useQuery} from "react-query"
 
 export const BinaryPage = ({username, hash}: {username: string, hash: string}) => {
     const profileQuery = useUserProfile(username)
@@ -70,13 +70,17 @@ export const BinaryPage = ({username, hash}: {username: string, hash: string}) =
 }
 
 const BinaryGameList = ({username, hash}: {username: string, hash: string}) => {
-    const gamesQuery = useQuery<unknown, AxiosError, Game[], ["games", {username: string, hash: string}]>(["games", {username, hash}], getFilteredGamesList, {
-        retry: dontRetryOn404
+    const gamesQuery = useInfiniteQuery(["games", {username, hash}], getFilteredGamesList, {
+        retry: dontRetryOn404,
+        getNextPageParam: p => p.next_cursor
     })
 
     if (gamesQuery.isLoading || !gamesQuery.data) {
         return <Loading />
     }
 
-    return <GameList games={gamesQuery.data} username={username} />
+    return <>
+        <GameList games={gamesQuery.data.pages.flatMap(p => p.items)} username={username} />
+        {gamesQuery.hasNextPage && <Button variant="link" onClick={() => gamesQuery.fetchNextPage()} isLoading={gamesQuery.isFetchingNextPage}>Load More...</Button>}
+    </>
 }

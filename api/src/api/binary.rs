@@ -2,40 +2,65 @@ use crate::models::{
     binary::{Binary, BinaryResponse},
     user::User,
 };
-use crate::paginate::Paginate;
+use crate::paginate::{Cursor, Paginate, Paginated};
 use ring::digest::{Context, SHA256};
+use rocket::http::Status;
 use rocket::serde::json::Json;
 use std::io::{BufReader, Read};
 
-#[get("/user/<username>/binaries?<per_page>&<page>")]
+#[get("/user/<username>/binaries?<per_page>&<cursor>")]
 pub async fn get_user_binaries(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
     config: &rocket::State<crate::config::Config>,
-    per_page: Option<u32>,
-    page: Option<u32>,
-) -> Option<Json<Vec<BinaryResponse>>> {
+    per_page: Option<i64>,
+    cursor: Option<String>,
+) -> Result<Json<Paginated<BinaryResponse>>, Status> {
     match User::get_by_username(username, pool.inner()).await {
-        Some(user) => Some(Json({
-            let paginate = Paginate::new(per_page, page);
+        Some(user) => Ok(Json({
+            let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
-            let binaries: Vec<Binary> = sqlx::query_as!(
-                Binary,
-                "SELECT *
-                FROM binaries
-                WHERE user_id=? AND tournament_id=?
-                ORDER BY created_at DESC
-                LIMIT ?
-                OFFSET ?",
-                user.id,
-                config.inner().current_tournament_id,
-                paginate.limit,
-                paginate.offset
-            )
-            .fetch_all(pool.inner())
-            .await
-            .expect("binary fetch all failed");
+            let binaries: Vec<Binary> = match paginate.cursor {
+                Cursor::None => sqlx::query_as!(
+                    Binary,
+                    "SELECT * FROM binaries
+                    WHERE user_id=? AND tournament_id=?
+                    ORDER BY created_at DESC LIMIT ?",
+                    user.id,
+                    config.inner().current_tournament_id,
+                    paginate.per_page_with_cursor
+                )
+                .fetch_all(pool.inner())
+                .await
+                .expect("binary fetch for user failed with no cursor"),
+                Cursor::Next(c) => sqlx::query_as!(
+                    Binary,
+                    "SELECT * FROM binaries
+                    WHERE user_id=? AND tournament_id=? AND created_at<?
+                    ORDER BY created_at DESC LIMIT ?",
+                    user.id,
+                    config.inner().current_tournament_id,
+                    c,
+                    paginate.per_page_with_cursor
+                )
+                .fetch_all(pool.inner())
+                .await
+                .expect("binary fetch for user failed with next cursor"),
+                Cursor::Prev(c) => sqlx::query_as!(
+                    Binary,
+                    "SELECT * FROM binaries
+                    WHERE user_id=? AND tournament_id=? AND created_at>?
+                    ORDER BY created_at DESC LIMIT ?",
+                    user.id,
+                    config.inner().current_tournament_id,
+                    c,
+                    paginate.per_page_with_cursor
+                )
+                .fetch_all(pool.inner())
+                .await
+                .expect("binary fetch for user failed with prev cursor"),
+            };
 
             let mut binaries_with_stats: Vec<BinaryResponse> = vec![];
 
@@ -53,9 +78,9 @@ pub async fn get_user_binaries(
                 }
             }
 
-            binaries_with_stats
+            Paginated::new(binaries_with_stats, paginate)
         })),
-        None => None,
+        None => Err(Status::NotFound),
     }
 }
 

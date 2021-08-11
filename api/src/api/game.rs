@@ -3,33 +3,56 @@ use crate::models::{
     game::{Game, GameResponse},
     user::User,
 };
-use crate::paginate::Paginate;
+use crate::paginate::{Cursor, Paginate, Paginated};
+use rocket::http::Status;
 use rocket::serde::json::Json;
 
-#[get("/games?<per_page>&<page>")]
+#[get("/games?<per_page>&<cursor>")]
 pub async fn get_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     config: &rocket::State<crate::config::Config>,
-    per_page: Option<u32>,
-    page: Option<u32>,
-) -> Json<Vec<GameResponse>> {
-    let paginate = Paginate::new(per_page, page);
+    per_page: Option<i64>,
+    cursor: Option<String>,
+) -> Result<Json<Paginated<GameResponse>>, Status> {
+    let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
-    let games: Vec<Game> = sqlx::query_as!(
-        Game,
-        "SELECT *
-        FROM games
-        WHERE tournament_id=?
-        ORDER BY games.completed_at DESC
-        LIMIT ?
-        OFFSET ?", // TODO: Replace offsets with better pagination once it gets laggy.
-        config.inner().current_tournament_id,
-        paginate.limit,
-        paginate.offset
-    )
-    .fetch_all(pool.inner())
-    .await
-    .expect("game fetch all failed");
+    let games: Vec<Game> = match paginate.cursor {
+        Cursor::None => sqlx::query_as!(
+            Game,
+            "SELECT * FROM games
+            WHERE tournament_id=?
+            ORDER BY games.created_at DESC LIMIT ?",
+            config.inner().current_tournament_id,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch all failed with no cursor"),
+        Cursor::Next(c) => sqlx::query_as!(
+            Game,
+            "SELECT * FROM games
+            WHERE tournament_id=? AND created_at<?
+            ORDER BY games.created_at DESC LIMIT ?",
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch all failed with next cursor"),
+        Cursor::Prev(c) => sqlx::query_as!(
+            Game,
+            "SELECT * FROM games
+            WHERE tournament_id=? AND created_at>?
+            ORDER BY games.created_at ASC LIMIT ?",
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch all failed with prev cursor"),
+    };
 
     let mut games_with_players: Vec<GameResponse> = vec![];
 
@@ -41,44 +64,67 @@ pub async fn get_games(
         })
     }
 
-    Json(games_with_players)
+    Ok(Json(Paginated::new(games_with_players, paginate)))
 }
 
-#[get("/user/<username>/games?<per_page>&<page>")]
+#[get("/user/<username>/games?<per_page>&<cursor>")]
 pub async fn get_user_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
     config: &rocket::State<crate::config::Config>,
-    per_page: Option<u32>,
-    page: Option<u32>,
-) -> Option<Json<Vec<GameResponse>>> {
+    per_page: Option<i64>,
+    cursor: Option<String>,
+) -> Result<Json<Paginated<GameResponse>>, Status> {
     let user = User::get_by_username(username, pool.inner()).await;
 
     if user.is_none() {
-        return None;
+        return Err(Status::NotFound);
     }
 
     let user = user.unwrap();
 
-    let paginate = Paginate::new(per_page, page);
+    let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
-    let games: Vec<Game> = sqlx::query_as!(
-        Game,
-        "SELECT games.*
-        FROM players
-        JOIN games ON players.game_id=games.id
-        WHERE players.user_id=? AND games.tournament_id=?
-        ORDER BY games.completed_at DESC
-        LIMIT ?
-        OFFSET ?",
-        user.id,
-        config.inner().current_tournament_id,
-        paginate.limit,
-        paginate.offset
-    )
-    .fetch_all(pool.inner())
-    .await
-    .expect("user games fetch failed");
+    let games: Vec<Game> = match paginate.cursor {
+        Cursor::None => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.user_id=? AND games.tournament_id=?
+            ORDER BY games.completed_at DESC LIMIT ?",
+            user.id,
+            config.inner().current_tournament_id,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for user failed with no cursor"),
+        Cursor::Next(c) => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.user_id=? AND games.tournament_id=? AND games.created_at<?
+            ORDER BY games.completed_at DESC LIMIT ?",
+            user.id,
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for user failed with next cursor"),
+        Cursor::Prev(c) => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.user_id=? AND games.tournament_id=? AND games.created_at>?
+            ORDER BY games.completed_at ASC LIMIT ?",
+            user.id,
+            config.inner().current_tournament_id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for user failed with prev cursor"),
+    };
 
     let mut games_with_players: Vec<GameResponse> = vec![];
 
@@ -91,22 +137,22 @@ pub async fn get_user_games(
         })
     }
 
-    Some(Json(games_with_players))
+    Ok(Json(Paginated::new(games_with_players, paginate)))
 }
 
-#[get("/user/<username>/binary/<hash>/games?<per_page>&<page>")]
+#[get("/user/<username>/binary/<hash>/games?<per_page>&<cursor>")]
 pub async fn get_binary_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
     hash: &str,
-    per_page: Option<u32>,
-    page: Option<u32>,
-) -> Option<Json<Vec<GameResponse>>> {
+    per_page: Option<i64>,
+    cursor: Option<String>,
+) -> Result<Json<Paginated<GameResponse>>, Status> {
     let binary = Binary::get_by_username_and_hash(username, hash, pool.inner()).await;
 
     if binary.is_none() {
-        return None;
+        return Err(Status::NotFound);
     }
 
     let binary = binary.unwrap();
@@ -114,27 +160,48 @@ pub async fn get_binary_games(
     if binary.compile_result != "success"
         && current_user.filter(|cu| cu.username == username).is_none()
     {
-        return None;
+        return Err(Status::NotFound);
     }
 
-    let paginate = Paginate::new(per_page, page);
+    let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
-    let games: Vec<Game> = sqlx::query_as!(
-        Game,
-        "SELECT games.*
-        FROM players
-        JOIN games ON players.game_id=games.id
-        WHERE players.binary_id=?
-        ORDER BY games.completed_at DESC
-        LIMIT ?
-        OFFSET ?",
-        binary.id,
-        paginate.limit,
-        paginate.offset
-    )
-    .fetch_all(pool.inner())
-    .await
-    .expect("user games fetch failed");
+    let games: Vec<Game> = match paginate.cursor {
+        Cursor::None => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.binary_id=?
+            ORDER BY games.completed_at DESC LIMIT ?",
+            binary.id,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for binary failed with no cursor"),
+        Cursor::Next(c) => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.binary_id=? AND games.created_at<?
+            ORDER BY games.completed_at DESC LIMIT ?",
+            binary.id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for binary failed with next cursor"),
+        Cursor::Prev(c) => sqlx::query_as!(
+            Game,
+            "SELECT games.* FROM players JOIN games ON players.game_id=games.id
+            WHERE players.binary_id=? AND games.created_at>?
+            ORDER BY games.completed_at ASC LIMIT ?",
+            binary.id,
+            c,
+            paginate.per_page_with_cursor
+        )
+        .fetch_all(pool.inner())
+        .await
+        .expect("game fetch for binary failed with prev cursor"),
+    };
 
     let mut games_with_players: Vec<GameResponse> = vec![];
 
@@ -146,7 +213,7 @@ pub async fn get_binary_games(
         })
     }
 
-    Some(Json(games_with_players))
+    Ok(Json(Paginated::new(games_with_players, paginate)))
 }
 
 #[get("/game/<id>")]

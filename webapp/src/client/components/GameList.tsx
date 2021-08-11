@@ -9,31 +9,9 @@ export const GameList = ({games, username}: {games: Omit<Game, "turns">[], usern
     if (games.length === 0) {
         return <Text>No games.</Text>
     }
+    
     return <Grid rowGap={2} columnGap={2} templateColumns={`repeat(${username ? 8 : 7}, max-content)`} fontWeight="semibold">
         {games.map((g, i) => <GameListItem game={g} username={username} row={i + 1} key={i} />)}
-
-
-        {/* <GridItem gridRow={2} gridColumn={1}>
-            <Badge variant="solid" colorScheme="red" w="100%" textAlign="center">Lost</Badge>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={2}>
-            <Text>Marc Chee</Text>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={3}>
-            <Text>(901)</Text>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={4}>
-            <Badge colorScheme="red" w="100%" textAlign="center">-13</Badge>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={5}>
-            <Text>vs Chicken</Text>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={6}>
-            <Text>(1234)</Text>
-        </GridItem>
-        <GridItem gridRow={2} gridColumn={7}>
-            <Badge colorScheme="green" w="100%" textAlign="center">+23</Badge>
-        </GridItem> */}
     </Grid>
 }
 

@@ -13,3 +13,4 @@ time = { version = "0.2", features = ["std"] }
 sqlx = { version = "0.5", features = ["runtime-tokio-native-tls", "macros", "migrate", "sqlite", "offline"] }
 ring = "0.16.20"
 data-encoding = "2.3.2"
+error-chain = "0.12.4"

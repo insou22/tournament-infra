@@ -18,7 +18,7 @@ export const Profile = ({username}: {username: string}) => {
     // const [showPreviousTournaments, setShowPreviousTournaments] = useBoolean(false)
     const profileQuery = useUserProfile(username)
 
-    const gamesQuery = useQuery(["games", {username, perPage: 10, page: 1}], getFilteredGamesList, {
+    const gamesQuery = useQuery(["games", {username, perPage: 10}], getFilteredGamesList, {
         retry: dontRetryOn404,
         enabled: !!(profileQuery.data)
     })
@@ -46,7 +46,7 @@ export const Profile = ({username}: {username: string}) => {
             <TournamentStatsSummary stats={profileQuery.data.current_tournament_stats_summary} />
             {profileQuery.data.current_binary && <>
                 <Heading size="md">Latest Games</Heading>
-                {gamesQuery.data ? <GameList games={gamesQuery.data} username={username} /> : <Loading />}
+                {gamesQuery.data ? <GameList games={gamesQuery.data.items} username={username} /> : <Loading />}
                 <ButtonLink href={`/user/${username}/games`} size="sm">See More...</ButtonLink>
                 <Divider />
                 <Heading size="md">Current Binary</Heading>
