@@ -11,9 +11,9 @@ const theme = extendTheme({
     components: {
         Heading: {
             sizes: {
-                // xl: {
-                //     color: "#FFFFFF"
-                // },
+                xl: {
+                    color: "#FFFFFF"
+                },
                 lg: {
                     color: "#E5FDFF" // blue
                 },
