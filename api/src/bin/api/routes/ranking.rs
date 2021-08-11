@@ -1,4 +1,4 @@
-use crate::paginate::{Cursor, Paginatable, Paginate, Paginated};
+use tournament_api::paginate::{Cursor, Paginatable, Paginate, Paginated};
 use rocket::http::Status;
 use rocket::serde::{json::Json, Serialize};
 
@@ -19,7 +19,7 @@ impl Paginatable for RankingResponse {
 #[get("/rankings?<per_page>&<cursor>")]
 pub async fn get_rankings(
     pool: &rocket::State<sqlx::SqlitePool>,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<RankingResponse>>, Status> {

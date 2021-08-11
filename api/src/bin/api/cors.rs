@@ -25,7 +25,7 @@ impl Fairing for Cors {
     }
 
     async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
-        let config = request.guard::<&rocket::State<crate::config::Config>>().await.expect("config fetch failed in CORS fairing");
+        let config = request.guard::<&rocket::State<tournament_api::config::Config>>().await.expect("config fetch failed in CORS fairing");
         // TODO: Revisit CORS down when we have a domain
         response.set_header(Header::new(
             "Access-Control-Allow-Origin",

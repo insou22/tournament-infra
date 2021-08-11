@@ -1,8 +1,8 @@
-use crate::models::{
+use tournament_api::models::{
     binary::{Binary, BinaryResponse},
     user::User,
 };
-use crate::paginate::{Cursor, Paginate, Paginated};
+use tournament_api::paginate::{Cursor, Paginate, Paginated};
 use ring::digest::{Context, SHA256};
 use rocket::http::Status;
 use rocket::serde::json::Json;
@@ -13,7 +13,7 @@ pub async fn get_user_binaries(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: Option<User>,
     username: &str,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<BinaryResponse>>, Status> {
@@ -136,7 +136,7 @@ fn hash_code(upload_time: i64, file_path: &std::path::Path) -> String {
 pub async fn put_user_binary(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: User,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
     mut file: rocket::fs::TempFile<'_>,
 ) -> Json<BinaryResponse> {
     // SQLite's max integer size is the same as i64, so we'll convert to that.

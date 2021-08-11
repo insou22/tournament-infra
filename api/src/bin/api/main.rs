@@ -1,16 +1,11 @@
 #![allow(unused)]
 
 #[macro_use] extern crate rocket;
-#[macro_use] extern crate error_chain;
 
-pub mod api;
-pub mod models;
-pub mod cors;
-pub mod paginate;
-pub mod errors;
-pub mod config;
+mod routes;
+mod cors;
 
-use api::{
+use routes::{
     login::*,
     logout::*,
     user::*,
@@ -30,7 +25,7 @@ async fn rocket() -> _ {
 
     rocket::build()
         .attach(cors::fairing())
-        .attach(rocket::fairing::AdHoc::config::<config::Config>())
+        .attach(rocket::fairing::AdHoc::config::<tournament_api::config::Config>())
         .manage(pool)
         .mount("/", routes![
             login,

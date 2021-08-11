@@ -1,4 +1,4 @@
-use crate::models::user::{User, UserInfo, UserProfile};
+use tournament_api::models::user::{User, UserInfo, UserProfile};
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
@@ -6,7 +6,7 @@ use serde::Deserialize;
 pub async fn get_userinfo(
     pool: &rocket::State<sqlx::SqlitePool>,
     user: User,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
 ) -> Json<UserInfo> {
     Json(
         user.get_userinfo(config.inner().current_tournament_id, pool.inner())
@@ -18,7 +18,7 @@ pub async fn get_userinfo(
 pub async fn get_user_profile(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
 ) -> Option<Json<UserProfile>> {
     match User::get_by_username(username, pool.inner()).await {
         Some(user) => Some(Json(
@@ -39,7 +39,7 @@ pub async fn update_user_profile(
     pool: &rocket::State<sqlx::SqlitePool>,
     user: User,
     profile_patch: Json<ProfileUpdate>,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
 ) -> Json<UserProfile> {
     let user = sqlx::query_as!(
         User,

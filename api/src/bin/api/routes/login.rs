@@ -1,4 +1,4 @@
-use crate::models::user::{User, UserInfo};
+use tournament_api::models::user::{User, UserInfo};
 use rocket::{
     http::{Cookie, CookieJar, SameSite},
     serde::json::Json,
@@ -29,7 +29,7 @@ pub async fn login(
     pool: &rocket::State<sqlx::SqlitePool>,
     request: Json<LoginRequest>,
     cookies: &CookieJar<'_>,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
 ) -> Json<LoginResponse> {
     let client = reqwest::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
