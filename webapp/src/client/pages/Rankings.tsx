@@ -10,12 +10,12 @@ import React from "react"
 import {QueryFunction, useInfiniteQuery} from "react-query"
 
 
-const getRankings: QueryFunction<Ranking[], ["rankings"]> = async ({pageParam: cursor}) => {
+const getRankings: QueryFunction<Paginated<Ranking>, ["rankings"]> = async ({pageParam: cursor}) => {
     return (await api.get("/rankings", {params: {cursor}})).data
 }
 
 export const Rankings = () => {
-    const rankingsQuery = useInfiniteQuery<unknown, AxiosError, Paginated<Ranking>, ["rankings"]>(["rankings"], getRankings, {
+    const rankingsQuery = useInfiniteQuery<Paginated<Ranking>, AxiosError, Paginated<Ranking>, ["rankings"]>(["rankings"], getRankings, {
         getNextPageParam: p => p.next_cursor
     })
 
