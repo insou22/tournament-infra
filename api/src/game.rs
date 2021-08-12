@@ -1,22 +1,32 @@
 use serde::Serialize;
 
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum TurnResult {
     Legal,
     Illegal,
     Invalid,
 }
 
+pub struct TurnData {
+    pub stdin: String,
+    pub player_index: usize
+}
+
+pub enum GameState {
+    Turn(TurnData),
+    Complete(Vec<usize>)
+}
+
 pub trait Game {
     // Creates a new game with random starting state.
     fn new() -> Self;
 
-    // Gets data and the binary that should receive said data for the upcoming turn.
-    fn get_turn_data(&self) -> (String, u32);
+    fn get_game_state(&self) -> GameState;
 
     // Pass the binary's response to this function.
     // Returns whether the response is legal, illegal or invalid,
     // along with a human readable string that represents the action taken.
-    fn respond(&self, action: String) -> (TurnResult, String);
+    fn respond(&mut self, action: &str) -> (TurnResult, String);
 
-    fn get_player_count() -> u8;
+    fn get_player_count() -> usize;
 }

@@ -1,16 +1,13 @@
-use crate::game::{Game, TurnResult};
+use crate::errors::*;
+use crate::game::{Game, GameState, TurnData, TurnResult};
+use rand::prelude::*;
 use rand::seq::SliceRandom;
+use super::common::Card;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum Who {
     P1,
     P2,
-}
-
-#[derive(Clone, Copy)]
-struct Card {
-    rank: u32,
-    suit: u32,
 }
 
 #[derive(Clone, Copy)]
@@ -64,7 +61,7 @@ impl Game for Round1 {
         }
     }
 
-    fn get_turn_data(&self) -> (String, u32) {
+    fn get_game_state(&self) -> GameState {
         let mut msg = format!(
             "{}\n",
             match self.turn {
@@ -77,6 +74,37 @@ impl Game for Round1 {
             Who::P1 => &self.p1_hand,
             Who::P2 => &self.p2_hand,
         };
+
+        if hand.len() == 0 {
+            let mut p1_score = 0;
+            let mut p2_score = 0;
+            for trick in &self.prev_tricks {
+                match trick.first {
+                    Who::P1 => {
+                        if trick.p1_card.suit != trick.p2_card.suit
+                            || trick.p1_card.rank > trick.p2_card.rank
+                        {
+                            p1_score += 1;
+                        } else {
+                            p2_score += 1;
+                        }
+                    }
+                    Who::P2 => {
+                        if trick.p2_card.suit != trick.p1_card.suit
+                            || trick.p2_card.rank > trick.p1_card.rank
+                        {
+                            p2_score += 1;
+                        } else {
+                            p1_score += 1;
+                        }
+                    }
+                }
+            }
+            return GameState::Complete(vec![
+                if p1_score > p2_score {2} else if p1_score == p2_score {1} else {0},
+                if p2_score > p1_score {2} else if p2_score == p1_score {1} else {0}
+            ]);
+        }
 
         msg.push_str(&format!("{}\n", hand.len()));
 
@@ -123,20 +151,87 @@ impl Game for Round1 {
             }
         }
 
-        (
-            msg,
-            match self.turn {
+        GameState::Turn(TurnData {
+            stdin: msg,
+            player_index: match self.turn {
                 Who::P1 => 0,
                 Who::P2 => 1,
             },
-        )
+        })
     }
 
-    fn respond(&self, action: String) -> (TurnResult, String) {
-        (TurnResult::Invalid, "".to_owned())
+    fn respond(&mut self, action: &str) -> (TurnResult, String) {
+        // parse card
+        let card = action.parse::<Card>();
+
+        let mut tr = TurnResult::Legal;
+
+        let mut hand = match self.turn {
+            Who::P1 => &mut self.p1_hand,
+            Who::P2 => &mut self.p2_hand,
+        };
+
+        if let Ok(card) = card {
+            if !hand.contains(&card) {
+                tr = TurnResult::Illegal;
+            }
+        } else {
+            tr = TurnResult::Invalid;
+        }
+
+        let card_index = if tr == TurnResult::Legal {
+            hand.iter()
+                .position(|c| c == card.as_ref().unwrap())
+                .expect("card not found")
+        } else {
+            let mut rng = rand::thread_rng();
+            rng.gen_range(0..hand.len())
+        };
+
+        let card = hand.remove(card_index);
+
+        match self.curr {
+            PartialTrick::First => {
+                self.curr = PartialTrick::Second(card);
+                self.turn = match self.turn {
+                    Who::P1 => Who::P2,
+                    Who::P2 => Who::P1,
+                };
+            }
+            PartialTrick::Second(first_card) => {
+                self.curr = PartialTrick::First;
+
+                match self.turn {
+                    Who::P1 => {
+                        self.prev_tricks.push(Trick {
+                            first: Who::P2,
+                            p1_card: card,
+                            p2_card: first_card,
+                        });
+
+                        if first_card.suit != card.suit || first_card.rank > card.rank {
+                            self.turn = Who::P2;
+                        }
+                    }
+                    Who::P2 => {
+                        self.prev_tricks.push(Trick {
+                            first: Who::P1,
+                            p1_card: first_card,
+                            p2_card: card,
+                        });
+
+                        if first_card.suit != card.suit || first_card.rank > card.rank {
+                            self.turn = Who::P1;
+                        }
+                    }
+                };
+            }
+        };
+
+        (tr, format!("{}", card))
     }
 
-    fn get_player_count() -> u8 {
+    fn get_player_count() -> usize {
         2
     }
 }

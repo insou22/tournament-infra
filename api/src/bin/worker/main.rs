@@ -8,8 +8,13 @@ async fn main() -> Result<()> {
 
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info,sqlx=warn"))
         .init();
+    std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL environment variable should be set (via .env or otherwise).");
+    std::env::var("REDIS_URL")
+        .expect("REDIS_URL environment variable should be set (via .env or otherwise).");
+
     let app = celery::app!(
-        broker = RedisBroker { std::env::var("REDIS_ADDR").unwrap() },
+        broker = RedisBroker { std::env::var("REDIS_URL").unwrap() },
         tasks = [play],
         task_routes = [],
     )

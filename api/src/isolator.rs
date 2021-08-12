@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bollard::{Docker, container::{self, LogOutput}, exec::{self, CreateExecOptions, StartExecOptions}, models::{HostConfig, HostConfigCgroupnsModeEnum}};
 use futures_util::StreamExt;
-use rocket::tokio::{io::AsyncWriteExt, time::timeout};
+use tokio::{io::AsyncWriteExt, time::timeout};
 
 const NANO_CPUS:    i64   = 1000 * 1000 * 1000; // 1 cpu
 const MEMORY:       i64   = 256  * 1024 * 1024; // 256MiB
