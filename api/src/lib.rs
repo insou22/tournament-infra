@@ -8,3 +8,5 @@ pub mod models;
 pub mod paginate;
 pub mod game;
 pub mod games;
+pub mod tasks;
+pub mod isolator;

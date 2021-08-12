@@ -65,14 +65,17 @@ impl Game for Round1 {
     }
 
     fn get_turn_data(&self) -> (String, u32) {
-        let mut msg = format!("{}\n", match self.turn {
-            Who::P1 => 1,
-            Who::P2 => 2
-        });
+        let mut msg = format!(
+            "{}\n",
+            match self.turn {
+                Who::P1 => 1,
+                Who::P2 => 2,
+            }
+        );
 
         let hand = match self.turn {
             Who::P1 => &self.p1_hand,
-            Who::P2 => &self.p2_hand
+            Who::P2 => &self.p2_hand,
         };
 
         msg.push_str(&format!("{}\n", hand.len()));
@@ -89,7 +92,7 @@ impl Game for Round1 {
                     msg.push_str("1\n");
                     msg.push_str(&format!("{} {}\n", trick.p1_card.suit, trick.p1_card.rank));
                     msg.push_str(&format!("{} {}\n", trick.p2_card.suit, trick.p2_card.rank));
-                },
+                }
                 Who::P2 => {
                     msg.push_str("2\n");
                     msg.push_str(&format!("{} {}\n", trick.p2_card.suit, trick.p2_card.rank));
@@ -100,27 +103,40 @@ impl Game for Round1 {
 
         match self.curr {
             PartialTrick::First => {
-                msg.push_str(&format!("{}\n", match self.turn {
-                    Who::P1 => 1,
-                    Who::P2 => 2
-                }));
-            },
+                msg.push_str(&format!(
+                    "{}\n",
+                    match self.turn {
+                        Who::P1 => 1,
+                        Who::P2 => 2,
+                    }
+                ));
+            }
             PartialTrick::Second(card) => {
-                msg.push_str(&format!("{}\n", match self.turn {
-                    Who::P1 => 2,
-                    Who::P2 => 1
-                }));
+                msg.push_str(&format!(
+                    "{}\n",
+                    match self.turn {
+                        Who::P1 => 2,
+                        Who::P2 => 1,
+                    }
+                ));
                 msg.push_str(&format!("{} {}\n", card.suit, card.rank));
             }
         }
 
-        (msg, match self.turn {
-            Who::P1 => 0,
-            Who::P2 => 1
-        })
+        (
+            msg,
+            match self.turn {
+                Who::P1 => 0,
+                Who::P2 => 1,
+            },
+        )
     }
 
     fn respond(&self, action: String) -> (TurnResult, String) {
         (TurnResult::Invalid, "".to_owned())
+    }
+
+    fn get_player_count() -> u8 {
+        2
     }
 }

@@ -1,7 +1,31 @@
-use tournament_api::games::round_1::Round1;
-use tournament_api::game::Game;
+use celery::prelude::*;
+use tournament_api::errors::*;
+use tournament_api::tasks::play;
 
-fn main() {
-    let game = Round1::new();
-    println!("{}", game.get_turn_data().0);
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv::dotenv().ok();
+
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info,sqlx=warn"))
+        .init();
+    let app = celery::app!(
+        broker = RedisBroker { std::env::var("REDIS_ADDR").unwrap() },
+        tasks = [play],
+        task_routes = [],
+    )
+    .await?;
+
+    app.send_task(play::new(
+        "round-1".to_owned(),
+        vec![
+            ("z5361056".to_owned(), "dbc3927".to_owned()),
+            ("chicken".to_owned(), "b3903f9".to_owned()),
+        ],
+    ))
+    .await?;
+
+    app.display_pretty().await;
+    app.consume().await?;
+
+    Ok(())
 }
