@@ -1,8 +1,8 @@
+use super::common::Card;
 use crate::errors::*;
 use crate::game::{Game, GameState, TurnData, TurnResult};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
-use super::common::Card;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Who {
@@ -101,8 +101,20 @@ impl Game for Round1 {
                 }
             }
             return GameState::Complete(vec![
-                if p1_score > p2_score {2} else if p1_score == p2_score {1} else {0},
-                if p2_score > p1_score {2} else if p2_score == p1_score {1} else {0}
+                if p1_score > p2_score {
+                    2
+                } else if p1_score == p2_score {
+                    1
+                } else {
+                    0
+                },
+                if p2_score > p1_score {
+                    2
+                } else if p2_score == p1_score {
+                    1
+                } else {
+                    0
+                },
             ]);
         }
 

@@ -1,6 +1,6 @@
-pub mod user;
 pub mod binary;
 pub mod game;
+pub mod user;
 
 pub struct Ranking {
     pub id: i64,

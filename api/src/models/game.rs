@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::paginate::Paginatable;
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct TurnStreams {

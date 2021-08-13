@@ -17,14 +17,15 @@ async fn main() -> Result<()> {
         broker = RedisBroker { std::env::var("REDIS_URL").unwrap() },
         tasks = [play],
         task_routes = [],
+        task_retry_for_unexpected = false
     )
     .await?;
 
     app.send_task(play::new(
         "round-1".to_owned(),
         vec![
-            ("z5361056".to_owned(), "dbc3927".to_owned()),
-            ("chicken".to_owned(), "b3903f9".to_owned()),
+            ("z5361056".to_owned(), "46bf1c1".to_owned()),
+            ("chicken".to_owned(), "17f16d4".to_owned()),
         ],
     ))
     .await?;

@@ -17,7 +17,7 @@ CREATE TABLE games (
     id INTEGER PRIMARY KEY NOT NULL,
     tournament_id INTEGER NOT NULL,
     created_at INTEGER NOT NULL,
-    completed_at INTEGER
+    completed_at INTEGER NOT NULL
 );
 
 CREATE TABLE players (
@@ -26,8 +26,8 @@ CREATE TABLE players (
     user_id INTEGER NOT NULL,
     binary_id INTEGER NOT NULL,
     rating_before_game INTEGER NOT NULL,
-    points INTEGER,
-    rating_change INTEGER,
+    points INTEGER NOT NULL,
+    rating_change INTEGER NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id),
     FOREIGN KEY (user_id) REFERENCES users (id), -- Technically redundant. Could join via binaries table.
     FOREIGN KEY (binary_id) REFERENCES binaries (id),

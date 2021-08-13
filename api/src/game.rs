@@ -9,12 +9,12 @@ pub enum TurnResult {
 
 pub struct TurnData {
     pub stdin: String,
-    pub player_index: usize
+    pub player_index: usize,
 }
 
 pub enum GameState {
     Turn(TurnData),
-    Complete(Vec<usize>)
+    Complete(Vec<u32>),
 }
 
 pub trait Game {

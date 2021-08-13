@@ -1,6 +1,6 @@
+use crate::paginate::Paginatable;
 use rocket::tokio::try_join;
 use serde::Serialize;
-use crate::paginate::Paginatable;
 
 #[derive(Serialize)]
 pub struct BinaryStats {

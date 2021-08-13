@@ -1,6 +1,6 @@
-use tournament_api::paginate::{Cursor, Paginatable, Paginate, Paginated};
 use rocket::http::Status;
 use rocket::serde::{json::Json, Serialize};
+use tournament_api::paginate::{Cursor, Paginatable, Paginate, Paginated};
 
 #[derive(Serialize)]
 pub struct RankingResponse {

@@ -1,6 +1,6 @@
-use tournament_api::models::user::{User, UserInfo, UserProfile};
 use rocket::serde::json::Json;
 use serde::Deserialize;
+use tournament_api::models::user::{User, UserInfo, UserProfile};
 
 #[get("/userinfo")]
 pub async fn get_userinfo(
@@ -52,7 +52,9 @@ pub async fn update_user_profile(
     .await
     .expect("profile update failed");
 
-    let profile = user.get_profile(config.inner().current_tournament_id, pool.inner()).await;
+    let profile = user
+        .get_profile(config.inner().current_tournament_id, pool.inner())
+        .await;
 
     Json(profile)
 }

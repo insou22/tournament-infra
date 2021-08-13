@@ -1,11 +1,11 @@
+use rocket::http::Status;
+use rocket::serde::json::Json;
 use tournament_api::models::{
     binary::Binary,
     game::{Game, GameResponse},
     user::User,
 };
 use tournament_api::paginate::{Cursor, Paginate, Paginated};
-use rocket::http::Status;
-use rocket::serde::json::Json;
 
 #[get("/games?<per_page>&<cursor>")]
 pub async fn get_games(

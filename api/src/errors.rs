@@ -4,5 +4,7 @@ error_chain! {
         DecodeError(::data_encoding::DecodeError);
         CeleryError(::celery::error::CeleryError);
         ParseIntError(::std::num::ParseIntError);
+        BollardError(::bollard::errors::Error);
+        IoError(::std::io::Error);
     }
 }

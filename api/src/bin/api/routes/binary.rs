@@ -1,12 +1,12 @@
+use ring::digest::{Context, SHA256};
+use rocket::http::Status;
+use rocket::serde::json::Json;
+use std::io::{BufReader, Read};
 use tournament_api::models::{
     binary::{Binary, BinaryResponse},
     user::User,
 };
 use tournament_api::paginate::{Cursor, Paginate, Paginated};
-use ring::digest::{Context, SHA256};
-use rocket::http::Status;
-use rocket::serde::json::Json;
-use std::io::{BufReader, Read};
 
 #[get("/user/<username>/binaries?<per_page>&<cursor>")]
 pub async fn get_user_binaries(

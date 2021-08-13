@@ -22,18 +22,23 @@ impl std::str::FromStr for Card {
 
 impl std::fmt::Display for Card {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} of {}", match self.rank {
-            1 => "Ace".to_owned(),
-            11 => "Jack".to_owned(),
-            12 => "Queen".to_owned(),
-            13 => "King".to_owned(),
-            x => format!("{}", x)
-        }, match self.suit {
-            1 => "Diamonds",
-            2 => "Hearts",
-            3 => "Spades",
-            4 => "Clubs",
-            _ => "Invalid Suit"
-        })
+        write!(
+            f,
+            "{} of {}",
+            match self.rank {
+                1 => "Ace".to_owned(),
+                11 => "Jack".to_owned(),
+                12 => "Queen".to_owned(),
+                13 => "King".to_owned(),
+                x => format!("{}", x),
+            },
+            match self.suit {
+                1 => "Diamonds",
+                2 => "Hearts",
+                3 => "Spades",
+                4 => "Clubs",
+                _ => "Invalid Suit",
+            }
+        )
     }
 }
