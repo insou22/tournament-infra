@@ -4,7 +4,7 @@ use crate::isolator::{
     connect_docker, create_container, exec_container_binary, teardown_container,
 };
 use crate::models::binary::Binary;
-use crate::models::game::TurnStreams;
+use crate::models::game::{Game as GameModel, TurnStreams};
 use celery::prelude::*;
 use sqlx::Connection;
 use std::path::Path;
@@ -166,29 +166,30 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             .with_unexpected_err(|| "Failed to teardown container.")?;
     }
 
-    sqlx::query!(
-        "INSERT INTO games (tournament_id, created_at, completed_at)
-        VALUES (?, ?, ?)",
-        tournament_id,
-        game_start_time,
-        game_end_time
-    )
-    .execute(&pool)
-    .await
-    .with_unexpected_err(|| "Failed to insert game.")?;
+    // Game creation.
+    let game_instance = GameModel::create(tournament_id, game_start_time, game_end_time, &pool)
+        .await
+        .with_unexpected_err(|| "Failed to insert game.")?;
 
+    // Player creation.
     let scores = scores.unwrap();
     for (player_container, score) in binaries.iter().zip(scores.iter()) {
+        let rating_record = sqlx::query!(
+            "SELECT rating FROM rankings WHERE user_id=? AND tournament_id=?",
+            player_container.binary.user_id,
+            tournament_id
+        )
+        .fetch_one(&pool)
+        .await
+        .with_unexpected_err(|| "Player doesn't have rating.")?;
+
         sqlx::query!(
             "INSERT INTO players (game_id, user_id, binary_id, rating_before_game, points, rating_change)
-            VALUES (
-                (SELECT id FROM games WHERE created_at=?),
-                ?, ?, ?, ?, ?
-            )",
-            game_start_time,
+            VALUES (?, ?, ?, ?, ?, ?)",
+            game_instance.id,
             player_container.binary.user_id,
             player_container.binary.id,
-            1000, // TODO: Find way to grab ratings without race conditions...
+            rating_record.rating, // TODO: Find way to grab ratings without race conditions...
             *score,
             13
         )
@@ -197,19 +198,19 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .with_unexpected_err(|| "Failed to insert turn.")?;
     }
 
+    // Turn Creation
     for (i, turn) in turns.iter().enumerate() {
         let turn_number = i as u32 + 1;
         sqlx::query!(
             "INSERT INTO turns (game_id, turn_number, player_id, created_at, run_time_ms, action, state, stdout, stderr, stdin)
             VALUES (
-                (SELECT id FROM games WHERE created_at=?),
-                ?,
-                (SELECT id FROM players WHERE game_id=(SELECT id FROM games WHERE created_at=?) AND user_id=?),
+                ?, ?,
+                (SELECT id FROM players WHERE game_id=? AND user_id=?),
                 ?, ?, ?, ?, ?, ?, ?
             )",
-            game_start_time,
+            game_instance.id,
             turn_number,
-            game_start_time,
+            game_instance.id,
             turn.player.binary.user_id,
             turn.created_at,
             turn.run_time_ms,

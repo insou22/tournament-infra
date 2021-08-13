@@ -6,5 +6,6 @@ error_chain! {
         ParseIntError(::std::num::ParseIntError);
         BollardError(::bollard::errors::Error);
         IoError(::std::io::Error);
+        SqlxError(::sqlx::Error);
     }
 }

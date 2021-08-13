@@ -1,3 +1,4 @@
+use crate::errors::*;
 use crate::paginate::Paginatable;
 use serde::Serialize;
 
@@ -62,6 +63,26 @@ impl Game {
             .fetch_optional(pool)
             .await
             .expect("game fetch failed")
+    }
+
+    pub async fn create(
+        tournament_id: i64,
+        created_at: i64,
+        completed_at: i64,
+        pool: &sqlx::SqlitePool,
+    ) -> Result<Self> {
+        Ok(sqlx::query_as!(
+            Self,
+            "INSERT INTO games (tournament_id, created_at, completed_at)
+            VALUES (?, ?, ?);
+            SELECT * FROM games WHERE created_at=?",
+            tournament_id,
+            created_at,
+            completed_at,
+            created_at
+        )
+        .fetch_one(pool)
+        .await?)
     }
 
     pub async fn get_players(&self, pool: &sqlx::SqlitePool) -> Vec<Player> {
