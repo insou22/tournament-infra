@@ -8,7 +8,8 @@ CREATE TABLE rankings (
     id INTEGER PRIMARY KEY NOT NULL,
     user_id INTEGER NOT NULL,
     tournament_id INTEGER NOT NULL,
-    rating INTEGER NOT NULL,
+    rating_mu REAL NOT NULL,
+    rating_sigma REAL NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
     UNIQUE (user_id, tournament_id)
 );
@@ -25,9 +26,11 @@ CREATE TABLE players (
     game_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     binary_id INTEGER NOT NULL,
-    rating_before_game INTEGER NOT NULL,
+    rating_mu_before_game REAL NOT NULL,
+    rating_sigma_before_game REAL NOT NULL,
+    rating_mu_change REAL NOT NULL,
+    rating_sigma_change REAL NOT NULL,
     points INTEGER NOT NULL,
-    rating_change INTEGER NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id),
     FOREIGN KEY (user_id) REFERENCES users (id), -- Technically redundant. Could join via binaries table.
     FOREIGN KEY (binary_id) REFERENCES binaries (id),

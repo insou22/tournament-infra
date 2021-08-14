@@ -175,7 +175,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
     let scores = scores.unwrap();
     for (player_container, score) in binaries.iter().zip(scores.iter()) {
         let rating_record = sqlx::query!(
-            "SELECT rating FROM rankings WHERE user_id=? AND tournament_id=?",
+            "SELECT rating_mu, rating_sigma FROM rankings WHERE user_id=? AND tournament_id=?",
             player_container.binary.user_id,
             tournament_id
         )
@@ -184,14 +184,16 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .with_unexpected_err(|| "Player doesn't have rating.")?;
 
         sqlx::query!(
-            "INSERT INTO players (game_id, user_id, binary_id, rating_before_game, points, rating_change)
-            VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO players (game_id, user_id, binary_id, rating_mu_before_game, rating_sigma_before_game, points, rating_mu_change, rating_sigma_change)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             game_instance.id,
             player_container.binary.user_id,
             player_container.binary.id,
-            rating_record.rating, // TODO: Find way to grab ratings without race conditions...
+            rating_record.rating_mu,
+            rating_record.rating_sigma,
             *score,
-            13
+            13,
+            12
         )
         .execute(&pool)
         .await

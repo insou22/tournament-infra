@@ -222,11 +222,13 @@ conn.executemany(
     """INSERT INTO rankings (
         user_id,
         tournament_id,
-        rating
+        rating_mu,
+        rating_sigma
     ) VALUES (
         (SELECT id FROM users WHERE username=:username),
         :tournament_id,
-        :rating
+        :rating,
+        0
     )""",
     user_inserts
 )
@@ -292,16 +294,20 @@ conn.executemany(
         game_id,
         user_id,
         binary_id,
-        rating_before_game,
+        rating_mu_before_game,
+        rating_sigma_before_game,
         points,
-        rating_change
+        rating_mu_change,
+        rating_sigma_change
     ) VALUES (
         (SELECT id FROM games WHERE created_at=:game_created_at),
         (SELECT id FROM users WHERE username=:username),
         (SELECT id FROM binaries WHERE hash=:binary_hash),
         :rating_before_game,
+        0,
         :points,
-        :rating_change
+        :rating_change,
+        0
     )""",
     player_inserts
 )

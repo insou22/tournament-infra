@@ -27,9 +27,11 @@ pub struct Player {
     pub binary_hash: String,
     pub username: String,
     pub display_name: String,
-    pub rating_before_game: i64,
-    pub rating_change: Option<i64>,
-    pub result: Option<String>,
+    pub rating_mu_before_game: f64,
+    pub rating_sigma_before_game: f64,
+    pub rating_mu_change: f64,
+    pub rating_sigma_change: f64,
+    pub result: String,
 }
 
 #[derive(Serialize)]
@@ -54,7 +56,7 @@ pub struct Game {
     #[serde(skip)]
     pub tournament_id: i64,
     pub created_at: i64,
-    pub completed_at: Option<i64>,
+    pub completed_at: i64,
 }
 
 impl Game {
@@ -92,13 +94,15 @@ impl Game {
                 binaries.hash AS binary_hash,
                 users.username AS username,
                 users.display_name AS display_name,
-                players.rating_before_game AS rating_before_game,
-                players.rating_change AS rating_change,
+                players.rating_mu_before_game AS "rating_mu_before_game: f64",
+                players.rating_sigma_before_game AS "rating_sigma_before_game: f64",
+                players.rating_mu_change AS "rating_mu_change: f64",
+                players.rating_sigma_change AS "rating_sigma_change: f64",
                 CASE players.points
                     WHEN 2 THEN 'won'
                     WHEN 1 THEN 'drew'
                     WHEN 0 THEN 'lost'
-                END AS "result?: String"
+                END AS "result!: String"
             FROM players
             JOIN users ON players.user_id=users.id
             JOIN binaries ON players.binary_id=binaries.id

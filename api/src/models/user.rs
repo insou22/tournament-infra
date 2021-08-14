@@ -1,6 +1,7 @@
+use crate::errors::*;
 use crate::models::{
     binary::{Binary, BinaryResponse},
-    Ranking,
+    ranking::Ranking,
 };
 use rocket::response::status::Unauthorized;
 use rocket::tokio::try_join;
@@ -13,7 +14,8 @@ pub struct TournamentStats {
     pub losses: i32,
     pub draws: i32,
     pub win_loss: f64,
-    pub rating: i64,
+    pub rating_mu: f64,
+    pub rating_sigma: f64,
     pub average_turn_run_time_ms: f64,
 }
 
@@ -29,7 +31,8 @@ pub struct UserProfile {
 pub struct UserInfo {
     pub username: String,
     pub display_name: String,
-    pub current_rating: Option<i64>,
+    pub current_rating_mu: Option<f64>,
+    pub current_rating_sigma: Option<f64>,
 }
 
 #[derive(Serialize, Clone)]
@@ -49,21 +52,33 @@ impl User {
     }
 
     pub async fn get_userinfo(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserInfo {
-        let ranking = sqlx::query_as!(
-            Ranking,
-            "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?",
-            self.id,
-            tournament_id
-        )
-        .fetch_optional(pool)
-        .await
-        .expect("optional ranking fetch failed");
+        let ranking: Option<Ranking> = self
+            .get_ranking(tournament_id, pool)
+            .await
+            .expect("optional ranking fetch failed");
 
         UserInfo {
             username: self.username.to_owned(),
             display_name: self.display_name.to_owned(),
-            current_rating: ranking.and_then(|r| Some(r.rating)),
+            current_rating_mu: ranking.as_ref().and_then(|r| Some(r.rating_mu as f64)),
+            current_rating_sigma: ranking.as_ref().and_then(|r| Some(r.rating_sigma as f64)),
         }
+    }
+
+    pub async fn get_ranking<'e>(
+        &self,
+        tournament_id: i64,
+        pool: impl sqlx::Executor<'e, Database=crate::DBType>,
+    ) -> Result<Option<Ranking>> {
+        Ok(sqlx::query_as!(
+            Ranking,
+            r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
+            WHERE user_id=? AND tournament_id=?"#,
+            self.id,
+            tournament_id
+        )
+        .fetch_optional(pool)
+        .await?)
     }
 
     pub async fn get_profile(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserProfile {
@@ -98,20 +113,15 @@ impl User {
         tournament_id: i64,
         pool: &sqlx::SqlitePool,
     ) -> Option<TournamentStats> {
-        match sqlx::query_as!(
-            Ranking,
-            "SELECT * FROM rankings WHERE user_id=? AND tournament_id=?",
-            self.id,
-            tournament_id
-        )
-        .fetch_optional(pool)
-        .await
-        .expect("ranking fetch failed")
+        match self
+            .get_ranking(tournament_id, pool)
+            .await
+            .expect("ranking fetch failed")
         {
             None => None,
             Some(ranking) => {
                 let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
-                    sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating > ? AND tournament_id=?", ranking.rating, tournament_id).fetch_one(pool),
+                    sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating_mu > ? AND tournament_id=?", ranking.rating_mu, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2", self.id, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0", self.id, tournament_id).fetch_one(pool),
                     sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1", self.id, tournament_id).fetch_one(pool),
@@ -120,7 +130,8 @@ impl User {
 
                 Some(TournamentStats {
                     ranking: position_record.result,
-                    rating: ranking.rating,
+                    rating_mu: ranking.rating_mu as f64,
+                    rating_sigma: ranking.rating_sigma as f64,
                     win_loss: wins_record.result as f64 / losses_record.result as f64,
                     wins: wins_record.result,
                     losses: losses_record.result,
