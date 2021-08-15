@@ -1,17 +1,17 @@
+use crate::errors::*;
 use crate::game::{Game, GameState, TurnResult};
 use crate::games::create_game_by_name;
 use crate::isolator::{
     connect_docker, create_container, exec_container_binary, teardown_container,
 };
-use crate::errors::*;
 use crate::models::binary::Binary;
 use crate::models::game::{Game as GameModel, TurnStreams};
 use crate::models::ranking::Ranking;
 use celery::prelude::*;
 use sqlx::Connection;
+use std::collections::HashMap;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::collections::HashMap;
 
 const RATER_BETA: f64 = 25.0 / 6.0;
 
@@ -189,22 +189,55 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             player.binary.user_id,
             tournament_id
         )
-        .fetch_one(&pool)
+        .fetch_optional(&pool)
         .await
-        .with_unexpected_err(|| "Player doesn't have rating.")?;
+        .with_unexpected_err(|| "Failed to fetch ranking.")?;
 
-        let rating = bbt::Rating::new(ranking.rating_mu, ranking.rating_sigma);
+        let rating = match ranking {
+            Some(r) => bbt::Rating::new(r.rating_mu, r.rating_sigma),
+            None => {
+                let rating = bbt::Rating::default();
+
+                let mu = rating.mu();
+                let sigma = rating.sigma();
+
+                sqlx::query!(
+                    "INSERT INTO rankings (user_id, tournament_id, rating_mu, rating_sigma)
+                    VALUES (?, ?, ?, ?)",
+                    player.binary.user_id,
+                    tournament_id,
+                    mu,
+                    sigma
+                )
+                .execute(&pool)
+                .await
+                .with_unexpected_err(|| "Failed to insert new ranking.");
+
+                rating
+            }
+        };
+
         ratings.push((score, rating));
     }
-    
     let rater = bbt::Rater::new(RATER_BETA);
-    let ratings = rater.update_ratings(
-        ratings.iter().map(|(s, r)| vec![r.clone()]).collect::<Vec<_>>(),
-        ratings.iter().map(|(&s, r)| 2 - s as usize).collect::<Vec<_>>()
-    ).or_else::<Error, _>(|e| Err(e.into())).with_unexpected_err(|| "BBT rating update failed.")?;
+    let ratings = rater
+        .update_ratings(
+            ratings
+                .iter()
+                .map(|(s, r)| vec![r.clone()])
+                .collect::<Vec<_>>(),
+            ratings
+                .iter()
+                .map(|(&s, r)| 2 - s as usize)
+                .collect::<Vec<_>>(),
+        )
+        .or_else::<Error, _>(|e| Err(e.into()))
+        .with_unexpected_err(|| "BBT rating update failed.")?;
 
     // Player creation.
-    for ((player_container, score), new_rating_vec) in binaries.iter().zip(scores.iter()).zip(ratings.iter()) {
+    for ((player_container, score), new_rating_vec) in
+        binaries.iter().zip(scores.iter()).zip(ratings.iter())
+    {
         let ranking = sqlx::query_as!(
             Ranking,
             r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
