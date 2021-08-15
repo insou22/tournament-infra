@@ -3,13 +3,19 @@ use crate::games::create_game_by_name;
 use crate::isolator::{
     connect_docker, create_container, exec_container_binary, teardown_container,
 };
+use crate::errors::*;
 use crate::models::binary::Binary;
 use crate::models::game::{Game as GameModel, TurnStreams};
+use crate::models::ranking::Ranking;
 use celery::prelude::*;
 use sqlx::Connection;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::collections::HashMap;
 
+const RATER_BETA: f64 = 25.0 / 6.0;
+
+#[derive(Clone, Debug)]
 struct GameBinary {
     pub binary: Binary,
     pub username: String,
@@ -171,11 +177,38 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .await
         .with_unexpected_err(|| "Failed to insert game.")?;
 
-    // Player creation.
     let scores = scores.unwrap();
-    for (player_container, score) in binaries.iter().zip(scores.iter()) {
-        let rating_record = sqlx::query!(
-            "SELECT rating_mu, rating_sigma FROM rankings WHERE user_id=? AND tournament_id=?",
+
+    let mut ratings = Vec::with_capacity(binaries.len());
+
+    for (player, score) in binaries.iter().zip(scores.iter()) {
+        let ranking = sqlx::query_as!(
+            Ranking,
+            r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
+            WHERE user_id=? AND tournament_id=?"#,
+            player.binary.user_id,
+            tournament_id
+        )
+        .fetch_one(&pool)
+        .await
+        .with_unexpected_err(|| "Player doesn't have rating.")?;
+
+        let rating = bbt::Rating::new(ranking.rating_mu, ranking.rating_sigma);
+        ratings.push((score, rating));
+    }
+    
+    let rater = bbt::Rater::new(RATER_BETA);
+    let ratings = rater.update_ratings(
+        ratings.iter().map(|(s, r)| vec![r.clone()]).collect::<Vec<_>>(),
+        ratings.iter().map(|(&s, r)| 2 - s as usize).collect::<Vec<_>>()
+    ).or_else::<Error, _>(|e| Err(e.into())).with_unexpected_err(|| "BBT rating update failed.")?;
+
+    // Player creation.
+    for ((player_container, score), new_rating_vec) in binaries.iter().zip(scores.iter()).zip(ratings.iter()) {
+        let ranking = sqlx::query_as!(
+            Ranking,
+            r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
+            WHERE user_id=? AND tournament_id=?"#,
             player_container.binary.user_id,
             tournament_id
         )
@@ -183,21 +216,40 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .await
         .with_unexpected_err(|| "Player doesn't have rating.")?;
 
+        let rating = bbt::Rating::new(ranking.rating_mu, ranking.rating_sigma);
+        let new_rating = &new_rating_vec[0];
+        // SQLx hates temporary values, so have to do this all here...
+        let new_rating_mu = new_rating.mu();
+        let new_rating_sigma = new_rating.sigma();
+        let rating_change_mu = ranking.rating_mu - new_rating_mu;
+        let rating_change_sigma = ranking.rating_sigma - new_rating_sigma;
+
         sqlx::query!(
             "INSERT INTO players (game_id, user_id, binary_id, rating_mu_before_game, rating_sigma_before_game, points, rating_mu_change, rating_sigma_change)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             game_instance.id,
             player_container.binary.user_id,
             player_container.binary.id,
-            rating_record.rating_mu,
-            rating_record.rating_sigma,
+            ranking.rating_mu,
+            ranking.rating_sigma,
             *score,
-            13,
-            12
+            rating_change_mu,
+            rating_change_sigma
         )
         .execute(&pool)
         .await
-        .with_unexpected_err(|| "Failed to insert turn.")?;
+        .with_unexpected_err(|| "Failed to insert player.")?;
+
+        sqlx::query!(
+            "UPDATE rankings SET rating_mu=?, rating_sigma=? WHERE user_id=? AND tournament_id=?",
+            new_rating_mu,
+            new_rating_sigma,
+            player_container.binary.user_id,
+            tournament_id
+        )
+        .execute(&pool)
+        .await
+        .with_unexpected_err(|| "Failed to update ranking.")?;
     }
 
     // Turn Creation

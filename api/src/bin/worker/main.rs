@@ -24,8 +24,8 @@ async fn main() -> Result<()> {
     app.send_task(play::new(
         "round-1".to_owned(),
         vec![
-            ("z5361056".to_owned(), "46bf1c1".to_owned()),
-            ("chicken".to_owned(), "17f16d4".to_owned()),
+            ("z5361056".to_owned(), "fcdcc27".to_owned()),
+            ("chicken".to_owned(), "f9b13c1".to_owned()),
         ],
     ))
     .await?;

@@ -2,7 +2,7 @@ use crate::paginate::Paginatable;
 use rocket::tokio::try_join;
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BinaryStats {
     pub wins: i32,
     pub losses: i32,
@@ -13,7 +13,7 @@ pub struct BinaryStats {
     pub average_turn_run_time_ms_percentage_change: Option<f64>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BinaryResponse {
     #[serde(flatten)]
     pub binary: Binary,
@@ -27,7 +27,7 @@ impl Paginatable for BinaryResponse {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Binary {
     #[serde(skip)]
     pub id: i64,
