@@ -220,7 +220,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         ratings.push((score, rating));
     }
     let rater = bbt::Rater::new(RATER_BETA);
-    let ratings = rater
+    let new_ratings = rater
         .update_ratings(
             ratings
                 .iter()
@@ -235,27 +235,17 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .with_unexpected_err(|| "BBT rating update failed.")?;
 
     // Player creation.
-    for ((player_container, score), new_rating_vec) in
-        binaries.iter().zip(scores.iter()).zip(ratings.iter())
+    for ((player_container, (score, rating)), new_rating_vec) in
+        binaries.iter().zip(ratings.iter()).zip(new_ratings.iter())
     {
-        let ranking = sqlx::query_as!(
-            Ranking,
-            r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
-            WHERE user_id=? AND tournament_id=?"#,
-            player_container.binary.user_id,
-            tournament_id
-        )
-        .fetch_one(&pool)
-        .await
-        .with_unexpected_err(|| "Player doesn't have rating.")?;
-
-        let rating = bbt::Rating::new(ranking.rating_mu, ranking.rating_sigma);
         let new_rating = &new_rating_vec[0];
         // SQLx hates temporary values, so have to do this all here...
         let new_rating_mu = new_rating.mu();
         let new_rating_sigma = new_rating.sigma();
-        let rating_change_mu = ranking.rating_mu - new_rating_mu;
-        let rating_change_sigma = ranking.rating_sigma - new_rating_sigma;
+        let rating_mu = rating.mu();
+        let rating_sigma = rating.sigma();
+        let rating_change_mu = rating_mu - new_rating_mu;
+        let rating_change_sigma = rating_sigma - new_rating_sigma;
 
         sqlx::query!(
             "INSERT INTO players (game_id, user_id, binary_id, rating_mu_before_game, rating_sigma_before_game, points, rating_mu_change, rating_sigma_change)
@@ -263,8 +253,8 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             game_instance.id,
             player_container.binary.user_id,
             player_container.binary.id,
-            ranking.rating_mu,
-            ranking.rating_sigma,
+            rating_mu,
+            rating_sigma,
             *score,
             rating_change_mu,
             rating_change_sigma
