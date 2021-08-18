@@ -129,13 +129,10 @@ fn hash_code(upload_time: i64, file_path: &std::path::Path) -> String {
     data_encoding::HEXLOWER.encode(context.finish().as_ref())
 }
 
-#[put(
-    "/binaries",
-    format = "multipart/form-data",
-    data = "<file>"
-)]
+#[put("/binaries", format = "multipart/form-data", data = "<file>")]
 pub async fn put_user_binary(
     pool: &rocket::State<sqlx::SqlitePool>,
+    celery_app: &rocket::State<std::sync::Arc<celery::Celery<celery::broker::RedisBroker>>>,
     current_user: User,
     config: &rocket::State<tournament_api::config::Config>,
     mut file: rocket::form::Form<rocket::fs::TempFile<'_>>,
@@ -196,6 +193,25 @@ pub async fn put_user_binary(
     .fetch_one(pool.inner())
     .await
     .expect("binary insert into failed. note that there is now an orphaned C file in the uploads directory!");
+
+    let other_binaries = sqlx::query!(
+        r#"SELECT username, hash, MAX(created_at) AS "created_at!: i64" FROM binaries JOIN users ON binaries.user_id=users.id
+        WHERE compile_result='success' AND user_id<>?
+        GROUP BY user_id"#,
+        current_user.id
+    ).fetch_all(pool.inner()).await.expect("binary get all for round robin failed.");
+
+    for other_binary in other_binaries {
+        celery_app
+            .inner()
+            .send_task(tournament_api::tasks::play::new(
+                "round-1".to_owned(), // TODO: Don't hardcode this.
+                vec![
+                    (current_user.username.clone(), hash.to_owned()),
+                    (other_binary.username.clone(), other_binary.hash),
+                ],
+            )).await.expect("couldn't send task to consumer");
+    }
 
     Json(BinaryResponse {
         stats_summary: binary.get_stats_summary(pool.inner()).await,

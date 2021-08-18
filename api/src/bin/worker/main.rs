@@ -1,6 +1,5 @@
-use celery::prelude::*;
 use tournament_api::errors::*;
-use tournament_api::tasks::play;
+use tournament_api::tasks::celery_app_factory;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -10,25 +9,8 @@ async fn main() -> Result<()> {
         .init();
     std::env::var("DATABASE_URL")
         .expect("DATABASE_URL environment variable should be set (via .env or otherwise).");
-    std::env::var("REDIS_URL")
-        .expect("REDIS_URL environment variable should be set (via .env or otherwise).");
 
-    let app = celery::app!(
-        broker = RedisBroker { std::env::var("REDIS_URL").unwrap() },
-        tasks = [play],
-        task_routes = [],
-        task_retry_for_unexpected = false
-    )
-    .await?;
-
-    app.send_task(play::new(
-        "round-1".to_owned(),
-        vec![
-            ("z5361056".to_owned(), "fcdcc27".to_owned()),
-            ("chicken".to_owned(), "f9b13c1".to_owned()),
-        ],
-    ))
-    .await?;
+    let app = celery_app_factory().await?;
 
     app.display_pretty().await;
     app.consume().await?;

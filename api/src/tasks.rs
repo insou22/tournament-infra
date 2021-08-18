@@ -38,6 +38,18 @@ struct CompletedGame<T> {
     pub ended_at: u128,
 }
 
+pub async fn celery_app_factory() -> Result<std::sync::Arc<celery::Celery<RedisBroker>>> {
+    let app = celery::app!(
+        broker = RedisBroker { std::env::var("REDIS_URL").expect("REDIS_URL environment variable should be set (via .env or otherwise).") },
+        tasks = [play],
+        task_routes = [],
+        task_retry_for_unexpected = false
+    )
+    .await?;
+
+    Ok(app)
+}
+
 #[celery::task(hard_time_limit = 60, max_retries = 3)]
 pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResult<()> {
     let game_details = create_game_by_name(&game_name);
@@ -85,6 +97,13 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             Some(binary) => {
                 let binary_path =
                     binaries_dir.join(Path::new(&format!("{}-{}", username, binary.created_at)));
+
+                if !binary_path.is_file() {
+                    return TaskResult::Err(TaskError::UnexpectedError(format!(
+                        "Binary does not exist: {}-{}.",
+                        username, binary.created_at
+                    )))
+                }
 
                 binaries.push(GamePlayer {
                     binary_path,
