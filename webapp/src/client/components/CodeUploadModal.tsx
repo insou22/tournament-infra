@@ -13,7 +13,9 @@ export const CodeUploadModal = ({isOpen, onClose}: {isOpen: boolean, onClose: ()
     const history = useHistory()
 
     const uploadMutation = useMutation<Binary, unknown, File, unknown>(async (file: File) => {
-        return (await api.put("/binaries", await file.text())).data
+        const formData = new FormData()
+        formData.append("file", file)
+        return (await api.put("/binaries", formData)).data
     }, {
         onSuccess: binary => {
             history.push(`/user/${user!.username}/binary/${binary.hash}`)

@@ -131,14 +131,14 @@ fn hash_code(upload_time: i64, file_path: &std::path::Path) -> String {
 
 #[put(
     "/binaries",
-    format = "application/x-www-form-urlencoded",
+    format = "multipart/form-data",
     data = "<file>"
 )]
 pub async fn put_user_binary(
     pool: &rocket::State<sqlx::SqlitePool>,
     current_user: User,
     config: &rocket::State<tournament_api::config::Config>,
-    mut file: rocket::fs::TempFile<'_>,
+    mut file: rocket::form::Form<rocket::fs::TempFile<'_>>,
 ) -> Json<BinaryResponse> {
     // SQLite's max integer size is the same as i64, so we'll convert to that.
     let upload_time = std::time::SystemTime::now()
