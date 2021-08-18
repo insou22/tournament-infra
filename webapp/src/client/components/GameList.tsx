@@ -1,5 +1,6 @@
 import {Badge, Grid, GridItem, Text, Tooltip} from "@chakra-ui/react"
 import type {Game} from "@client/api"
+import {displayRating} from "@client/utils/ratings"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
 import React from "react"
@@ -32,24 +33,24 @@ const GameListItem = ({game, username, row}: {game: Omit<Game, "turns">, usernam
             <Text>{firstPlayer.display_name}</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={2 + columnOffset}>
-            <Text>({firstPlayer.rating_mu_before_game})</Text>
+            <Text>({displayRating(firstPlayer.rating_mu_before_game, firstPlayer.rating_sigma_before_game)})</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={3 + columnOffset}>
             <Badge colorScheme={resultProps[firstPlayer.result].color} w="100%" textAlign="center">
                 {firstPlayer.rating_mu_change > 0 && "+"}
-                {firstPlayer.rating_mu_change}
+                {firstPlayer.rating_mu_change.toFixed(2)}
             </Badge>
         </GridItem>
         <GridItem gridRow={row} gridColumn={4 + columnOffset} placeContent="center">
             <Text>vs {secondPlayer.display_name}</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={5 + columnOffset}>
-            <Text>({secondPlayer.rating_mu_before_game})</Text>
+            <Text>({displayRating(secondPlayer.rating_mu_before_game, secondPlayer.rating_sigma_before_game)})</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={6 + columnOffset}>
             <Badge colorScheme={resultProps[secondPlayer.result].color} w="100%" textAlign="center">
                 {secondPlayer.rating_mu_change > 0 && "+"}
-                {secondPlayer.rating_mu_change}
+                {secondPlayer.rating_mu_change.toFixed(2)}
             </Badge>
         </GridItem>
         <GridItem gridRow={row} gridColumn={7 + columnOffset} fontWeight="normal">

@@ -120,7 +120,7 @@ const PlayerListItem = ({player}: {player: Player}) => {
             </Badge>
             <Badge colorScheme={resultProps[player.result].color}>
                 {player.rating_mu_change > 0 && "+"}
-                {player.rating_mu_change}
+                {player.rating_mu_change.toFixed(2)}
             </Badge>
             <Button size="xs" onClick={setShow.toggle}>
                 {show ? "Hide" : "Show"} Binary Details
