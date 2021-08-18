@@ -7,5 +7,6 @@ error_chain! {
         BollardError(::bollard::errors::Error);
         IoError(::std::io::Error);
         SqlxError(::sqlx::Error);
+        SystemTimeError(::std::time::SystemTimeError);
     }
 }

@@ -11,5 +11,6 @@ pub mod isolator;
 pub mod models;
 pub mod paginate;
 pub mod tasks;
+pub mod rating;
 
 pub type DBType = sqlx::Sqlite;

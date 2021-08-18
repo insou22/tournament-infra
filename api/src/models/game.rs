@@ -2,7 +2,7 @@ use crate::errors::*;
 use crate::paginate::Paginatable;
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct TurnStreams {
     pub stdin: String,
     pub stdout: String,

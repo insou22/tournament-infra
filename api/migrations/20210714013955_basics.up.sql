@@ -56,6 +56,7 @@ CREATE TABLE turns (
     created_at INTEGER NOT NULL,
     run_time_ms INTEGER NOT NULL,
     action TEXT NOT NULL,
+    human_action TEXT NOT NULL,
     state TEXT NOT NULL CHECK (state IN ('legal', 'illegal', 'invalid', 'timed_out')),
     stdout TEXT NOT NULL,
     stderr TEXT NOT NULL,
