@@ -1,6 +1,7 @@
 use ring::digest::{Context, SHA256};
 use rocket::http::Status;
 use rocket::serde::json::Json;
+use rocket::tokio::time::timeout;
 use std::io::{BufReader, Read};
 use tournament_api::models::{
     binary::{Binary, BinaryResponse},
@@ -144,11 +145,36 @@ pub async fn put_user_binary(
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis() as i64;
-    let filename = format!("{}-{}.c", current_user.username, upload_time);
-    let path = std::path::Path::new(&config.inner().code_upload_directory).join(filename);
+    let filename = format!("{}-{}", current_user.username, upload_time);
+    let path =
+        std::path::Path::new(&config.inner().code_upload_directory).join(format!("{}.c", filename));
     file.persist_to(&path).await.expect("file persist failed.");
 
     let hash = &hash_code(upload_time, &path)[..config.inner().code_hash_length];
+
+    let binary_path = std::path::Path::new(&config.inner().binary_directory).join(filename);
+    let compilation_future = async_process::Command::new("gcc")
+        .arg(path.into_os_string())
+        .arg("-o")
+        .arg(binary_path)
+        .kill_on_drop(true)
+        .status();
+    let compilation_status = match timeout(
+        std::time::Duration::from_millis(config.inner().compilation_timeout),
+        compilation_future,
+    )
+    .await
+    {
+        Ok(Ok(s)) => {
+            if s.success() {
+                "success"
+            } else {
+                "failed"
+            }
+        }
+        Ok(Err(_)) => "failed",
+        Err(_) => "timed_out",
+    };
 
     let binary = sqlx::query_as!(
         Binary,
@@ -163,7 +189,7 @@ pub async fn put_user_binary(
         config.inner().current_tournament_id,
         upload_time,
         hash,
-        "not_compiled",
+        compilation_status,
         current_user.id,
         hash
     )

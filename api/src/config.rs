@@ -11,4 +11,6 @@ pub struct Config {
     pub code_upload_directory: String,
     pub code_hash_length: usize,
     pub webapp_url: String,
+    pub compilation_timeout: u64,
+    pub binary_directory: String
 }
