@@ -32,24 +32,24 @@ const GameListItem = ({game, username, row}: {game: Omit<Game, "turns">, usernam
             <Text>{firstPlayer.display_name}</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={2 + columnOffset}>
-            <Text>({firstPlayer.rating_before_game})</Text>
+            <Text>({firstPlayer.rating_mu_before_game})</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={3 + columnOffset}>
             <Badge colorScheme={resultProps[firstPlayer.result].color} w="100%" textAlign="center">
-                {firstPlayer.rating_change > 0 && "+"}
-                {firstPlayer.rating_change}
+                {firstPlayer.rating_mu_change > 0 && "+"}
+                {firstPlayer.rating_mu_change}
             </Badge>
         </GridItem>
         <GridItem gridRow={row} gridColumn={4 + columnOffset} placeContent="center">
             <Text>vs {secondPlayer.display_name}</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={5 + columnOffset}>
-            <Text>({secondPlayer.rating_before_game})</Text>
+            <Text>({secondPlayer.rating_mu_before_game})</Text>
         </GridItem>
         <GridItem gridRow={row} gridColumn={6 + columnOffset}>
             <Badge colorScheme={resultProps[secondPlayer.result].color} w="100%" textAlign="center">
-                {secondPlayer.rating_change > 0 && "+"}
-                {secondPlayer.rating_change}
+                {secondPlayer.rating_mu_change > 0 && "+"}
+                {secondPlayer.rating_mu_change}
             </Badge>
         </GridItem>
         <GridItem gridRow={row} gridColumn={7 + columnOffset} fontWeight="normal">

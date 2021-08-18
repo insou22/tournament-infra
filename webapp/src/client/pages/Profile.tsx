@@ -75,7 +75,8 @@ const TournamentStatsSummary = ({stats}: {stats: TournamentStats}) => {
         },
         {
             label: "Rating",
-            value: stats.rating
+            value: stats.rating_mu.toFixed(2),
+            subvalue: `± ${(stats.rating_sigma * 3).toFixed(2)}`
         },
         {
             label: "Wins",

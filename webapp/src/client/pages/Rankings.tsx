@@ -4,6 +4,7 @@ import {api, Paginated, Ranking} from "@client/api"
 import {ButtonLink} from "@client/components/ButtonLink"
 import {Loading} from "@client/components/Loading"
 import {PageWrapper} from "@client/components/PageWrapper"
+import {displayRating} from "@client/utils/ratings"
 import {getRankingStyles} from "@client/utils/stats"
 import type {AxiosError} from "axios"
 import React from "react"
@@ -52,6 +53,6 @@ const RankingItem = ({ranking, n}: {ranking: Ranking, n: number}) => {
             </HStack>
         </Td>
         <Td><ButtonLink href={`/user/${ranking.username}`} size="inherit" color={styles.color}>{ranking.display_name}</ButtonLink></Td>
-        <Td>{ranking.rating}</Td>
+        <Td>{displayRating(ranking.rating_mu, ranking.rating_sigma)}</Td>
     </Tr>
 }
