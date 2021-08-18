@@ -58,13 +58,9 @@ USERS = {
     "marcchee": {
         "display_name": "Marc Chee"
     },
-    "z5555555": {
-        "display_name": "Generic UNSW Student"
-    },
-    "z5555556": {
-        "display_name": "Generic UNSW Student 2"
-    },
 }
+
+USERS.update({f"z{5555555+i}": {"display_name": f"Generic UNSW Student {i+1}"} for i in range(0, 16)})
 
 TOURNAMENT_ID = 1
 current_timestamp = 1625787738000  # July 9th 2021, 9:42:18 AM

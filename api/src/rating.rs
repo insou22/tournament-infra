@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-const RATER_BETA: f64 = 25.0 / 6.0;
+pub const RATER_BETA: f64 = 25.0 / 6.0;
 
 pub fn get_rating_change<T>(
     players: Vec<(T, u32, bbt::Rating)>,
