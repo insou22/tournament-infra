@@ -1,16 +1,16 @@
-use crate::models::{
+use rocket::http::Status;
+use rocket::serde::json::Json;
+use tournament_api::models::{
     binary::Binary,
     game::{Game, GameResponse},
     user::User,
 };
-use crate::paginate::{Cursor, Paginate, Paginated};
-use rocket::http::Status;
-use rocket::serde::json::Json;
+use tournament_api::paginate::{Cursor, Paginate, Paginated};
 
 #[get("/games?<per_page>&<cursor>")]
 pub async fn get_games(
     pool: &rocket::State<sqlx::SqlitePool>,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<GameResponse>>, Status> {
@@ -71,7 +71,7 @@ pub async fn get_games(
 pub async fn get_user_games(
     pool: &rocket::State<sqlx::SqlitePool>,
     username: &str,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<GameResponse>>, Status> {

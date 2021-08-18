@@ -58,13 +58,9 @@ USERS = {
     "marcchee": {
         "display_name": "Marc Chee"
     },
-    "z5555555": {
-        "display_name": "Generic UNSW Student"
-    },
-    "z5555556": {
-        "display_name": "Generic UNSW Student 2"
-    },
 }
+
+USERS.update({f"z{5555555+i}": {"display_name": f"Generic UNSW Student {i+1}"} for i in range(0, 16)})
 
 TOURNAMENT_ID = 1
 current_timestamp = 1625787738000  # July 9th 2021, 9:42:18 AM
@@ -222,11 +218,13 @@ conn.executemany(
     """INSERT INTO rankings (
         user_id,
         tournament_id,
-        rating
+        rating_mu,
+        rating_sigma
     ) VALUES (
         (SELECT id FROM users WHERE username=:username),
         :tournament_id,
-        :rating
+        :rating,
+        0
     )""",
     user_inserts
 )
@@ -292,16 +290,20 @@ conn.executemany(
         game_id,
         user_id,
         binary_id,
-        rating_before_game,
+        rating_mu_before_game,
+        rating_sigma_before_game,
         points,
-        rating_change
+        rating_mu_change,
+        rating_sigma_change
     ) VALUES (
         (SELECT id FROM games WHERE created_at=:game_created_at),
         (SELECT id FROM users WHERE username=:username),
         (SELECT id FROM binaries WHERE hash=:binary_hash),
         :rating_before_game,
+        0,
         :points,
-        :rating_change
+        :rating_change,
+        0
     )""",
     player_inserts
 )
@@ -313,6 +315,7 @@ turn_inserts = [{
     "created_at": turn["created_at"],
     "run_time_ms": turn["run_time_ms"],
     "action": turn["action"],
+    "human_action": turn["action"],
     "state": turn["state"],
     "stdout": turn["stdout"],
     "stdin": turn["stdin"],
@@ -327,6 +330,7 @@ conn.executemany(
         created_at,
         run_time_ms,
         action,
+        human_action,
         state,
         stdout,
         stdin,
@@ -342,6 +346,7 @@ conn.executemany(
         :created_at,
         :run_time_ms,
         :action,
+        :human_action,
         :state,
         :stdout,
         :stdin,

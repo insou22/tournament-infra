@@ -1,10 +1,10 @@
-use crate::models::user::{User, UserInfo};
 use rocket::{
     http::{Cookie, CookieJar, SameSite},
     serde::json::Json,
 };
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
+use tournament_api::models::user::{User, UserInfo};
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
@@ -29,7 +29,7 @@ pub async fn login(
     pool: &rocket::State<sqlx::SqlitePool>,
     request: Json<LoginRequest>,
     cookies: &CookieJar<'_>,
-    config: &rocket::State<crate::config::Config>,
+    config: &rocket::State<tournament_api::config::Config>,
 ) -> Json<LoginResponse> {
     let client = reqwest::Client::new();
     let params = [("zid", &request.zid), ("password", &request.password)];
@@ -60,7 +60,7 @@ pub async fn login(
             "none" => cookie_builder.same_site(SameSite::None),
             "lax" => cookie_builder.same_site(SameSite::Lax),
             "strict" => cookie_builder.same_site(SameSite::Strict),
-            _ => cookie_builder
+            _ => cookie_builder,
         };
 
         if !config.inner().cookies.secure {
@@ -90,7 +90,8 @@ pub async fn login(
         };
 
         Json(LoginResponse::Success(
-            user.get_userinfo(config.inner().current_tournament_id, pool.inner()).await,
+            user.get_userinfo(config.inner().current_tournament_id, pool.inner())
+                .await,
         ))
     } else {
         Json(LoginResponse::Failure(LoginFailure {

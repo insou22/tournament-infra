@@ -7,6 +7,7 @@ import {Loading} from "@client/components/Loading"
 import {PageWrapper} from "@client/components/PageWrapper"
 import {useBinary} from "@client/hooks/useBinary"
 import {dontRetryOn404} from "@client/utils/api"
+import {displayRating} from "@client/utils/ratings"
 import {resultProps} from "@client/utils/results"
 import {formatTimestamp} from "@client/utils/time"
 import React from "react"
@@ -112,14 +113,14 @@ const PlayerListItem = ({player}: {player: Player}) => {
     return <>
         <HStack>
             <ButtonLink href={`/user/${player.username}`}>
-                {player.display_name} ({player.rating_before_game})
+                {player.display_name} ({displayRating(player.rating_mu_before_game, player.rating_sigma_before_game)})
             </ButtonLink>
             <Badge variant="solid" colorScheme={resultProps[player.result].color}>
                 {resultProps[player.result].label}
             </Badge>
             <Badge colorScheme={resultProps[player.result].color}>
-                {player.rating_change > 0 && "+"}
-                {player.rating_change}
+                {player.rating_mu_change > 0 && "+"}
+                {player.rating_mu_change.toFixed(2)}
             </Badge>
             <Button size="xs" onClick={setShow.toggle}>
                 {show ? "Hide" : "Show"} Binary Details

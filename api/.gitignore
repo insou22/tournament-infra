@@ -1,4 +1,6 @@
 # Build files.
 /target
-# Runtime code upload location.
+# Runtime player code upload location.
 /uploads
+# Runtime player binary storage location.
+/binaries

@@ -1,8 +1,8 @@
 use crate::errors::*;
 use data_encoding::BASE64;
 use serde::Serialize;
-use std::str::FromStr;
 use std::fmt::Display;
+use std::str::FromStr;
 
 pub enum Cursor<T> {
     Next(T),
@@ -27,14 +27,14 @@ impl<T: FromStr + Display> Paginate<T> {
                     let s = BASE64.decode(s.as_bytes())?;
                     let s = String::from_utf8(s)?;
                     if let Some(c) = s.get(5..) {
-                        let c = c.parse::<T>().or::<Error>(Err("Cursor parse failed.".into()))?;
+                        let c = c
+                            .parse::<T>()
+                            .or::<Error>(Err("Cursor parse failed.".into()))?;
                         match s.get(..5) {
-                            Some(s) => {
-                                match s {
-                                    "next_" => Cursor::Next(c),
-                                    "prev_" => Cursor::Prev(c),
-                                    _ => bail!("Invalid cursor type.")
-                                }
+                            Some(s) => match s {
+                                "next_" => Cursor::Next(c),
+                                "prev_" => Cursor::Prev(c),
+                                _ => bail!("Invalid cursor type."),
                             },
                             None => bail!("Invalid cursor type."),
                         }
@@ -61,10 +61,7 @@ pub struct Paginated<Item: Serialize> {
 }
 
 impl<Item: Serialize + Paginatable> Paginated<Item> {
-    pub fn new(
-        mut items: Vec<Item>,
-        paginate: Paginate<Item::CursorType>
-    ) -> Self {
+    pub fn new(mut items: Vec<Item>, paginate: Paginate<Item::CursorType>) -> Self {
         let mut next_cursor: Option<Item::CursorType> = None;
         let mut prev_cursor: Option<Item::CursorType> = None;
 
@@ -73,14 +70,18 @@ impl<Item: Serialize + Paginatable> Paginated<Item> {
                 next_cursor = items.get(0).and_then(|x| Some(x.get_cursor()));
 
                 if let Some(_) = items.get(paginate.per_page_with_cursor as usize - 1) {
-                    prev_cursor = items.get(paginate.per_page as usize - 1).and_then(|x| Some(x.get_cursor()));
+                    prev_cursor = items
+                        .get(paginate.per_page as usize - 1)
+                        .and_then(|x| Some(x.get_cursor()));
                 }
 
                 items.reverse();
-            },
+            }
             _ => {
                 if let Some(_) = items.get(paginate.per_page_with_cursor as usize - 1) {
-                    next_cursor = items.get(paginate.per_page as usize - 1).and_then(|x| Some(x.get_cursor()));
+                    next_cursor = items
+                        .get(paginate.per_page as usize - 1)
+                        .and_then(|x| Some(x.get_cursor()));
                 }
 
                 if let Cursor::Next(_) = paginate.cursor {
@@ -92,8 +93,10 @@ impl<Item: Serialize + Paginatable> Paginated<Item> {
         items.truncate(paginate.per_page as usize);
 
         Self {
-            next_cursor: next_cursor.and_then(|c| Some(BASE64.encode(format!("next_{}", c).as_bytes()))),
-            prev_cursor: prev_cursor.and_then(|c| Some(BASE64.encode(format!("prev_{}", c).as_bytes()))),
+            next_cursor: next_cursor
+                .and_then(|c| Some(BASE64.encode(format!("next_{}", c).as_bytes()))),
+            prev_cursor: prev_cursor
+                .and_then(|c| Some(BASE64.encode(format!("prev_{}", c).as_bytes()))),
             items,
         }
     }

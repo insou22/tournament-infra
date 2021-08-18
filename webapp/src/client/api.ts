@@ -16,7 +16,8 @@ export interface TournamentStats {
     wins: number
     losses: number
     draws: number
-    rating: number
+    rating_mu: number
+    rating_sigma: number
     win_loss: number | null
     average_turn_run_time_ms: number
 }
@@ -57,6 +58,7 @@ export type TurnState = "legal" | "illegal" | "invalid" | "timed_out"
 export interface Turn {
     username: string,
     action: string,
+    human_action: string,
     streams?: Record<Stream, string>,
     state?: TurnState,
     run_time_ms: number
@@ -68,8 +70,10 @@ export interface Player {
     binary_hash: string
     username: string,
     display_name: string
-    rating_before_game: number,
-    rating_change: number
+    rating_mu_before_game: number,
+    rating_sigma_before_game: number,
+    rating_mu_change: number
+    rating_sigma_change: number
     result: PlayerResult
 }
 
@@ -84,5 +88,6 @@ export interface Game {
 export interface Ranking {
     username: string
     display_name: string
-    rating: number
+    rating_mu: number
+    rating_sigma: number
 }

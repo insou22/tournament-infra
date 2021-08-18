@@ -7,6 +7,10 @@ port = 8000
 current_tournament_id = 1
 # Directory to upload code to. Relative to `/api`.
 code_upload_directory = "./uploads"
+# Directory to save compiled binaries to. Relative to `/api`.
+binary_directory = "./binaries"
+# Maximum time that a binary can take to compile in milliseconds.
+compilation_timeout = 5000
 # Length to truncate player binary hashes to.
 code_hash_length = 7
 
