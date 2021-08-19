@@ -3,6 +3,7 @@ import {PlusSquareIcon, SettingsIcon} from "@chakra-ui/icons"
 import {Box, HStack, Text, VStack} from "@chakra-ui/layout"
 import {Spinner, useDisclosure} from "@chakra-ui/react"
 import {useUserInfo} from "@client/hooks/useUserInfo"
+import {displayRating} from "@client/utils/ratings"
 import React from "react"
 import {useHistory, useRouteMatch} from "react-router-dom"
 import {ButtonLink} from "./ButtonLink"
@@ -20,7 +21,7 @@ export const Navbar = () => {
         userControls = <HStack spacing={2}>
             <VStack alignItems="flex-end" spacing={1}>
                 <ButtonLink size="md" href={`/user/${user.username}`}>{user.display_name}</ButtonLink>
-                <Text fontSize="xs">{user.current_elo ? `${user.current_elo}` : "Unrated"}</Text>
+                <Text fontSize="xs">{user.current_rating_mu !== null && user.current_rating_sigma !== null ? displayRating(user.current_rating_mu, user.current_rating_sigma) : "Unrated"}</Text>
             </VStack>
             <NavbarIconLink aria-label="settings" path="/settings" icon={<SettingsIcon />} exact={false} />
         </HStack>

@@ -19,7 +19,8 @@ export const login = async (username: string, password: string): Promise<UserInf
 export interface UserInfo {
     username: string,
     display_name: string,
-    current_elo: number | null
+    current_rating_mu: number | null,
+    current_rating_sigma: number | null
 }
 
 export const CheckUserInfoContextProvider: React.FC<{}> = ({children}) => {
