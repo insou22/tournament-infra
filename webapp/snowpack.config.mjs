@@ -16,6 +16,12 @@ export default {
                 ...(process.versions.pnp ? {tsc: 'yarn pnpify tsc'} : {})
             },
         ],
+        [
+            "@snowpack/plugin-webpack",
+            {
+                sourceMaps: true
+            }
+        ]
     ],
     routes: [
         /* Enable an SPA Fallback in development: */
