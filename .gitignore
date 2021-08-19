@@ -4,7 +4,7 @@
 **.env
 
 # Database.
-test.db
+database.db
 # These files are created when the SQLite DB is in use.
-test.db-shm
-test.db-wal
+database.db-shm
+database.db-wal

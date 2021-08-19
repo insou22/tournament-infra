@@ -79,7 +79,7 @@ def get_timestamp(event: str):
     return current_timestamp
 
 
-conn = sqlite3.connect('test.db')
+conn = sqlite3.connect('database.db')
 
 for username, user in USERS.items():
     user["binaries"] = []
