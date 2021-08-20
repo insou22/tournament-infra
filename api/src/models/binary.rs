@@ -70,19 +70,21 @@ impl Binary {
         &self,
         conn: &mut sqlx::SqliteConnection,
     ) -> Result<BinaryStats> {
-        let (wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
-            sqlx::query!("SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=2", self.id).fetch_one(conn),
-            sqlx::query!("SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=0", self.id).fetch_one(conn),
-            sqlx::query!("SELECT COUNT(*) AS result FROM players WHERE binary_id=? AND points=1", self.id).fetch_one(conn),
-            sqlx::query!(r#"SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN players ON turns.player_id=players.id WHERE players.binary_id=?"#, self.id).fetch_one(conn)
-        )?;
+        let stats_record = sqlx::query!(
+            r#"SELECT
+                (SELECT COUNT(*) FROM players WHERE binary_id=? AND points=2) AS wins,
+                (SELECT COUNT(*) FROM players WHERE binary_id=? AND points=0) AS losses,
+                (SELECT COUNT(*) FROM players WHERE binary_id=? AND points=1) AS draws,
+                (SELECT AVG(run_time_ms) FROM turns JOIN players ON turns.player_id=players.id WHERE players.binary_id=?) AS "average_turn_run_time_ms!: f64""#,
+            self.id, self.id, self.id, self.id
+        ).fetch_one(conn).await?;
 
         Ok(BinaryStats {
-            wins: wins_record.result,
-            losses: losses_record.result,
-            draws: draws_record.result,
-            win_loss: wins_record.result as f64 / losses_record.result as f64,
-            average_turn_run_time_ms: average_turn_run_time_ms_record.result,
+            wins: stats_record.wins,
+            losses: stats_record.losses,
+            draws: stats_record.draws,
+            win_loss: stats_record.wins as f64 / stats_record.losses as f64,
+            average_turn_run_time_ms: stats_record.average_turn_run_time_ms,
             average_turn_run_time_ms_percentage_change: None,
             win_loss_ratio_percentage_change: None,
         })

@@ -86,20 +86,28 @@ impl User {
         .await?)
     }
 
-    pub async fn get_profile(
+    pub async fn get_current_binary(
         &self,
         tournament_id: i64,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<UserProfile> {
-        // Must be successfully compiled to be the user's current binary (even if the user is viewing their own profile, as this binary is used in games).
-        let binary = sqlx::query_as!(
+    ) -> Result<Option<Binary>> {
+        Ok(sqlx::query_as!(
             Binary,
             "SELECT * FROM binaries WHERE user_id=? AND tournament_id=? AND compile_result='success' ORDER BY created_at DESC",
             self.id,
             tournament_id
         )
         .fetch_optional(conn)
-        .await?;
+        .await?)
+    }
+
+    pub async fn get_profile(
+        &self,
+        tournament_id: i64,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<UserProfile> {
+        // Must be successfully compiled to be the user's current binary (even if the user is viewing their own profile, as this binary is used in games).
+        let binary = self.get_current_binary(tournament_id, conn).await?;
 
         Ok(UserProfile {
             current_binary: match binary {
@@ -171,7 +179,7 @@ impl<'r> rocket::request::FromRequest<'r> for User {
                     .guard::<&rocket::State<sqlx::SqlitePool>>()
                     .await
                     .unwrap();
-                let conn = pool.inner().acquire().await.unwrap(); // TODO: Don't unwrap this...
+                let mut conn = pool.inner().acquire().await.unwrap(); // TODO: Don't unwrap this...
                 let user = User::get_by_username(zid, &mut conn).await.unwrap(); // TODO: Don't unwrap this...
                 match user {
                     None => rocket::request::Outcome::Failure((
