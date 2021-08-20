@@ -60,18 +60,17 @@ pub struct Game {
 }
 
 impl Game {
-    pub async fn get_by_id(id: i64, pool: &sqlx::SqlitePool) -> Option<Self> {
-        sqlx::query_as!(Self, "SELECT * FROM games WHERE id=?", id)
-            .fetch_optional(pool)
-            .await
-            .expect("game fetch failed")
+    pub async fn get_by_id(id: i64, conn: &mut sqlx::SqliteConnection) -> Result<Option<Self>> {
+        Ok(sqlx::query_as!(Self, "SELECT * FROM games WHERE id=?", id)
+            .fetch_optional(conn)
+            .await?)
     }
 
     pub async fn create(
         tournament_id: i64,
         created_at: i64,
         completed_at: i64,
-        pool: &sqlx::SqlitePool,
+        conn: &mut sqlx::SqliteConnection,
     ) -> Result<Self> {
         Ok(sqlx::query_as!(
             Self,
@@ -83,12 +82,12 @@ impl Game {
             completed_at,
             created_at
         )
-        .fetch_one(pool)
+        .fetch_one(conn)
         .await?)
     }
 
-    pub async fn get_players(&self, pool: &sqlx::SqlitePool) -> Vec<Player> {
-        sqlx::query_as!(
+    pub async fn get_players(&self, conn: &mut sqlx::SqliteConnection) -> Result<Vec<Player>> {
+        Ok(sqlx::query_as!(
             Player,
             r#"SELECT
                 binaries.hash AS binary_hash,
@@ -109,12 +108,11 @@ impl Game {
             WHERE players.game_id=?"#,
             self.id
         )
-        .fetch_all(pool)
-        .await
-        .expect("players fetch all failed")
+        .fetch_all(conn)
+        .await?)
     }
 
-    pub async fn get_turns(&self, pool: &sqlx::SqlitePool) -> Vec<Turn> {
+    pub async fn get_turns(&self, conn: &mut sqlx::SqliteConnection) -> Result<Vec<Turn>> {
         let mut turns = vec![];
 
         for turn_record in sqlx::query!(
@@ -133,9 +131,8 @@ impl Game {
             WHERE turns.game_id=?",
             self.id
         )
-        .fetch_all(pool)
-        .await
-        .expect("turns fetch all failed")
+        .fetch_all(conn)
+        .await?
         {
             turns.push(Turn {
                 user_id: turn_record.user_id,
@@ -151,6 +148,6 @@ impl Game {
             })
         }
 
-        return turns;
+        Ok(turns)
     }
 }

@@ -44,31 +44,36 @@ pub struct User {
 }
 
 impl User {
-    pub async fn get_by_username(username: &str, pool: &sqlx::SqlitePool) -> Option<Self> {
-        sqlx::query_as!(Self, "SELECT * FROM users WHERE username=?", username)
-            .fetch_optional(pool)
-            .await
-            .expect("optional user fetch failed")
+    pub async fn get_by_username(
+        username: &str,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Option<Self>> {
+        Ok(
+            sqlx::query_as!(Self, "SELECT * FROM users WHERE username=?", username)
+                .fetch_optional(conn)
+                .await?,
+        )
     }
 
-    pub async fn get_userinfo(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserInfo {
-        let ranking: Option<Ranking> = self
-            .get_ranking(tournament_id, pool)
-            .await
-            .expect("optional ranking fetch failed");
+    pub async fn get_userinfo(
+        &self,
+        tournament_id: i64,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<UserInfo> {
+        let ranking: Option<Ranking> = self.get_ranking(tournament_id, conn).await?;
 
-        UserInfo {
+        Ok(UserInfo {
             username: self.username.to_owned(),
             display_name: self.display_name.to_owned(),
             current_rating_mu: ranking.as_ref().and_then(|r| Some(r.rating_mu as f64)),
             current_rating_sigma: ranking.as_ref().and_then(|r| Some(r.rating_sigma as f64)),
-        }
+        })
     }
 
-    pub async fn get_ranking<'e>(
+    pub async fn get_ranking(
         &self,
         tournament_id: i64,
-        pool: impl sqlx::Executor<'e, Database=crate::DBType>,
+        conn: &mut sqlx::SqliteConnection,
     ) -> Result<Option<Ranking>> {
         Ok(sqlx::query_as!(
             Ranking,
@@ -77,11 +82,15 @@ impl User {
             self.id,
             tournament_id
         )
-        .fetch_optional(pool)
+        .fetch_optional(conn)
         .await?)
     }
 
-    pub async fn get_profile(&self, tournament_id: i64, pool: &sqlx::SqlitePool) -> UserProfile {
+    pub async fn get_profile(
+        &self,
+        tournament_id: i64,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<UserProfile> {
         // Must be successfully compiled to be the user's current binary (even if the user is viewing their own profile, as this binary is used in games).
         let binary = sqlx::query_as!(
             Binary,
@@ -89,57 +98,58 @@ impl User {
             self.id,
             tournament_id
         )
-        .fetch_optional(pool)
-        .await
-        .expect("optional binary fetch failed");
+        .fetch_optional(conn)
+        .await?;
 
-        UserProfile {
+        Ok(UserProfile {
             current_binary: match binary {
                 Some(binary) => Some(BinaryResponse {
-                    stats_summary: binary.get_stats_summary(pool).await,
+                    stats_summary: binary.get_stats_summary(conn).await?,
                     binary,
                 }),
                 None => None,
             },
             current_tournament_stats_summary: self
-                .get_tournament_stats_summary(tournament_id, pool)
-                .await,
+                .get_tournament_stats_summary(tournament_id, conn)
+                .await?,
             user: self.clone(),
-        }
+        })
     }
 
     async fn get_tournament_stats_summary(
         &self,
         tournament_id: i64,
-        pool: &sqlx::SqlitePool,
-    ) -> Option<TournamentStats> {
-        match self
-            .get_ranking(tournament_id, pool)
-            .await
-            .expect("ranking fetch failed")
-        {
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Option<TournamentStats>> {
+        Ok(match self.get_ranking(tournament_id, conn).await? {
             None => None,
             Some(ranking) => {
-                let (position_record, wins_record, losses_record, draws_record, average_turn_run_time_ms_record) = try_join!(
-                    sqlx::query!("SELECT COUNT(*) + 1 AS result FROM rankings WHERE rating_mu > ? AND tournament_id=?", ranking.rating_mu, tournament_id).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2", self.id, tournament_id).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0", self.id, tournament_id).fetch_one(pool),
-                    sqlx::query!("SELECT COUNT(*) AS result FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1", self.id, tournament_id).fetch_one(pool),
-                    sqlx::query!(r#"SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id JOIN players ON turns.player_id=players.id WHERE players.user_id=? AND games.tournament_id=?"#, self.id, tournament_id).fetch_one(pool)
-                ).expect("a tournament stats fetch failed");
+                let stats_record = sqlx::query!(
+                    r#"SELECT
+                        (SELECT COUNT(*) + 1 FROM rankings WHERE rating_mu > ? AND tournament_id=?) AS ranking,
+                        (SELECT COUNT(*) FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=2) AS wins,
+                        (SELECT COUNT(*) FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=0) AS losses,
+                        (SELECT COUNT(*) FROM players JOIN games ON games.id=players.game_id WHERE user_id=? AND tournament_id=? AND points=1) AS draws,
+                        (SELECT AVG(run_time_ms) AS "result!: f64" FROM turns JOIN games ON turns.game_id=games.id JOIN players ON turns.player_id=players.id WHERE players.user_id=? AND games.tournament_id=?) AS "average_turn_run_time_ms!: f64""#,
+                    ranking.rating_mu, tournament_id,
+                    self.id, tournament_id,
+                    self.id, tournament_id,
+                    self.id, tournament_id,
+                    self.id, tournament_id
+                ).fetch_one(conn).await?;
 
                 Some(TournamentStats {
-                    ranking: position_record.result,
-                    rating_mu: ranking.rating_mu as f64,
-                    rating_sigma: ranking.rating_sigma as f64,
-                    win_loss: wins_record.result as f64 / losses_record.result as f64,
-                    wins: wins_record.result,
-                    losses: losses_record.result,
-                    draws: draws_record.result,
-                    average_turn_run_time_ms: average_turn_run_time_ms_record.result,
+                    ranking: stats_record.ranking,
+                    rating_mu: ranking.rating_mu,
+                    rating_sigma: ranking.rating_sigma,
+                    win_loss: stats_record.wins as f64 / stats_record.losses as f64,
+                    wins: stats_record.wins,
+                    losses: stats_record.losses,
+                    draws: stats_record.draws,
+                    average_turn_run_time_ms: stats_record.average_turn_run_time_ms,
                 })
             }
-        }
+        })
     }
 }
 
@@ -161,7 +171,8 @@ impl<'r> rocket::request::FromRequest<'r> for User {
                     .guard::<&rocket::State<sqlx::SqlitePool>>()
                     .await
                     .unwrap();
-                let user = User::get_by_username(zid, pool.inner()).await;
+                let conn = pool.inner().acquire().await.unwrap(); // TODO: Don't unwrap this...
+                let user = User::get_by_username(zid, &mut conn).await.unwrap(); // TODO: Don't unwrap this...
                 match user {
                     None => rocket::request::Outcome::Failure((
                         rocket::http::Status::Unauthorized,

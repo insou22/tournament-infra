@@ -77,6 +77,8 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .await
         .with_expected_err(|| "Failed to connect to database.")?;
 
+    let mut conn = pool.acquire().await.with_unexpected_err(|| "Failed to get connection to DB from pool.")?;
+
     let mut binaries_dir =
         std::env::current_dir().with_unexpected_err(|| "No current directory.")?;
     binaries_dir = binaries_dir.join("binaries");
@@ -85,7 +87,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
     let mut binaries: Vec<GamePlayer<(Binary, String)>> = vec![];
 
     for (username, binary_hash) in players {
-        let binary = Binary::get_by_username_and_hash(&username, &binary_hash, &pool).await;
+        let binary = Binary::get_by_username_and_hash(&username, &binary_hash, &mut conn).await.with_unexpected_err(|| "Binary fetch failed.")?;
 
         match binary {
             None => {
@@ -117,11 +119,13 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
         .await
         .with_unexpected_err(|| "Game playing failed.")?;
 
+    let mut tx = conn.begin().await.with_unexpected_err(|| "Could not begin transaction.")?;
+
     let game_instance = GameModel::create(
         tournament_id,
         completed_game.started_at as i64,
         completed_game.started_at as i64,
-        &pool,
+        &mut tx,
     )
     .await
     .with_unexpected_err(|| "Failed to insert game.")?;
@@ -135,7 +139,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             player.meta.0.user_id,
             tournament_id
         )
-        .fetch_optional(&pool)
+        .fetch_optional(&mut tx)
         .await
         .with_unexpected_err(|| "Failed to fetch ranking.")?;
 
@@ -155,7 +159,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
                     mu,
                     sigma
                 )
-                .execute(&pool)
+                .execute(&mut tx)
                 .await
                 .with_unexpected_err(|| "Failed to insert new ranking.");
 
@@ -190,7 +194,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             rating_change_mu,
             rating_change_sigma
         )
-        .execute(&pool)
+        .execute(&mut tx)
         .await
         .with_unexpected_err(|| "Failed to insert player.")?;
 
@@ -201,7 +205,7 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             player.meta.0.user_id,
             tournament_id
         )
-        .execute(&pool)
+        .execute(&mut tx)
         .await
         .with_unexpected_err(|| "Failed to update ranking.")?;
     }
@@ -231,10 +235,12 @@ pub async fn play(game_name: String, players: Vec<(String, String)>) -> TaskResu
             turn.streams.stderr,
             turn.streams.stdin
         )
-        .execute(&pool)
+        .execute(&mut tx)
         .await
         .with_unexpected_err(|| "Failed to insert turn.")?;
     }
+
+    tx.commit().await.with_unexpected_err(|| "Failed to commit transaction.")?;
 
     TaskResult::Ok(())
 }
