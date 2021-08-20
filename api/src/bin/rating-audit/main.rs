@@ -14,6 +14,8 @@ async fn main() -> Result<()> {
         .expect("DATABASE_URL environment variable should be set (via .env or otherwise).");
 
     let pool = sqlx::SqlitePool::connect(&database_url).await?;
+    let mut conn = pool.acquire().await?;
+    let mut tx = pool.begin().await?;
 
     let (default_mu, default_sigma) = {
         let r = bbt::Rating::default();
@@ -25,15 +27,15 @@ async fn main() -> Result<()> {
         default_mu,
         default_sigma
     )
-    .execute(&pool)
+    .execute(&mut tx)
     .await?;
 
     let mut games_stream =
-        sqlx::query_as!(Game, "SELECT * FROM games ORDER BY created_at ASC").fetch(&pool);
+        sqlx::query_as!(Game, "SELECT * FROM games ORDER BY created_at ASC").fetch(&mut conn);
 
     while let Some(game) = games_stream.try_next().await? {
         let mut players = vec![];
-        for player in game.get_players(&pool).await {
+        for player in game.get_players(&mut tx).await? {
             let ranking = sqlx::query_as!(
                 Ranking,
                 r#"SELECT id, user_id, tournament_id, rating_mu AS "rating_mu: f64", rating_sigma AS "rating_sigma: f64" FROM rankings
@@ -41,7 +43,7 @@ async fn main() -> Result<()> {
                 player.username,
                 game.tournament_id
             )
-            .fetch_one(&pool)
+            .fetch_one(&mut tx)
             .await?;
             players.push((
                 player.username,
@@ -49,7 +51,7 @@ async fn main() -> Result<()> {
                     "won" => 2,
                     "drew" => 1,
                     "lost" => 0,
-                    _ => unreachable!()
+                    _ => unreachable!(),
                 },
                 bbt::Rating::new(ranking.rating_mu, ranking.rating_sigma),
             ))
@@ -75,7 +77,7 @@ async fn main() -> Result<()> {
                 game.id,
                 username
             )
-            .execute(&pool)
+            .execute(&mut tx)
             .await?;
 
             sqlx::query!(
@@ -86,10 +88,12 @@ async fn main() -> Result<()> {
                 username,
                 game.tournament_id
             )
-            .execute(&pool)
+            .execute(&mut tx)
             .await?;
         }
     }
+
+    tx.commit().await?;
 
     Ok(())
 }

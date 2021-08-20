@@ -51,6 +51,11 @@ pub async fn login(
     let status = status_body.trim();
 
     if status == "true" {
+        let mut conn = pool
+            .inner()
+            .acquire()
+            .await
+            .expect("could not acquire pool connection");
         let mut cookie_builder = Cookie::build("zid", request.zid.to_string())
             .path("/")
             .expires(OffsetDateTime::now_utc() + Duration::weeks(6))
@@ -73,7 +78,10 @@ pub async fn login(
 
         let zid = &request.zid;
 
-        let user = match User::get_by_username(zid, pool.inner()).await {
+        let user = match User::get_by_username(zid, &mut conn)
+            .await
+            .expect("could not fetch user")
+        {
             Some(u) => u,
             None => {
                 sqlx::query!(
@@ -81,17 +89,21 @@ pub async fn login(
                     zid,
                     zid
                 )
-                .execute(pool.inner())
+                .execute(&mut conn)
                 .await
                 .expect("user insert failed");
 
-                User::get_by_username(zid, pool.inner()).await.unwrap()
+                User::get_by_username(zid, &mut conn)
+                    .await
+                    .expect("could not fetch user")
+                    .expect("just inserted user")
             }
         };
 
         Json(LoginResponse::Success(
-            user.get_userinfo(config.inner().current_tournament_id, pool.inner())
-                .await,
+            user.get_userinfo(config.inner().current_tournament_id, &mut conn)
+                .await
+                .expect("could not fetch userinfo"),
         ))
     } else {
         Json(LoginResponse::Failure(LoginFailure {

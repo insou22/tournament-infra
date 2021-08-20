@@ -18,7 +18,13 @@ pub async fn get_user_binaries(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<BinaryResponse>>, Status> {
-    match User::get_by_username(username, pool.inner()).await {
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+
+    match User::get_by_username(username, &mut conn).await.expect("could not fetch user") {
         Some(user) => Ok(Json({
             let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
@@ -32,7 +38,7 @@ pub async fn get_user_binaries(
                     config.inner().current_tournament_id,
                     paginate.per_page_with_cursor
                 )
-                .fetch_all(pool.inner())
+                .fetch_all(&mut conn)
                 .await
                 .expect("binary fetch for user failed with no cursor"),
                 Cursor::Next(c) => sqlx::query_as!(
@@ -45,7 +51,7 @@ pub async fn get_user_binaries(
                     c,
                     paginate.per_page_with_cursor
                 )
-                .fetch_all(pool.inner())
+                .fetch_all(&mut conn)
                 .await
                 .expect("binary fetch for user failed with next cursor"),
                 Cursor::Prev(c) => sqlx::query_as!(
@@ -58,7 +64,7 @@ pub async fn get_user_binaries(
                     c,
                     paginate.per_page_with_cursor
                 )
-                .fetch_all(pool.inner())
+                .fetch_all(&mut conn)
                 .await
                 .expect("binary fetch for user failed with prev cursor"),
             };
@@ -73,7 +79,7 @@ pub async fn get_user_binaries(
                         .is_some()
                 {
                     binaries_with_stats.push(BinaryResponse {
-                        stats_summary: binary.get_stats_summary(pool.inner()).await,
+                        stats_summary: binary.get_stats_summary(&mut conn).await.expect("could not fetch binary stats summary"),
                         binary,
                     })
                 }
@@ -92,13 +98,21 @@ pub async fn get_user_binary(
     username: &str,
     hash: &str,
 ) -> Option<Json<BinaryResponse>> {
-    match Binary::get_by_username_and_hash(username, hash, pool.inner()).await {
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+    match Binary::get_by_username_and_hash(username, hash, &mut conn).await.expect("could not fetch binary") {
         Some(binary) => {
             if binary.compile_result == "success"
                 || current_user.filter(|cu| cu.username == username).is_some()
             {
                 Some(Json(BinaryResponse {
-                    stats_summary: binary.get_stats_summary(pool.inner()).await,
+                    stats_summary: binary
+                        .get_stats_summary(&mut conn)
+                        .await
+                        .expect("could not fetch binary stats summary"),
                     binary,
                 }))
             } else {
@@ -137,6 +151,12 @@ pub async fn put_user_binary(
     config: &rocket::State<tournament_api::config::Config>,
     mut file: rocket::form::Form<rocket::fs::TempFile<'_>>,
 ) -> Json<BinaryResponse> {
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+
     // SQLite's max integer size is the same as i64, so we'll convert to that.
     let upload_time = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -190,7 +210,7 @@ pub async fn put_user_binary(
         current_user.id,
         hash
     )
-    .fetch_one(pool.inner())
+    .fetch_one(&mut conn)
     .await
     .expect("binary insert into failed. note that there is now an orphaned C file in the uploads directory!");
 
@@ -199,7 +219,7 @@ pub async fn put_user_binary(
         WHERE compile_result='success' AND user_id<>?
         GROUP BY user_id"#,
         current_user.id
-    ).fetch_all(pool.inner()).await.expect("binary get all for round robin failed.");
+    ).fetch_all(&mut conn).await.expect("binary get all for round robin failed.");
 
     for other_binary in other_binaries {
         celery_app
@@ -210,11 +230,16 @@ pub async fn put_user_binary(
                     (current_user.username.clone(), hash.to_owned()),
                     (other_binary.username.clone(), other_binary.hash),
                 ],
-            )).await.expect("couldn't send task to consumer");
+            ))
+            .await
+            .expect("couldn't send task to consumer");
     }
 
     Json(BinaryResponse {
-        stats_summary: binary.get_stats_summary(pool.inner()).await,
+        stats_summary: binary
+            .get_stats_summary(&mut conn)
+            .await
+            .expect("could not fetch binary stats summary"),
         binary,
     })
 }

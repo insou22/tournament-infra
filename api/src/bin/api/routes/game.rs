@@ -14,6 +14,12 @@ pub async fn get_games(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<GameResponse>>, Status> {
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+
     let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
     let games: Vec<Game> = match paginate.cursor {
@@ -25,7 +31,7 @@ pub async fn get_games(
             config.inner().current_tournament_id,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch all failed with no cursor"),
         Cursor::Next(c) => sqlx::query_as!(
@@ -37,7 +43,7 @@ pub async fn get_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch all failed with next cursor"),
         Cursor::Prev(c) => sqlx::query_as!(
@@ -49,7 +55,7 @@ pub async fn get_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch all failed with prev cursor"),
     };
@@ -58,7 +64,10 @@ pub async fn get_games(
 
     for game in games {
         games_with_players.push(GameResponse {
-            players: game.get_players(pool.inner()).await,
+            players: game
+                .get_players(&mut conn)
+                .await
+                .expect("could not fetch players"),
             game,
             turns: None,
         })
@@ -75,8 +84,15 @@ pub async fn get_user_games(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<GameResponse>>, Status> {
-    let user = User::get_by_username(username, pool.inner()).await;
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
 
+    let user = User::get_by_username(username, &mut conn)
+        .await
+        .expect("could not fetch user");
     if user.is_none() {
         return Err(Status::NotFound);
     }
@@ -95,7 +111,7 @@ pub async fn get_user_games(
             config.inner().current_tournament_id,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for user failed with no cursor"),
         Cursor::Next(c) => sqlx::query_as!(
@@ -108,7 +124,7 @@ pub async fn get_user_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for user failed with next cursor"),
         Cursor::Prev(c) => sqlx::query_as!(
@@ -121,7 +137,7 @@ pub async fn get_user_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for user failed with prev cursor"),
     };
@@ -129,7 +145,10 @@ pub async fn get_user_games(
     let mut games_with_players: Vec<GameResponse> = vec![];
 
     for game in games {
-        let players = game.get_players(pool.inner()).await;
+        let players = game
+            .get_players(&mut conn)
+            .await
+            .expect("could not fetch players");
         games_with_players.push(GameResponse {
             players,
             game,
@@ -149,7 +168,14 @@ pub async fn get_binary_games(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<GameResponse>>, Status> {
-    let binary = Binary::get_by_username_and_hash(username, hash, pool.inner()).await;
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+    let binary = Binary::get_by_username_and_hash(username, hash, &mut conn)
+        .await
+        .expect("could not fetch binary");
 
     if binary.is_none() {
         return Err(Status::NotFound);
@@ -174,7 +200,7 @@ pub async fn get_binary_games(
             binary.id,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for binary failed with no cursor"),
         Cursor::Next(c) => sqlx::query_as!(
@@ -186,7 +212,7 @@ pub async fn get_binary_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for binary failed with next cursor"),
         Cursor::Prev(c) => sqlx::query_as!(
@@ -198,7 +224,7 @@ pub async fn get_binary_games(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("game fetch for binary failed with prev cursor"),
     };
@@ -207,7 +233,10 @@ pub async fn get_binary_games(
 
     for game in games {
         games_with_players.push(GameResponse {
-            players: game.get_players(pool.inner()).await,
+            players: game
+                .get_players(&mut conn)
+                .await
+                .expect("could not fetch players"),
             game,
             turns: None,
         })
@@ -222,7 +251,15 @@ pub async fn get_game(
     user: Option<User>,
     id: i64,
 ) -> Option<Json<GameResponse>> {
-    let game = Game::get_by_id(id, pool.inner()).await;
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+
+    let game = Game::get_by_id(id, &mut conn)
+        .await
+        .expect("could not fetch game");
 
     if game.is_none() {
         return None;
@@ -230,9 +267,15 @@ pub async fn get_game(
     let game = game.unwrap();
 
     Some(Json(GameResponse {
-        players: game.get_players(pool.inner()).await,
+        players: game
+            .get_players(&mut conn)
+            .await
+            .expect("could not fetch players"),
         turns: {
-            let mut turns = game.get_turns(pool.inner()).await;
+            let mut turns = game
+                .get_turns(&mut conn)
+                .await
+                .expect("could not fetch turns");
 
             for mut turn in &mut turns {
                 if user.is_none() || user.as_ref().filter(|u| u.id == turn.user_id).is_none() {

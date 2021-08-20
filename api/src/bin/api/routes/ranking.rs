@@ -24,6 +24,12 @@ pub async fn get_rankings(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<RankingResponse>>, Status> {
+    let mut conn = pool
+        .inner()
+        .acquire()
+        .await
+        .expect("could not acquire pool connection");
+
     let paginate = Paginate::new(per_page, cursor).or(Err(Status::BadRequest))?;
 
     let rankings: Vec<RankingResponse> = match paginate.cursor {
@@ -36,7 +42,7 @@ pub async fn get_rankings(
             config.inner().current_tournament_id,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("rankings fetch failed with no cursor"),
         Cursor::Next(c) => sqlx::query_as!(
@@ -49,7 +55,7 @@ pub async fn get_rankings(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("rankings fetch failed with next cursor"),
         Cursor::Prev(c) => sqlx::query_as!(
@@ -62,7 +68,7 @@ pub async fn get_rankings(
             c,
             paginate.per_page_with_cursor
         )
-        .fetch_all(pool.inner())
+        .fetch_all(&mut conn)
         .await
         .expect("rankings fetch failed with prev cursor"),
     };
