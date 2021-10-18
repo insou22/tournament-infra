@@ -1,0 +1,164 @@
+openapi: "3.0.2"
+info:
+  title: Marc's Tournament API
+  version: "1.0"
+servers:
+  - url: https://marc.hamishwhc.com/api
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: zid
+  schemas:
+    UserInfo:
+      type: object
+      properties:
+        username:
+          type: string
+        display_name:
+          type: string
+        current_rating_mu:
+          type: number
+        current_rating_sigma:
+          type: number
+
+    UserProfile:
+      type: object
+      properties:
+        username:
+          type: string
+          readOnly: true
+        display_name:
+          type: string
+        current_binary:
+          $ref: '#/components/schemas/Binary'
+          readOnly: true
+        current_tournament_stats_summary:
+          type: object
+          readOnly: true
+          nullable: true
+          properties:
+            ranking:
+              type: integer
+              minimum: 1
+            wins:
+              type: integer
+              minimum: 0
+            losses:
+              type: integer
+              minimum: 0
+            draws:
+              type: integer
+              minimum: 0
+            win_loss:
+              type: number
+              minimum: 0
+              nullable: true
+              description: If null, the user has lost 0 times, and so this is undefined/infinite.
+            rating_mu:
+              type: number
+            rating_sigma:
+              type: number
+            average_turn_run_time_ms:
+              type: number
+              minimum: 0
+
+    Binary:
+      type: object
+      properties:
+        hash:
+          type: string
+        created_at:
+          type: number
+        compile_result:
+          type: string
+          enum:
+            - "success"
+            - "failure"
+            - "timed_out"
+            - "not_compiled"
+        compile_time_ms:
+          type: number
+          minimum: 0
+          nullable: true
+          description: If null, this binary has not been compiled (`compile_result` should be `not_compiled`).
+        stats_summary:
+          type: object
+          properties:
+            wins:
+              type: integer
+              minimum: 0
+            losses:
+              type: integer
+              minimum: 0
+            draws:
+              type: integer
+              minimum: 0
+            win_loss:
+              type: number
+              minimum: 0
+              nullable: true
+              description: If null, the binary has lost 0 times, and so this is undefined/infinite.
+            win_loss_ratio_percentage_change:
+              type: number
+              nullable: true
+              description: If null, this is the user's first binary and so no change has occurred.
+            rating_mu:
+              type: number
+            rating_sigma:
+              type: number
+            average_turn_run_time_ms:
+              type: number
+              minimum: 0
+            average_turn_run_time_ms_percentage_change:
+              type: number
+              nullable: true
+              description: If null, this is the user's first binary and so no change has occurred.
+
+paths:
+  /login:
+    summary: Login with UNSW zID and password.
+    description: This endpoint authenticates the user and returns userinfo for the now logged in user.
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "username"
+                - "password"
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+
+      responses:
+        "200":
+          description: Login was successful. A `zid` cookie is returned and should be included in subsequent requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+          headers: 
+            Set-Cookie:
+              description: Cookie for use in subsequent requests.
+              schema:
+                type: string
+                example: zid=vPK0oTvcpRsx6wQG8oBUbN1Kgb4jg0qNtyQv+0ZGPYYyBT7U; Path=/; HttpOnly
+        "403":
+          description: Login failed due to the reason provided in `message`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Reason why the login failed.
+  /user/{username}:
+    summary: View a user's profile for the current tournament.

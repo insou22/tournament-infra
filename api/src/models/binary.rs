@@ -39,7 +39,6 @@ pub struct Binary {
     pub created_at: i64,
     pub hash: String,
     pub compile_result: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub compile_time_ms: Option<i64>,
 }
 
