@@ -13,6 +13,12 @@ impl std::str::FromStr for Card {
             let suit = s[0..1].parse::<u32>()?;
             let rank = s[2..3].parse::<u32>()?;
 
+            if !(1..=4).contains(&suit) {
+                bail!("invalid suit")
+            } else if !(1..=13).contains(&rank) {
+                bail!("invalid rank")
+            }
+
             Ok(Self { suit, rank })
         } else {
             bail!("failed to parse card")
@@ -30,14 +36,15 @@ impl std::fmt::Display for Card {
                 11 => "Jack".to_owned(),
                 12 => "Queen".to_owned(),
                 13 => "King".to_owned(),
-                x => format!("{}", x),
+                x @ 2..=10 => format!("{}", x),
+                _ => unreachable!(),
             },
             match self.suit {
                 1 => "Diamonds",
                 2 => "Hearts",
                 3 => "Spades",
                 4 => "Clubs",
-                _ => "Invalid Suit",
+                _ => unreachable!(),
             }
         )
     }

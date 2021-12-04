@@ -7,6 +7,7 @@ use tournament_api::models::{
     binary::{Binary, BinaryResponse},
     user::User,
 };
+use tournament_api::utils::get_connection;
 use tournament_api::paginate::{Cursor, Paginate, Paginated};
 
 #[get("/user/<username>/binaries?<per_page>&<cursor>")]
@@ -18,11 +19,7 @@ pub async fn get_user_binaries(
     per_page: Option<i64>,
     cursor: Option<String>,
 ) -> Result<Json<Paginated<BinaryResponse>>, Status> {
-    let mut conn = pool
-        .inner()
-        .acquire()
-        .await
-        .expect("could not acquire pool connection");
+    let mut conn = get_connection(pool).await;
 
     match User::get_by_username(username, &mut conn).await.expect("could not fetch user") {
         Some(user) => Ok(Json({

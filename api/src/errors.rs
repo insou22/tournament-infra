@@ -10,3 +10,27 @@ error_chain! {
         SystemTimeError(::std::time::SystemTimeError);
     }
 }
+
+pub struct ErrorResponse {
+    status: rocket::http::Status,
+    message: String,
+}
+
+impl From<Error> for ErrorResponse {
+    fn from(error: Error) -> Self {
+        ErrorResponse {
+            status: rocket::http::Status::InternalServerError,
+            message: format!("{}", error)
+        }
+    }
+}
+
+impl<'r> rocket::response::Responder<'r, 'static> for ErrorResponse {
+    fn respond_to(self, _: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
+        rocket::response::Response::build()
+            .sized_body(self.message.len(), std::io::Cursor::new(self.message))
+            .header(rocket::http::ContentType::new("application", "json"))
+            .status(self.status)
+            .ok()
+    }
+}
